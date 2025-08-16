@@ -1,9 +1,9 @@
 {
-  "name": "sutando",
-  "version": "1.7.2",
-  "packageManager": "pnpm@7.33.7",
-  "description": "A modern Node.js ORM. Makes it enjoyable to interact with your database. Support Mysql, MSSql, MariaDB, Sqlite.",
-  "homepage": "https://sutando.org/",
+  "name": "@h3ravel/arquebus",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.14.0",
+  "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
+  "homepage": "https://h3ravel.net/arquebus",
   "bin": {
     "sutando": "./bin/cli.js"
   },
@@ -66,7 +66,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sutandojs/sutando.git"
+    "url": "https://github.com/h3ravel/arquebus.git"
   },
   "engines": {
     "node": ">=14",
@@ -124,7 +124,6 @@
     "mssql",
     "active record"
   ],
-  "author": "Kidd Yu",
   "readmeFilename": "README.md",
   "license": "MIT"
 }
