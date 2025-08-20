@@ -1,7 +1,7 @@
-const { Model } = require('sutando');
+import { Model } from 'sutando'
 
 class {{ name }} extends Model {
   //
 }
 
-module.exports = {{ name }};
+export default {{ name }};

@@ -1,4 +1,8 @@
-module.exports = {
+import { config as dotenv } from 'dotenv'
+
+dotenv()
+
+export default {
   mysql: {
     client: 'mysql2',
     connection: {

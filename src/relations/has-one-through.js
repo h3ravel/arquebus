@@ -1,42 +1,29 @@
-const { compose } = require('../utils');
-const SupportsDefaultModels = require('./concerns/supports-default-models');
-const HasManyThrough = require('./has-many-through');
-
-class HasOneThrough extends compose(
-  HasManyThrough,
-  SupportsDefaultModels
-) {
-  async getResults() {
-    return (await this.first()) || this.getDefaultFor(this.farParent);
+import HasManyThrough from './has-many-through'
+import SupportsDefaultModels from './concerns/supports-default-models'
+import { compose } from 'src/utils'
+class HasOneThrough extends compose(HasManyThrough, SupportsDefaultModels) {
+  async getResults () {
+    return (await this.first()) || this.getDefaultFor(this.farParent)
   }
-  
-  initRelation(models, relation) {
+  initRelation (models, relation) {
     for (const model of models) {
-      model.setRelation(relation, this.getDefaultFor(model));
+      model.setRelation(relation, this.getDefaultFor(model))
     }
-
-    return models;
+    return models
   }
-  
-  match(models, results, relation) {
-    const dictionary = this.buildDictionary(results);
-
+  match (models, results, relation) {
+    const dictionary = this.buildDictionary(results)
     for (const model of models) {
-      const key = this.getDictionaryKey(model.getAttribute(this.localKey));
+      const key = this.getDictionaryKey(model.getAttribute(this.localKey))
       if (dictionary[key] !== undefined) {
-        const value = dictionary[key];
-        model.setRelation(
-          relation, value[0]
-        );
+        const value = dictionary[key]
+        model.setRelation(relation, value[0])
       }
     }
-
-    return models;
+    return models
   }
-  
-  newRelatedInstanceFor(parent) {
-    return this.related.newInstance();
+  newRelatedInstanceFor (parent) {
+    return this.related.newInstance()
   }
 }
-
-module.exports = HasOneThrough;
+export default HasOneThrough

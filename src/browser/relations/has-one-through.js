@@ -1,6 +1,4 @@
-const HasManyThrough = require('./has-many-through');
-
+import HasManyThrough from './has-many-through'
 class HasOneThrough extends HasManyThrough {
 }
-
-module.exports = HasOneThrough;
+export default HasOneThrough

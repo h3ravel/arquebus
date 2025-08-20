@@ -1,4 +1,4 @@
-import Sutando from './src/index.js';
+import Sutando from 'src'
 
 const {
   sutando,
@@ -33,7 +33,7 @@ const {
   migrateRun,
   migrateRollback,
   migrateStatus,
-} = Sutando;
+} = Sutando
 
 export {
   sutando,
@@ -68,4 +68,4 @@ export {
   migrateRun,
   migrateRollback,
   migrateStatus
-};
+}

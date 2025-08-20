@@ -1,35 +1,36 @@
-import { Knex } from 'knex';
-import { Collection as BaseCollection } from 'collect.js';
+import { Knex } from 'knex'
+import { Collection as BaseCollection } from 'collect.js'
+import { TFunction, TGeneric } from './generics'
 
 declare module 'sutando' {
   type AnyQueryBuilder = QueryBuilder<any, any>;
   export interface Constructor<T> {
-    new (): T;
+    new(): T;
   }
   type AnyModelConstructor = ModelConstructor<Model>;
-  export interface ModelConstructor<M extends Model> extends Constructor<M> {}
+  export type ModelConstructor<M extends Model> = Constructor<M> & {}
   export type SchemaBuilder = Knex.SchemaBuilder;
   type Raw = Knex.Raw;
   type Trx = AnyQueryBuilder & {
-    commit(): Promise<void>;
-    rollback(): Promise<void>;
+    commit (): Promise<void>;
+    rollback (): Promise<void>;
   };
   type Operator = string;
   type ColumnRef = string | Raw;
   type TableRef<QB extends AnyQueryBuilder> = ColumnRef | AnyQueryBuilder | CallbackVoid<QB>;
   type Expression<T> = T | Raw | AnyQueryBuilder;
   type FieldExpression = string;
-  type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T];
+  type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends TFunction ? never : K }[keyof T];
   type DataPropertyNames<T> = Exclude<NonFunctionPropertyNames<T>, 'AnyQueryBuilderType'>;
   type AnyQueryBuilderType<T extends Model> = T;
   type PartialModelObject<T extends Model> = {
     [K in DataPropertyNames<T>]?: Defined<T[K]> extends Model
-      ? T[K]
-      : Defined<T[K]> extends Array<infer I>
-      ? I extends Model
-        ? I[]
-        : Expression<T[K]>
-      : Expression<T[K]>;
+    ? T[K]
+    : Defined<T[K]> extends Array<infer I>
+    ? I extends Model
+    ? I[]
+    : Expression<T[K]>
+    : Expression<T[K]>;
   };
 
   type PrimitiveValue =
@@ -53,15 +54,15 @@ declare module 'sutando' {
     (sql: string, ...bindings: any[]): R;
   }
   interface Aliasable {
-    as(alias: string): this;
+    as (alias: string): this;
   }
 
   type Selection<QB extends AnyQueryBuilder> = ColumnRef | AnyQueryBuilder | CallbackVoid<QB>;
   type JsonObjectOrFieldExpression = object | object[] | FieldExpression;
 
   interface SelectMethod<QB extends AnyQueryBuilder> {
-    <QBP extends QB>(...columns: Selection<QBP>[]): QB;
-    <QBP extends QB>(columns: Selection<QBP>[]): QB;
+    <QBP extends QB> (...columns: Selection<QBP>[]): QB;
+    <QBP extends QB> (columns: Selection<QBP>[]): QB;
   }
 
   interface AsMethod<QB extends AnyQueryBuilder> {
@@ -75,12 +76,12 @@ declare module 'sutando' {
     (condition: boolean): QB;
     (cb: CallbackVoid<QB>): QB;
     (raw: Raw): QB;
-    <QBA extends AnyQueryBuilder>(qb: QBA): QB;
+    <QBA extends AnyQueryBuilder> (qb: QBA): QB;
 
     (obj: object): QB;
   }
 
-  interface WhereRawMethod<QB extends AnyQueryBuilder> extends RawInterface<QB> {}
+  type WhereRawMethod<QB extends AnyQueryBuilder> = RawInterface<QB> & {}
 
   interface WhereWrappedMethod<QB extends AnyQueryBuilder> {
     (cb: CallbackVoid<QB>): QB;
@@ -89,7 +90,7 @@ declare module 'sutando' {
   interface WhereExistsMethod<QB extends AnyQueryBuilder> {
     (cb: CallbackVoid<QB>): QB;
     (raw: Raw): QB;
-    <QBA extends AnyQueryBuilder>(qb: QBA): QB;
+    <QBA extends AnyQueryBuilder> (qb: QBA): QB;
   }
 
   interface WhereInMethod<QB extends AnyQueryBuilder> {
@@ -208,7 +209,7 @@ declare module 'sutando' {
     (raw: Raw): QB;
   }
 
-  interface JoinRawMethod<QB extends AnyQueryBuilder> extends RawInterface<QB> {}
+  type JoinRawMethod<QB extends AnyQueryBuilder> = RawInterface<QB> & {}
 
   interface GroupByMethod<QB extends AnyQueryBuilder> {
     (...columns: ColumnRef[]): QB;
@@ -229,92 +230,92 @@ declare module 'sutando' {
     (columns: ColumnRefOrOrderByDescriptor[]): QB;
   }
 
-  interface OrderByRawMethod<QB extends AnyQueryBuilder> extends RawInterface<QB> {}
+  type OrderByRawMethod<QB extends AnyQueryBuilder> = RawInterface<QB> & {}
 
   export class sutando {
-    static connectorFactory: any | null;
-    static instance: sutando | null;
-    static connection(connection?: string | null): AnyQueryBuilder;
-    static setConnectorFactory(connectorFactory: any): void;
-    static getConnectorFactory(): any;
-    static getConnection(connection?: string | null): AnyQueryBuilder;
-    static addConnection(config: object, name?: string): void;
-    static beginTransaction(name?: string | null): Promise<Trx>;
-    static transaction(callback: (trx: Trx) => Promise<any>, name?: string | null): any;
-    static schema(name?: string | null): SchemaBuilder;
-    static table(table: string, connection?: string): QueryBuilder<any>;
-    static destroyAll(): Promise<void>;
-    static createModel(name: string, options: any): typeof Model;
+    static connectorFactory: any | null
+    static instance: sutando | null
+    static connection (connection?: string | null): AnyQueryBuilder;
+    static setConnectorFactory (connectorFactory: any): void;
+    static getConnectorFactory (): any;
+    static getConnection (connection?: string | null): AnyQueryBuilder;
+    static addConnection (config: object, name?: string): void;
+    static beginTransaction (name?: string | null): Promise<Trx>;
+    static transaction (callback: (trx: Trx) => Promise<any>, name?: string | null): any;
+    static schema (name?: string | null): SchemaBuilder;
+    static table (table: string, connection?: string): QueryBuilder<any>;
+    static destroyAll (): Promise<void>;
+    static createModel (name: string, options: any): typeof Model;
     manager: {
       [key: string]: AnyQueryBuilder
-    };
+    }
     connections: {
       [key: string]: any
-    };
+    }
     models: {
       [key: string]: typeof Model;
-    };
-    connection(connection?: string | null): AnyQueryBuilder;
-    setConnectorFactory(connectorFactory: any): void;
-    getConnectorFactory(): any;
-    addConnection(config: object, name?: string): void;
-    beginTransaction(name?: string | null): Promise<Trx>;
-    transaction(callback: (trx: Trx) => Promise<any>, name?: string | null): any;
-    schema(name?: string | null): SchemaBuilder;
-    table(table: string, connection?: string): QueryBuilder<any>;
-    destroyAll(): Promise<void>;
-    createModel(name: string, options: any): typeof Model;
+    }
+    connection (connection?: string | null): AnyQueryBuilder;
+    setConnectorFactory (connectorFactory: any): void;
+    getConnectorFactory (): any;
+    addConnection (config: object, name?: string): void;
+    beginTransaction (name?: string | null): Promise<Trx>;
+    transaction (callback: (trx: Trx) => Promise<any>, name?: string | null): any;
+    schema (name?: string | null): SchemaBuilder;
+    table (table: string, connection?: string): QueryBuilder<any>;
+    destroyAll (): Promise<void>;
+    createModel (name: string, options: any): typeof Model;
   }
 
   export class Attribute {
-    static make(config: { get?: Function | null, set?: Function | null }): Attribute;
-    get: Function | null;
-    set: Function | null;
+    static make (config: { get?: TFunction | null, set?: TFunction | null }): Attribute;
+    get: TFunction | null;
+    set: TFunction | null
   }
 
   export class CastsAttributes {
     constructor();
-    static get(): any;
-    static set(): void;
+    static get (): any;
+    static set (): void;
   }
 
   export class Relation<M> extends Builder<M, any> {
   }
   class HasOneOrMany<M> extends Relation<M> {
-    save(model: M): Promise<M>;
-    saveMany(models: M[] | Collection<M>): Promise<Collection<M>>;
-    create(attributes?: any): Promise<M>;
-    createMany(records: any[]): Promise<Collection<M>>;
+    save (model: M): Promise<M>;
+    saveMany (models: M[] | Collection<M>): Promise<Collection<M>>;
+    create (attributes?: any): Promise<M>;
+    createMany (records: any[]): Promise<Collection<M>>;
   }
   export class HasOne<M> extends HasOneOrMany<M> {
-    getResults(): Promise<M | null>;
-    withDefault(callback?: Function | object): this;
+    getResults (): Promise<M | null>;
+    withDefault (callback?: TFunction | object): this;
   }
   export class HasMany<M> extends HasOneOrMany<M> {
-    getResults(): Promise<Collection<M>>;
+    getResults (): Promise<Collection<M>>;
   }
   export class BelongsTo<M> extends Relation<M> {
-    getResults(): Promise<M | null>;
-    withDefault(callback?: Function | object): this;
+    getResults (): Promise<M | null>;
+    withDefault (callback?: TFunction | object): this;
   }
   export class BelongsToMany<M> extends Relation<M> {
-    getResults(): Promise<Collection<M>>;
-    withTimestamps(): this;
-    wherePivot(column: any, operator?: any, value?: any, boolean?: string, ...args: any[]): this;
-    wherePivotBetween(column: any, values: any, boolean?: string, not?: boolean): this;
-    orWherePivotBetween(column: any, values: any): this;
-    wherePivotNotBetween(column: any, values: any, boolean?: string): this;
-    orWherePivotNotBetween(column: any, values: any): this;
-    wherePivotIn(column: any, values: any, boolean?: string, not?: boolean): this;
-    orWherePivot(column: any, operator?: any, value?: any): this;
-    orWherePivotIn(column: any, values: any): this;
-    wherePivotNotIn(column: any, values: any, boolean?: string): this;
-    orWherePivotNotIn(column: any, values: any): this;
-    wherePivotNull(column: any, boolean?: string, not?: boolean): this;
-    wherePivotNotNull(column: any, boolean?: string): this;
-    orWherePivotNull(column: any, not?: boolean): this;
-    orWherePivotNotNull(column: any): this;
-    orderByPivot(column: any, direction?: string): this;
+    getResults (): Promise<Collection<M>>;
+    withTimestamps (): this;
+    wherePivot (column: any, operator?: any, value?: any, boolean?: string, ...args: any[]): this;
+    wherePivotBetween (column: any, values: any, boolean?: string, not?: boolean): this;
+    orWherePivotBetween (column: any, values: any): this;
+    wherePivotNotBetween (column: any, values: any, boolean?: string): this;
+    orWherePivotNotBetween (column: any, values: any): this;
+    wherePivotIn (column: any, values: any, boolean?: string, not?: boolean): this;
+    orWherePivot (column: any, operator?: any, value?: any): this;
+    orWherePivotIn (column: any, values: any): this;
+    wherePivotNotIn (column: any, values: any, boolean?: string): this;
+    orWherePivotNotIn (column: any, values: any): this;
+    wherePivotNull (column: any, boolean?: string, not?: boolean): this;
+    wherePivotNotNull (column: any, boolean?: string): this;
+    orWherePivotNull (column: any, not?: boolean): this;
+    orWherePivotNotNull (column: any): this;
+    orderByPivot (column: any, direction?: string): this;
   }
 
   // declare const model: ModelDecorator;
@@ -340,269 +341,269 @@ declare module 'sutando' {
 
   export class Model {
     // [value: string]: any | never;
-    protected attributes: any;
-    protected relations: any;
-    public exists: boolean;
-    protected primaryKey: string;
-    protected builder: Builder<any, any>;
-    protected table: string;
-    protected connection: string;
-    protected keyType: string;
-    protected incrementing: boolean;
-    protected perPage: number;
-    protected with: string[];
-    protected withCount: string[];
-    protected trx: AnyQueryBuilder | null;
-    protected timestamps: boolean;
-    protected dateFormat: string;
-    visible: string[];
-    hidden: string[];
-    static query<T extends { prototype: unknown }>(this: T, client?: AnyQueryBuilder | null): Builder<T['prototype']>;
-    static on<T extends { prototype: unknown }>(this: T, connection: string | null): Builder<T['prototype']>;
-    static boot(): void;
-    static make<T extends Model>(this: new () => T, attributes?: {}): T;
-    static addHook(hook: Hook, callback: Function): void;
-    static creating(callback: Function): void;
-    static created(callback: Function): void;
-    static updating(callback: Function): void;
-    static updated(callback: Function): void;
-    static deleting(callback: Function): void;
-    static deleted(callback: Function): void;
-    static saving(callback: Function): void;
-    static saved(callback: Function): void;
-    static restoring(callback: Function): void;
-    static restored(callback: Function): void;
-    static trashed(callback: Function): void;
-    static forceDeleted(callback: Function): void;
+    protected attributes: any
+    protected relations: any
+    public exists: boolean
+    protected primaryKey: string
+    protected builder: Builder<any, any>
+    protected table: string
+    protected connection: string
+    protected keyType: string
+    protected incrementing: boolean
+    protected perPage: number
+    protected with: string[]
+    protected withCount: string[]
+    protected trx: AnyQueryBuilder | null
+    protected timestamps: boolean
+    protected dateFormat: string
+    visible: string[]
+    hidden: string[]
+    static query<T extends { prototype: unknown }> (this: T, client?: AnyQueryBuilder | null): Builder<T['prototype']>;
+    static on<T extends { prototype: unknown }> (this: T, connection: string | null): Builder<T['prototype']>;
+    static boot (): void;
+    static make<T extends Model> (this: new () => T, attributes?: TGeneric): T;
+    static addHook (hook: Hook, callback: TFunction): void;
+    static creating (callback: TFunction): void;
+    static created (callback: TFunction): void;
+    static updating (callback: TFunction): void;
+    static updated (callback: TFunction): void;
+    static deleting (callback: TFunction): void;
+    static deleted (callback: TFunction): void;
+    static saving (callback: TFunction): void;
+    static saved (callback: TFunction): void;
+    static restoring (callback: TFunction): void;
+    static restored (callback: TFunction): void;
+    static trashed (callback: TFunction): void;
+    static forceDeleted (callback: TFunction): void;
     constructor(attributes?: any);
-    protected bootIfNotBooted(): void;
-    protected initialize(): void;
-    protected initializePlugins(): void;
-    protected addPluginInitializer(method: any): void;
-    protected newInstance(attributes?: {}, exists?: boolean): any;
-    getKey(): string | number | null | undefined;
-    getKeyName(): string;
-    getConnectionName(): string;
-    getConnection(): any;
-    setConnection(connection: string): this;
-    usesUniqueIds(): boolean;
-    uniqueIds(): string[];
-    newUniqueId(): string;
-    setUniqueIds(): void;
-    getKeyType(): string;
-    getIncrementing(): boolean;
-    setIncrementing(value: boolean): this;
-    getTable(): string;
-    setTable(table: string): this;
-    getDates(): string[];
-    getDateFormat(): string;
-    getAttributes(): object;
-    getAttribute(key: string): any;
-    setAttribute(key: string, value: any): this;
-    fill(attributes: any): this;
-    setAppends(appends: string[]): this;
-    append(key: string | string[]): this;
-    getRelation<T extends Model>(relation: string): T | Collection<T> | null | undefined;
-    setRelation<T extends Model>(relation: string, value: T | Collection<T> | null): this;
-    unsetRelation(relation: string): this;
-    relationLoaded(relation: string): boolean;
-    makeVisible(attributes: string | string[]): this;
-    makeHidden(attributes: string | string[]): this;
-    newCollection(models?: any[]): Collection<this>;
-    load(relations: WithRelationType): Promise<this>;
-    load(...relations: WithRelationType[]): Promise<this>;
-    loadAggregate(relations: WithRelationType, column: any, callback?: any): Promise<this>;
-    loadCount(...relations: WithRelationType[]): Promise<this>;
-    loadMax(relations: WithRelationType, column: string): Promise<this>;
-    loadMin(relations: WithRelationType, column: string): Promise<this>;
-    loadSum(relations: WithRelationType, column: string): Promise<this>;
-    usesTimestamps(): boolean;
-    updateTimestamps(): this;
-    getCreatedAtColumn(): string;
-    getUpdatedAtColumn(): string;
-    getDeletedAtColumn(): string;
-    setCreatedAt(value: string): this;
-    setUpdatedAt(value: string): this;
-    freshTimestamp(): Date;
-    freshTimestampString(): string;
-    fromDateTime(value: Date | number | null): string;
-    useSoftDeletes(): boolean;
-    toData(): any;
-    attributesToData(): any;
-    relationsToData(): any;
-    toJSON(): any;
-    toJson(): string;
-    toString(): string;
-    isDirty(attributes?: string | string[]): boolean;
-    getDirty(): string[];
-    save(options?: any): Promise<boolean>;
-    update(attributes?: any, options?: any): Promise<boolean>;
-    increment(column: string, amount?: number, extra?: any): Promise<boolean>;
-    decrement(column: string, amount?: number, extra?: any): Promise<boolean>;
-    serializeDate(date: any): string;
-    delete(options?: any): Promise<boolean>;
-    softDelete(options?: any): Promise<boolean>;
-    forceDelete(options?: any): Promise<boolean>;
-    restore(options?: any): Promise<boolean>;
-    trashed(): boolean;
-    fresh(): Promise<this>;
-    refresh(): Promise<this>;
-    push(): Promise<boolean>;
-    is(model: this): boolean;
-    isNot(model: this): boolean;
+    protected bootIfNotBooted (): void;
+    protected initialize (): void;
+    protected initializePlugins (): void;
+    protected addPluginInitializer (method: any): void;
+    protected newInstance (attributes?: TGeneric, exists?: boolean): any;
+    getKey (): string | number | null | undefined;
+    getKeyName (): string;
+    getConnectionName (): string;
+    getConnection (): any;
+    setConnection (connection: string): this;
+    usesUniqueIds (): boolean;
+    uniqueIds (): string[];
+    newUniqueId (): string;
+    setUniqueIds (): void;
+    getKeyType (): string;
+    getIncrementing (): boolean;
+    setIncrementing (value: boolean): this;
+    getTable (): string;
+    setTable (table: string): this;
+    getDates (): string[];
+    getDateFormat (): string;
+    getAttributes (): object;
+    getAttribute (key: string): any;
+    setAttribute (key: string, value: any): this;
+    fill (attributes: any): this;
+    setAppends (appends: string[]): this;
+    append (key: string | string[]): this;
+    getRelation<T extends Model> (relation: string): T | Collection<T> | null | undefined;
+    setRelation<T extends Model> (relation: string, value: T | Collection<T> | null): this;
+    unsetRelation (relation: string): this;
+    relationLoaded (relation: string): boolean;
+    makeVisible (attributes: string | string[]): this;
+    makeHidden (attributes: string | string[]): this;
+    newCollection (models?: any[]): Collection<this>;
+    load (relations: WithRelationType): Promise<this>;
+    load (...relations: WithRelationType[]): Promise<this>;
+    loadAggregate (relations: WithRelationType, column: any, callback?: any): Promise<this>;
+    loadCount (...relations: WithRelationType[]): Promise<this>;
+    loadMax (relations: WithRelationType, column: string): Promise<this>;
+    loadMin (relations: WithRelationType, column: string): Promise<this>;
+    loadSum (relations: WithRelationType, column: string): Promise<this>;
+    usesTimestamps (): boolean;
+    updateTimestamps (): this;
+    getCreatedAtColumn (): string;
+    getUpdatedAtColumn (): string;
+    getDeletedAtColumn (): string;
+    setCreatedAt (value: string): this;
+    setUpdatedAt (value: string): this;
+    freshTimestamp (): Date;
+    freshTimestampString (): string;
+    fromDateTime (value: Date | number | null): string;
+    useSoftDeletes (): boolean;
+    toData (): any;
+    attributesToData (): any;
+    relationsToData (): any;
+    toJSON (): any;
+    toJson (): string;
+    toString (): string;
+    isDirty (attributes?: string | string[]): boolean;
+    getDirty (): string[];
+    save (options?: any): Promise<boolean>;
+    update (attributes?: any, options?: any): Promise<boolean>;
+    increment (column: string, amount?: number, extra?: any): Promise<boolean>;
+    decrement (column: string, amount?: number, extra?: any): Promise<boolean>;
+    serializeDate (date: any): string;
+    delete (options?: any): Promise<boolean>;
+    softDelete (options?: any): Promise<boolean>;
+    forceDelete (options?: any): Promise<boolean>;
+    restore (options?: any): Promise<boolean>;
+    trashed (): boolean;
+    fresh (): Promise<this>;
+    refresh (): Promise<this>;
+    push (): Promise<boolean>;
+    is (model: this): boolean;
+    isNot (model: this): boolean;
     // related(relation: string): Builder<any>;
     // getRelated<T extends Model>(relation: string): Promise<this | Collection<T> | null>;
-    related<T extends RelationNames<this>>(relation: T): ReturnTypeOfMethod<this, `relation${Capitalize<SnakeToCamelCase<T>>}`>;
-    getRelated<T extends RelationNames<this>>(relation: T): ReturnTypeOfMethod<ReturnTypeOfMethod<this, `relation${Capitalize<SnakeToCamelCase<T>>}`>, 'getResults'>;
-    hasOne<T extends Model>(model: new () => T, foreignKey?: string, localKey?: string): HasOne<T>;
-    hasMany<T extends Model>(model: new () => T, foreignKey?: string, localKey?: string): HasMany<T>;
-    belongsTo<T extends Model>(model: new () => T, foreignKey?: string, ownerKey?: string, relation?: string): BelongsTo<T>;
-    belongsToMany<T extends Model>(model: new () => T, table?: string, foreignPivotKey?: string, relatedPivotKey?: string, parentKey?: string, relatedKey?: string): BelongsToMany<T>;
+    related<T extends RelationNames<this>> (relation: T): ReturnTypeOfMethod<this, `relation${Capitalize<SnakeToCamelCase<T>>}`>;
+    getRelated<T extends RelationNames<this>> (relation: T): ReturnTypeOfMethod<ReturnTypeOfMethod<this, `relation${Capitalize<SnakeToCamelCase<T>>}`>, 'getResults'>;
+    hasOne<T extends Model> (model: new () => T, foreignKey?: string, localKey?: string): HasOne<T>;
+    hasMany<T extends Model> (model: new () => T, foreignKey?: string, localKey?: string): HasMany<T>;
+    belongsTo<T extends Model> (model: new () => T, foreignKey?: string, ownerKey?: string, relation?: string): BelongsTo<T>;
+    belongsToMany<T extends Model> (model: new () => T, table?: string, foreignPivotKey?: string, relatedPivotKey?: string, parentKey?: string, relatedKey?: string): BelongsToMany<T>;
   }
 
-  export class Pivot extends Model {}
+  export class Pivot extends Model { }
 
   export class QueryBuilder<M, R = M[] | M> {
-    connector: any;
+    connector: any
     constructor(config: any, connector?: any);
-    schema: SchemaBuilder;
-    table(name: string): this;
-    select: SelectMethod<this>;
-    columns: SelectMethod<this>;
-    column: SelectMethod<this>;
-    distinct: SelectMethod<this>;
-    distinctOn: SelectMethod<this>;
-    as: AsMethod<this>;
+    schema: SchemaBuilder
+    table (name: string): this;
+    select: SelectMethod<this>
+    columns: SelectMethod<this>
+    column: SelectMethod<this>
+    distinct: SelectMethod<this>
+    distinctOn: SelectMethod<this>
+    as: AsMethod<this>
 
-    where: WhereMethod<this>;
-    andWhere: WhereMethod<this>;
-    orWhere: WhereMethod<this>;
-    whereNot: WhereMethod<this>;
-    andWhereNot: WhereMethod<this>;
-    orWhereNot: WhereMethod<this>;
+    where: WhereMethod<this>
+    andWhere: WhereMethod<this>
+    orWhere: WhereMethod<this>
+    whereNot: WhereMethod<this>
+    andWhereNot: WhereMethod<this>
+    orWhereNot: WhereMethod<this>
 
-    whereRaw: WhereRawMethod<this>;
-    orWhereRaw: WhereRawMethod<this>;
-    andWhereRaw: WhereRawMethod<this>;
+    whereRaw: WhereRawMethod<this>
+    orWhereRaw: WhereRawMethod<this>
+    andWhereRaw: WhereRawMethod<this>
 
-    whereWrapped: WhereWrappedMethod<this>;
-    havingWrapped: WhereWrappedMethod<this>;
+    whereWrapped: WhereWrappedMethod<this>
+    havingWrapped: WhereWrappedMethod<this>
 
-    whereExists: WhereExistsMethod<this>;
-    orWhereExists: WhereExistsMethod<this>;
-    whereNotExists: WhereExistsMethod<this>;
-    orWhereNotExists: WhereExistsMethod<this>;
+    whereExists: WhereExistsMethod<this>
+    orWhereExists: WhereExistsMethod<this>
+    whereNotExists: WhereExistsMethod<this>
+    orWhereNotExists: WhereExistsMethod<this>
 
-    whereIn: WhereInMethod<this>;
-    orWhereIn: WhereInMethod<this>;
-    whereNotIn: WhereInMethod<this>;
-    orWhereNotIn: WhereInMethod<this>;
+    whereIn: WhereInMethod<this>
+    orWhereIn: WhereInMethod<this>
+    whereNotIn: WhereInMethod<this>
+    orWhereNotIn: WhereInMethod<this>
 
-    whereBetween: WhereBetweenMethod<this>;
-    orWhereBetween: WhereBetweenMethod<this>;
-    andWhereBetween: WhereBetweenMethod<this>;
-    whereNotBetween: WhereBetweenMethod<this>;
-    orWhereNotBetween: WhereBetweenMethod<this>;
-    andWhereNotBetween: WhereBetweenMethod<this>;
+    whereBetween: WhereBetweenMethod<this>
+    orWhereBetween: WhereBetweenMethod<this>
+    andWhereBetween: WhereBetweenMethod<this>
+    whereNotBetween: WhereBetweenMethod<this>
+    orWhereNotBetween: WhereBetweenMethod<this>
+    andWhereNotBetween: WhereBetweenMethod<this>
 
-    whereNull: WhereNullMethod<this>;
-    orWhereNull: WhereNullMethod<this>;
-    whereNotNull: WhereNullMethod<this>;
-    orWhereNotNull: WhereNullMethod<this>;
+    whereNull: WhereNullMethod<this>
+    orWhereNull: WhereNullMethod<this>
+    whereNotNull: WhereNullMethod<this>
+    orWhereNotNull: WhereNullMethod<this>
 
-    whereColumn: WhereColumnMethod<this>;
-    orWhereColumn: WhereColumnMethod<this>;
-    andWhereColumn: WhereColumnMethod<this>;
-    whereNotColumn: WhereColumnMethod<this>;
-    orWhereNotColumn: WhereColumnMethod<this>;
-    andWhereNotColumn: WhereColumnMethod<this>;
+    whereColumn: WhereColumnMethod<this>
+    orWhereColumn: WhereColumnMethod<this>
+    andWhereColumn: WhereColumnMethod<this>
+    whereNotColumn: WhereColumnMethod<this>
+    orWhereNotColumn: WhereColumnMethod<this>
+    andWhereNotColumn: WhereColumnMethod<this>
 
-    whereJsonIsArray: WhereFieldExpressionMethod<this>;
-    orWhereJsonIsArray: WhereFieldExpressionMethod<this>;
-    whereJsonNotArray: WhereFieldExpressionMethod<this>;
-    orWhereJsonNotArray: WhereFieldExpressionMethod<this>;
-    whereJsonIsObject: WhereFieldExpressionMethod<this>;
-    orWhereJsonIsObject: WhereFieldExpressionMethod<this>;
-    whereJsonNotObject: WhereFieldExpressionMethod<this>;
-    orWhereJsonNotObject: WhereFieldExpressionMethod<this>;
-    whereJsonHasAny: WhereJsonExpressionMethod<this>;
-    orWhereJsonHasAny: WhereJsonExpressionMethod<this>;
-    whereJsonHasAll: WhereJsonExpressionMethod<this>;
-    orWhereJsonHasAll: WhereJsonExpressionMethod<this>;
+    whereJsonIsArray: WhereFieldExpressionMethod<this>
+    orWhereJsonIsArray: WhereFieldExpressionMethod<this>
+    whereJsonNotArray: WhereFieldExpressionMethod<this>
+    orWhereJsonNotArray: WhereFieldExpressionMethod<this>
+    whereJsonIsObject: WhereFieldExpressionMethod<this>
+    orWhereJsonIsObject: WhereFieldExpressionMethod<this>
+    whereJsonNotObject: WhereFieldExpressionMethod<this>
+    orWhereJsonNotObject: WhereFieldExpressionMethod<this>
+    whereJsonHasAny: WhereJsonExpressionMethod<this>
+    orWhereJsonHasAny: WhereJsonExpressionMethod<this>
+    whereJsonHasAll: WhereJsonExpressionMethod<this>
+    orWhereJsonHasAll: WhereJsonExpressionMethod<this>
 
-    having: WhereMethod<this>;
-    andHaving: WhereMethod<this>;
-    orHaving: WhereMethod<this>;
+    having: WhereMethod<this>
+    andHaving: WhereMethod<this>
+    orHaving: WhereMethod<this>
 
-    havingRaw: WhereRawMethod<this>;
-    orHavingRaw: WhereRawMethod<this>;
+    havingRaw: WhereRawMethod<this>
+    orHavingRaw: WhereRawMethod<this>
 
-    havingIn: WhereInMethod<this>;
-    orHavingIn: WhereInMethod<this>;
-    havingNotIn: WhereInMethod<this>;
-    orHavingNotIn: WhereInMethod<this>;
+    havingIn: WhereInMethod<this>
+    orHavingIn: WhereInMethod<this>
+    havingNotIn: WhereInMethod<this>
+    orHavingNotIn: WhereInMethod<this>
 
-    havingNull: WhereNullMethod<this>;
-    orHavingNull: WhereNullMethod<this>;
-    havingNotNull: WhereNullMethod<this>;
-    orHavingNotNull: WhereNullMethod<this>;
+    havingNull: WhereNullMethod<this>
+    orHavingNull: WhereNullMethod<this>
+    havingNotNull: WhereNullMethod<this>
+    orHavingNotNull: WhereNullMethod<this>
 
-    havingExists: WhereExistsMethod<this>;
-    orHavingExists: WhereExistsMethod<this>;
-    havingNotExists: WhereExistsMethod<this>;
-    orHavingNotExists: WhereExistsMethod<this>;
+    havingExists: WhereExistsMethod<this>
+    orHavingExists: WhereExistsMethod<this>
+    havingNotExists: WhereExistsMethod<this>
+    orHavingNotExists: WhereExistsMethod<this>
 
-    havingBetween: WhereBetweenMethod<this>;
-    orHavingBetween: WhereBetweenMethod<this>;
-    havingNotBetween: WhereBetweenMethod<this>;
-    orHavingNotBetween: WhereBetweenMethod<this>;
+    havingBetween: WhereBetweenMethod<this>
+    orHavingBetween: WhereBetweenMethod<this>
+    havingNotBetween: WhereBetweenMethod<this>
+    orHavingNotBetween: WhereBetweenMethod<this>
 
-    union: UnionMethod<this>;
-    unionAll: UnionMethod<this>;
-    intersect: SetOperationsMethod<this>;
+    union: UnionMethod<this>
+    unionAll: UnionMethod<this>
+    intersect: SetOperationsMethod<this>
 
-    join: JoinMethod<this>;
-    joinRaw: JoinRawMethod<this>;
-    innerJoin: JoinMethod<this>;
-    leftJoin: JoinMethod<this>;
-    leftOuterJoin: JoinMethod<this>;
-    rightJoin: JoinMethod<this>;
-    rightOuterJoin: JoinMethod<this>;
-    outerJoin: JoinMethod<this>;
-    fullOuterJoin: JoinMethod<this>;
-    crossJoin: JoinMethod<this>;
+    join: JoinMethod<this>
+    joinRaw: JoinRawMethod<this>
+    innerJoin: JoinMethod<this>
+    leftJoin: JoinMethod<this>
+    leftOuterJoin: JoinMethod<this>
+    rightJoin: JoinMethod<this>
+    rightOuterJoin: JoinMethod<this>
+    outerJoin: JoinMethod<this>
+    fullOuterJoin: JoinMethod<this>
+    crossJoin: JoinMethod<this>
 
-    orderBy: OrderByMethod<this>;
-    orderByRaw: OrderByRawMethod<this>;
+    orderBy: OrderByMethod<this>
+    orderByRaw: OrderByRawMethod<this>
 
-    groupBy: GroupByMethod<this>;
-    groupByRaw: RawInterface<this>;
+    groupBy: GroupByMethod<this>
+    groupByRaw: RawInterface<this>
 
-    beginTransaction(): Promise<Trx>;
-    transaction(callback: (trx: Trx) => Promise<any>): Promise<any>;
-    destroy(): void;
+    beginTransaction (): Promise<Trx>;
+    transaction (callback: (trx: Trx) => Promise<any>): Promise<any>;
+    destroy (): void;
 
-    clone(): QueryBuilder<M, R>;
-    raw(sql: string, bindings?: any[]): Raw;
-    get<T = M>(columns?: string[]): Promise<T[]>;
-    first<T = M>(columns?: string[]): Promise<T | null | undefined>;
-    find<T = M>(key: string | number, columns?: string[]): Promise<T>;
-    insert(attributes: any): Promise<unknown>;
-    update(attributes: any): Promise<unknown>;
-    delete(): Promise<number>;
-    exists(): Promise<boolean>;
-    count(column?: string): Promise<number>;
-    min(column: string): Promise<number>;
-    max(column: string): Promise<number>;
-    sum(column: string): Promise<number>;
-    avg(column: string): Promise<number>;
-    skip(count: number): this;
-    take(count: number): this;
-    limit(count: number): this;
-    offset(count: number): this;
-    chunk(count: number, callback: (rows: M[]) => any): Promise<boolean>;
-    forPage(page: number, perPage?: number): this;
-    paginate<F = { current_page: number, data: M[], per_page: number, total: number, last_page: number, count: number, }>(page: number, perPage?: number): Promise<Paginator<M, F>>;
+    clone (): QueryBuilder<M, R>;
+    raw (sql: string, bindings?: any[]): Raw;
+    get<T = M> (columns?: string[]): Promise<T[]>;
+    first<T = M> (columns?: string[]): Promise<T | null | undefined>;
+    find<T = M> (key: string | number, columns?: string[]): Promise<T>;
+    insert (attributes: any): Promise<unknown>;
+    update (attributes: any): Promise<unknown>;
+    delete (): Promise<number>;
+    exists (): Promise<boolean>;
+    count (column?: string): Promise<number>;
+    min (column: string): Promise<number>;
+    max (column: string): Promise<number>;
+    sum (column: string): Promise<number>;
+    avg (column: string): Promise<number>;
+    skip (count: number): this;
+    take (count: number): this;
+    limit (count: number): this;
+    offset (count: number): this;
+    chunk (count: number, callback: (rows: M[]) => any): Promise<boolean>;
+    forPage (page: number, perPage?: number): this;
+    paginate<F = { current_page: number, data: M[], per_page: number, total: number, last_page: number, count: number, }> (page: number, perPage?: number): Promise<Paginator<M, F>>;
   }
 
   type WithRelationType = {
@@ -610,115 +611,115 @@ declare module 'sutando' {
   } | string | string[];
 
   export class Builder<M, R = Collection<M> | Model> extends QueryBuilder<M, R> {
-    protected asProxy(): ProxyConstructor;
-    chunk(count: number, callback: (rows: Collection<M>) => any): Promise<boolean>;
-    enforceOrderBy(): void;
-    clone(): Builder<M, R>;
-    forPage(page: number, perPage?: number): this;
-    insert(attributes: any): Promise<any>;
-    update(attributes: any): Promise<any>;
-    increment(column: string, amount?: number, extra?: any): Promise<any>;
-    decrement(column: string, amount?: number, extra?: any): Promise<any>;
-    addUpdatedAtColumn(values: any): any;
-    delete(): Promise<any>;
-    softDelete(): Promise<any>;
-    forceDelete(): Promise<any>;
-    restore(): Promise<any>;
-    withTrashed(): this;
-    withoutTrashed(): this;
-    onlyTrashed(): this;
-    getDeletedAtColumn(): string;
-    create(attributes?: any): Promise<M>;
-    newModelInstance(attributes?: any): M;
-    count(columns?: string): Promise<number>;
-    getQuery(): AnyQueryBuilder;
-    getModel(): M;
-    setModel(model: Model): this;
-    setTable(table: string): this;
-    applyScopes(): this;
-    scopes(scopes: string[]): this;
-    withGlobalScope(identifier: string | number, scope: string | (() => void)): this;
-    withoutGlobalScope(identifier: string | number): this;
-    with(relation: WithRelationType): this;
-    with(...relations: WithRelationType[]): this;
-    has(relation: string, operator?: any, count?: number, boolean?: any, callback?: (builder: Builder<any>) => void | null): this;
-    orHas(relation: string, operator?: any, count?: number): this;
-    doesntHave(relation: string, boolean?: any, callback?: (builder: Builder<any>) => void | null): this;
-    orDoesntHave(relation: string): this;
-    whereHas(relation: string, callback?: (builder: Builder<any>) => void | Builder<any> | null, operator?: any, count?: number): this;
-    orWhereHas(relation: string, callback?: (builder: Builder<any>) => void | Builder<any> | null, operator?: any, count?: number): this;
-    whereRelation(relation: string, column: string, operator?: any, value?: any): this;
-    hasNested(relation: string, operator?: any, count?: number, boolean?: any, callback?: (builder: Builder<any>) => void | null): this;
-    canUseExistsForExistenceCheck(operator: string, count: number): boolean;
-    addHasWhere(hasQuery: Builder<any>, relation: string, operator?: string, count?: number, boolean?: string): this;
-    withAggregate(relations: string | string[] | object, column: string, action?: string | null): this;
-    toSql(): object;
-    withCount(...relations: WithRelationType[]): this;
-    withMax(relation: WithRelationType, column: string): this;
-    withMin(relation: WithRelationType, column: string): this;
-    withAvg(relation: WithRelationType, column: string): this;
-    withSum(relation: WithRelationType, column: string): this;
-    withExists(relation: WithRelationType): this;
-    related(relation: string): this;
-    take(count: number): this;
-    skip(count: number): this;
-    limit(count: number): this;
-    offset(count: number): this;
-    first<T = M>(column?: string | string[]): Promise<T | null>;
-    firstOrFail<T = M>(column?: string | string[]): Promise<T>;
-    findOrFail<T = M>(key: string | number, columns?: string[]): Promise<T>;
-    findOrFail<T = M>(key: string[] | number[] | Collection<any>, columns?: string[]): Promise<Collection<T>>;
-    findOrFail<T = M>(key: string | number | string[] | number[] | Collection<any>, columns?: string[]): Promise<T | Collection<T>>;
-    findOrNew<T = M>(id: string | number, columns?: string[]): Promise<T>;
-    firstOrNew<T = M>(attributes?: object, values?: object): Promise<T>;
-    firstOrCreate<T = M>(attributes?: object, values?: object): Promise<T>;
-    updateOrCreate(attributes: object, values?: object): Promise<M>;
-    latest(column?: string): this;
-    oldest(column?: string): this;
-    find<T = M>(key: string | number, columns?: string[]): Promise<T | null>;
-    find<T = M>(key: string[] | number[] | Collection<any>, columns?: string[]): Promise<Collection<T>>;
-    find<T = M>(key: string | number | string[] | number[] | Collection<any>, columns?: string[]): Promise<T | Collection<T> | null>;
-    findMany<T = M>(keys: string[] | number[] | Collection<any>, columns?: string[]): Promise<Collection<T>>;
-    pluck(column: string): Promise<Collection<any>>;
-    destroy(ids: string | number | string[] | number[] | Collection<any>): Promise<number>;
-    get<T = M>(columns?: string[]): Promise<Collection<T>>;
-    all<T = M>(columns?: string[]): Promise<Collection<T>>;
-    paginate<F = { current_page: number, data: any[], per_page: number, total: number, last_page: number, count: number, }>(page?: number, perPage?: number): Promise<Paginator<M, F>>;
+    protected asProxy (): ProxyConstructor;
+    chunk (count: number, callback: (rows: Collection<M>) => any): Promise<boolean>;
+    enforceOrderBy (): void;
+    clone (): Builder<M, R>;
+    forPage (page: number, perPage?: number): this;
+    insert (attributes: any): Promise<any>;
+    update (attributes: any): Promise<any>;
+    increment (column: string, amount?: number, extra?: any): Promise<any>;
+    decrement (column: string, amount?: number, extra?: any): Promise<any>;
+    addUpdatedAtColumn (values: any): any;
+    delete (): Promise<any>;
+    softDelete (): Promise<any>;
+    forceDelete (): Promise<any>;
+    restore (): Promise<any>;
+    withTrashed (): this;
+    withoutTrashed (): this;
+    onlyTrashed (): this;
+    getDeletedAtColumn (): string;
+    create (attributes?: any): Promise<M>;
+    newModelInstance (attributes?: any): M;
+    count (columns?: string): Promise<number>;
+    getQuery (): AnyQueryBuilder;
+    getModel (): M;
+    setModel (model: Model): this;
+    setTable (table: string): this;
+    applyScopes (): this;
+    scopes (scopes: string[]): this;
+    withGlobalScope (identifier: string | number, scope: string | (() => void)): this;
+    withoutGlobalScope (identifier: string | number): this;
+    with (relation: WithRelationType): this;
+    with (...relations: WithRelationType[]): this;
+    has (relation: string, operator?: any, count?: number, boolean?: any, callback?: (builder: Builder<any>) => void | null): this;
+    orHas (relation: string, operator?: any, count?: number): this;
+    doesntHave (relation: string, boolean?: any, callback?: (builder: Builder<any>) => void | null): this;
+    orDoesntHave (relation: string): this;
+    whereHas (relation: string, callback?: (builder: Builder<any>) => void | Builder<any> | null, operator?: any, count?: number): this;
+    orWhereHas (relation: string, callback?: (builder: Builder<any>) => void | Builder<any> | null, operator?: any, count?: number): this;
+    whereRelation (relation: string, column: string, operator?: any, value?: any): this;
+    hasNested (relation: string, operator?: any, count?: number, boolean?: any, callback?: (builder: Builder<any>) => void | null): this;
+    canUseExistsForExistenceCheck (operator: string, count: number): boolean;
+    addHasWhere (hasQuery: Builder<any>, relation: string, operator?: string, count?: number, boolean?: string): this;
+    withAggregate (relations: string | string[] | object, column: string, action?: string | null): this;
+    toSql (): object;
+    withCount (...relations: WithRelationType[]): this;
+    withMax (relation: WithRelationType, column: string): this;
+    withMin (relation: WithRelationType, column: string): this;
+    withAvg (relation: WithRelationType, column: string): this;
+    withSum (relation: WithRelationType, column: string): this;
+    withExists (relation: WithRelationType): this;
+    related (relation: string): this;
+    take (count: number): this;
+    skip (count: number): this;
+    limit (count: number): this;
+    offset (count: number): this;
+    first<T = M> (column?: string | string[]): Promise<T | null>;
+    firstOrFail<T = M> (column?: string | string[]): Promise<T>;
+    findOrFail<T = M> (key: string | number, columns?: string[]): Promise<T>;
+    findOrFail<T = M> (key: string[] | number[] | Collection<any>, columns?: string[]): Promise<Collection<T>>;
+    findOrFail<T = M> (key: string | number | string[] | number[] | Collection<any>, columns?: string[]): Promise<T | Collection<T>>;
+    findOrNew<T = M> (id: string | number, columns?: string[]): Promise<T>;
+    firstOrNew<T = M> (attributes?: object, values?: object): Promise<T>;
+    firstOrCreate<T = M> (attributes?: object, values?: object): Promise<T>;
+    updateOrCreate (attributes: object, values?: object): Promise<M>;
+    latest (column?: string): this;
+    oldest (column?: string): this;
+    find<T = M> (key: string | number, columns?: string[]): Promise<T | null>;
+    find<T = M> (key: string[] | number[] | Collection<any>, columns?: string[]): Promise<Collection<T>>;
+    find<T = M> (key: string | number | string[] | number[] | Collection<any>, columns?: string[]): Promise<T | Collection<T> | null>;
+    findMany<T = M> (keys: string[] | number[] | Collection<any>, columns?: string[]): Promise<Collection<T>>;
+    pluck (column: string): Promise<Collection<any>>;
+    destroy (ids: string | number | string[] | number[] | Collection<any>): Promise<number>;
+    get<T = M> (columns?: string[]): Promise<Collection<T>>;
+    all<T = M> (columns?: string[]): Promise<Collection<T>>;
+    paginate<F = { current_page: number, data: any[], per_page: number, total: number, last_page: number, count: number, }> (page?: number, perPage?: number): Promise<Paginator<M, F>>;
     [value: string]: any;
   }
 
   export class Scope {
-    apply(builder: Builder<any>, model: Model): void;
+    apply (builder: Builder<any>, model: Model): void;
   }
 
   export class Collection<T> extends BaseCollection<T> {
-    load(...relations: WithRelationType[]): Promise<this>;
-    loadAggregate(relations: string | string[], column: string, action?: string | null): Promise<this>;
-    loadCount(relation: string, column: string): Promise<this>;
-    loadMax(relation: string, column: string): Promise<this>;
-    loadMin(relation: string, column: string): Promise<this>;
-    loadSum(relation: string, column: string): Promise<this>;
-    loadAvg(relation: string, column: string): Promise<this>;
-    mapThen(callback: () => void): Promise<any>;
-    modelKeys(): string[] | number[];
-    contains(key: Model | any, operator?: any, value?: any): boolean;
-    diff(items: Collection<T> | any[]): Collection<T>;
-    except(keys: any[]): Collection<T>;
-    intersect(items: any[]): Collection<T>;
-    unique(key?: any, strict?: boolean): Collection<T>;
-    find(key: any, defaultValue?: any): any;
-    fresh(withs?: any[]): Promise<Collection<T>>;
-    makeVisible(attributes: string | string[]): this;
-    makeHidden(attributes: string | string[]): this;
-    append(attributes: string[]): this;
-    only(keys: null | any[]): this;
-    getDictionary(items?: any): any;
-    toQuery(): Builder<T, any>;
-    toData(): any;
-    toJSON(): any;
-    toJson(): string;
-    toString(): string;
-    [Symbol.iterator](): Iterator<T>;
+    load (...relations: WithRelationType[]): Promise<this>;
+    loadAggregate (relations: string | string[], column: string, action?: string | null): Promise<this>;
+    loadCount (relation: string, column: string): Promise<this>;
+    loadMax (relation: string, column: string): Promise<this>;
+    loadMin (relation: string, column: string): Promise<this>;
+    loadSum (relation: string, column: string): Promise<this>;
+    loadAvg (relation: string, column: string): Promise<this>;
+    mapThen (callback: () => void): Promise<any>;
+    modelKeys (): string[] | number[];
+    contains (key: Model | any, operator?: any, value?: any): boolean;
+    diff (items: Collection<T> | any[]): Collection<T>;
+    except (keys: any[]): Collection<T>;
+    intersect (items: any[]): Collection<T>;
+    unique (key?: any, strict?: boolean): Collection<T>;
+    find (key: any, defaultValue?: any): any;
+    fresh (withs?: any[]): Promise<Collection<T>>;
+    makeVisible (attributes: string | string[]): this;
+    makeHidden (attributes: string | string[]): this;
+    append (attributes: string[]): this;
+    only (keys: null | any[]): this;
+    getDictionary (items?: any): any;
+    toQuery (): Builder<T, any>;
+    toData (): any;
+    toJSON (): any;
+    toJson (): string;
+    toString (): string;
+    [Symbol.iterator] (): Iterator<T>;
   }
 
   export class Paginator<T, K = {
@@ -729,92 +730,92 @@ declare module 'sutando' {
     last_page: number,
     count: number,
   }> {
-    static formatter: (paginator: Paginator<any>) => any | null;
-    static setFormatter(formatter: (paginator: Paginator<any>) => any | null): void;
+    static formatter: (paginator: Paginator<any>) => any | null
+    static setFormatter (formatter: (paginator: Paginator<any>) => any | null): void;
     constructor(items: T[], total: number, perPage: number, currentPage?: null | number, options?: any);
-    setItems(items: T[] | Collection<T>): void;
-    hasMorePages(): boolean;
-    get(index: number): T;
-    count(): number;
-    items(): Collection<T>;
-    map<U>(callback: (value: T, index: number, array: T[]) => U): Collection<U>;
-    currentPage(): number;
-    perPage(): number;
-    lastPage(): number;
-    firstItem(): number | null;
-    lastItem(): number | null;
-    total(): number;
-    toData<U = K>(): U;
-    toJSON<U = K>(): U;
-    toJson(): string;
-    [Symbol.iterator](): { next: () => { value: T; done: boolean } };
+    setItems (items: T[] | Collection<T>): void;
+    hasMorePages (): boolean;
+    get (index: number): T;
+    count (): number;
+    items (): Collection<T>;
+    map<U> (callback: (value: T, index: number, array: T[]) => U): Collection<U>;
+    currentPage (): number;
+    perPage (): number;
+    lastPage (): number;
+    firstItem (): number | null;
+    lastItem (): number | null;
+    total (): number;
+    toData<U = K> (): U;
+    toJSON<U = K> (): U;
+    toJson (): string;
+    [Symbol.iterator] (): { next: () => { value: T; done: boolean } };
   }
   export class ModelNotFoundError extends Error {
-    protected model: Model;
-    protected ids: string[] | number[];
-    setModel(model: Model, ids?: string[] | number[]): this;
-    getModel(): Model;
-    getIds(): string[] | number[];
+    protected model: Model
+    protected ids: string[] | number[]
+    setModel (model: Model, ids?: string[] | number[]): this;
+    getModel (): Model;
+    getIds (): string[] | number[];
   }
-  export class RelationNotFoundError extends Error {}
-  export class InvalidArgumentError extends Error {}
+  export class RelationNotFoundError extends Error { }
+  export class InvalidArgumentError extends Error { }
 
-  export function HasUniqueIds<T extends new (...args: any[]) => Model>(Base: T): T & {
-    new (...args: ConstructorParameters<T>): {
+  export function HasUniqueIds<T extends new (...args: any[]) => Model> (Base: T): T & {
+    new(...args: ConstructorParameters<T>): {
       useUniqueIds: boolean;
     };
   };
 
   export interface ISoftDeletes<T extends new (...args: any[]) => Model> {
-    new (...args: ConstructorParameters<T>): {
+    new(...args: ConstructorParameters<T>): {
       forceDeleting: boolean;
-      initializeSoftDeletes(): void;
-      forceDelete(): Promise<boolean>;
-      forceDeleteQuietly(): any;
-      performDeleteOnModel(options?: {}): Promise<any>;
+      initializeSoftDeletes (): void;
+      forceDelete (): Promise<boolean>;
+      forceDeleteQuietly (): any;
+      performDeleteOnModel (options?: TGeneric): Promise<any>;
       exists: boolean;
-      runSoftDelete(options?: {}): Promise<void>;
-      restore(options?: any): Promise<any>;
-      restoreQuietly(): any;
-      trashed(): boolean;
-      isForceDeleting(): boolean;
-      getDeletedAtColumn(): any;
-      getQualifiedDeletedAtColumn(): any;
+      runSoftDelete (options?: TGeneric): Promise<void>;
+      restore (options?: any): Promise<any>;
+      restoreQuietly (): any;
+      trashed (): boolean;
+      isForceDeleting (): boolean;
+      getDeletedAtColumn (): any;
+      getQualifiedDeletedAtColumn (): any;
     };
-    bootSoftDeletes(): void;
-    softDeleted(callback: Function): void;
-    restoring(callback: Function): void;
-    restored(callback: Function): void;
-    forceDeleting(callback: Function): void;
-    forceDeleted(callback: Function): void;
+    bootSoftDeletes (): void;
+    softDeleted (callback: TFunction): void;
+    restoring (callback: TFunction): void;
+    restored (callback: TFunction): void;
+    forceDeleting (callback: TFunction): void;
+    forceDeleted (callback: TFunction): void;
   }
 
-  export function SoftDeletes<T extends new (...args: any[]) => Model>(Base: T): T & ISoftDeletes<T>;
+  export function SoftDeletes<T extends new (...args: any[]) => Model> (Base: T): T & ISoftDeletes<T>;
 
   export class Migration {
-    protected connection: AnyQueryBuilder;
-    getConnection(): AnyQueryBuilder;
-    up(schema: SchemaBuilder, connection?: AnyQueryBuilder): Promise<any>;
-    down(schema: SchemaBuilder, connection?: AnyQueryBuilder): Promise<any>;
+    protected connection: AnyQueryBuilder
+    getConnection (): AnyQueryBuilder;
+    up (schema: SchemaBuilder, connection?: AnyQueryBuilder): Promise<any>;
+    down (schema: SchemaBuilder, connection?: AnyQueryBuilder): Promise<any>;
   }
 
-  export function getRelationMethod(name: string): string;
-  export function getScopeMethod(name: string): string;
-  export const compose: MixinFunction;
+  export function getRelationMethod (name: string): string;
+  export function getScopeMethod (name: string): string;
+  export const compose: MixinFunction
 
-  export function make<T extends new (...args: any[]) => Model>(modelClass: T, attributes: Record<string, any>[]): Collection<T>;
-  export function makeCollection<T extends new (...args: any[]) => Model>(modelClass: T, attributes: Record<string, any>[]): Collection<T>;
-  export function makePaginator<T extends new (...args: any[]) => Model>(modelClass: T, attributes: Record<string, any>[]): Paginator<T>;
+  export function make<T extends new (...args: any[]) => Model> (modelClass: T, attributes: Record<string, any>[]): Collection<T>;
+  export function makeCollection<T extends new (...args: any[]) => Model> (modelClass: T, attributes: Record<string, any>[]): Collection<T>;
+  export function makePaginator<T extends new (...args: any[]) => Model> (modelClass: T, attributes: Record<string, any>[]): Paginator<T>;
 
   export interface Plugin {
-    <M extends typeof Model>(modelClass: M): M;
+    <M extends typeof Model> (modelClass: M): M;
   }
 
   export interface MixinFunction {
-    <MC extends AnyModelConstructor>(modelClass: MC, ...plugins: Plugin[]): MC;
+    <MC extends AnyModelConstructor> (modelClass: MC, ...plugins: Plugin[]): MC;
   }
 
-  export function migrateRun(
+  export function migrateRun (
     config: any,
     options?: {
       step?: number;
@@ -824,7 +825,7 @@ declare module 'sutando' {
     destroyAll?: boolean = false
   ): Promise<void>;
 
-  export function migrateRollback(
+  export function migrateRollback (
     config: any,
     options?: {
       step?: number;
@@ -835,7 +836,7 @@ declare module 'sutando' {
     destroyAll?: boolean = false
   ): Promise<void>;
 
-  export function migrateStatus(
+  export function migrateStatus (
     config: any,
     options?: {
       path?: string;

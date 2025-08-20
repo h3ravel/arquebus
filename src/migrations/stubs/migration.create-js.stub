@@ -1,6 +1,6 @@
-const { Migration, sutando } = require('sutando');
+import { Migration, sutando } from 'sutando'
 
-module.exports = class extends Migration {
+export class extends Migration {
   /**
     * Run the migrations.
     */

@@ -1,3 +1,2 @@
-const Sutando = require('.');
-
-module.exports = Sutando;
+import Sutando from '.'
+export default Sutando

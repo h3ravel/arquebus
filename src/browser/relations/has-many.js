@@ -1,16 +1,12 @@
-const Relation = require('./relation');
-
+import Relation from './relation'
 class HasMany extends Relation {
-  foreignKey;
-  localKey;
-
-  constructor(related, parent, foreignKey, localKey) {
-    super(related, parent);
-    this.foreignKey = foreignKey;
-    this.localKey = localKey;
-
-    return this.asProxy();
-  }
+    foreignKey
+    localKey
+    constructor(related, parent, foreignKey, localKey) {
+        super(related, parent)
+        this.foreignKey = foreignKey
+        this.localKey = localKey
+        return this.asProxy()
+    }
 }
-
-module.exports = HasMany;
+export default HasMany

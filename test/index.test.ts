@@ -1,66 +1,66 @@
-const unset = require('lodash/unset');
-const filter = require('lodash/filter');
-const kebabCase = require('lodash/kebabCase');
-const {
-  sutando,
-  Model,
-  Collection,
-  Builder,
-  Paginator,
-  compose,
-  SoftDeletes,
+import {
   Attribute,
-  HasUniqueIds,
+  Builder,
   CastsAttributes,
+  Collection,
+  HasUniqueIds,
+  Model,
   ModelNotFoundError,
+  Paginator,
+  SoftDeletes,
+  compose,
   make,
   makeCollection,
   makePaginator,
-} = require('../src');
-const config = require(process.env.SUTANDO_CONFIG || './config');
-const dayjs = require('dayjs');
-const crypto = require('crypto');
-const collect = require('collect.js');
-const QueryBuilder = require('../src/query-builder');
+  sutando,
+} from 'src'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest'
 
-Promise.delay = function (duration) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve(true);
-    }, duration)
-  });
-}
+import QueryBuilder from 'src/query-builder'
+import { TGeneric } from 'types/generics'
+import collect from 'collect.js'
+import config from './config'
+import crypto from 'crypto'
+import dayjs from 'dayjs'
+import { delay } from './utils'
+import filter from 'lodash/filter'
+import kebabCase from 'lodash/kebabCase'
+import unset from 'lodash/unset'
+
+// const config = require(process.env.SUTANDO_CONFIG || './config')
 
 describe('node environment test', () => {
-  test('should load the node version of the module', () => {
+  test('should load the node version of the module', async () => {
     // Test automatically loads the node version
-    const module = require('sutando');
-    expect(module.isBrowser).toBeUndefined();
-  });
-});
+    const module = (await import('sutando'))
+    expect(module.isBrowser).toBeUndefined()
+  })
+})
+
+let hits: TGeneric
 
 describe('Sutando', () => {
   it('should fail if passing a wrong connection info', () => {
     sutando.addConnection({
       client: 'abc',
       connection: {
-        host : '127.0.0.1',
-        port : 1234,
+        host: '127.0.0.1',
+        port: 1234,
       }
-    });
+    })
     expect(() => {
-      sutando.connection();
-    }).toThrow();
-    sutando.connections = {};
-  });
-});
+      sutando.connection()
+    }).toThrow()
+    sutando.connections = {}
+  })
+})
 
 describe('Model', () => {
   const SomePlugin = (Model) => {
     return class extends Model {
-      pluginAttribtue = 'plugin';
-      pluginMethod() {
-        return this.pluginAttribtue;
+      pluginAttribtue = 'plugin'
+      pluginMethod () {
+        return this.pluginAttribtue
       }
     }
   }
@@ -69,42 +69,42 @@ describe('Model', () => {
     Model,
     SomePlugin,
   ) {
-    relationPost() {
-      return this.hasMany(Post);
+    relationPost () {
+      return this.hasMany(Post)
     }
   }
 
   class Post extends Model {
-    relationAuthor() {
-      return this.belongsTo(User);
+    relationAuthor () {
+      return this.belongsTo(User)
     }
 
-    relationTags() {
-      return this.belongsToMany(Tag, 'post_tag');
+    relationTags () {
+      return this.belongsToMany(Tag, 'post_tag')
     }
 
-    relationThumbnail() {
-      return this.belongsTo(Thumbnail, 'thumbnail_id');
+    relationThumbnail () {
+      return this.belongsTo(Thumbnail, 'thumbnail_id')
     }
   }
 
   class Tag extends Model {
-    relationPosts() {
-      return this.belongsToMany(Post, 'post_tag');
+    relationPosts () {
+      return this.belongsToMany(Post, 'post_tag')
     }
   }
 
-  class Thumbnail extends Model {}
-  class Media extends Model {}
+  class Thumbnail extends Model { }
+  class Media extends Model { }
 
-  const manager = new sutando;
+  const manager = new sutando
 
   manager.createModel('User', {
     plugins: [SomePlugin],
     relations: {
       post: (model) => model.hasMany(manager.models.Post),
     }
-  });
+  })
 
   manager.createModel('Post', {
     relations: {
@@ -112,41 +112,41 @@ describe('Model', () => {
       tags: (model) => model.belongsToMany(Tag, 'post_tag'),
       thumbnail: (model) => model.belongsTo(Thumbnail, 'thumbnail_id'),
     }
-  });
+  })
 
   it('return the table name of the plural model name', () => {
-    const user = new User;
-    const media = new Media;
-    expect(user.getTable()).toBe('users');
-    expect(media.getTable()).toBe('media');
+    const user = new User
+    const media = new Media
+    expect(user.getTable()).toBe('users')
+    expect(media.getTable()).toBe('media')
 
-    const anotherUser = new manager.models.User;
-    expect(anotherUser.getTable()).toBe('users');
-  });
+    const anotherUser = new manager.models.User
+    expect(anotherUser.getTable()).toBe('users')
+  })
 
   describe('#compose', () => {
     it('should return a Model instance', () => {
-      const user = new User;
-      expect(user).toBeInstanceOf(Model);
+      const user = new User
+      expect(user).toBeInstanceOf(Model)
 
-      const anotherUser = new manager.models.User;
-      expect(anotherUser).toBeInstanceOf(Model);
-    });
+      const anotherUser = new manager.models.User
+      expect(anotherUser).toBeInstanceOf(Model)
+    })
 
     it('has mixin\'s attributes and methods', () => {
-      const user = new User;
-      expect(user.pluginAttribtue).toBe('plugin');
-      expect(user.pluginMethod()).toBe('plugin');
+      const user = new User
+      expect(user.pluginAttribtue).toBe('plugin')
+      expect(user.pluginMethod()).toBe('plugin')
 
-      const anotherUser = new manager.models.User;
-      expect(anotherUser.pluginAttribtue).toBe('plugin');
-      expect(anotherUser.pluginMethod()).toBe('plugin');
+      const anotherUser = new manager.models.User
+      expect(anotherUser.pluginAttribtue).toBe('plugin')
+      expect(anotherUser.pluginMethod()).toBe('plugin')
     })
   })
 
   describe('#toData & #toJson', () => {
     class User extends Model {
-      attributeFullName() {
+      attributeFullName () {
         return Attribute.make({
           get: (value, attributes) => `${attributes.firstName} ${attributes.lastName}`,
           set: (value, attributes) => ({
@@ -156,101 +156,101 @@ describe('Model', () => {
         })
       }
 
-      get another_full_name() {
-        return `${this.attributes.firstName} ${this.attributes.lastName}`;
+      get another_full_name () {
+        return `${this.attributes.firstName} ${this.attributes.lastName}`
       }
 
-      set another_full_name(value) {
-        const names = value.split(' ');
-        this.attributes.firstName = names[0];
-        this.attributes.lastName = names[1];
+      set another_full_name (value) {
+        const names = value.split(' ')
+        this.attributes.firstName = names[0]
+        this.attributes.lastName = names[1]
       }
     }
-    class Post extends Model {}
+    class Post extends Model { }
 
-    let testModel;
+    let testModel: Model
     beforeEach(() => {
       testModel = new User({
         id: 1,
         firstName: 'Joe',
         lastName: 'Shmoe',
         address: '123 Main St.'
-      });
-    });
+      })
+    })
 
     it('includes the relations loaded on the model', () => {
       testModel.setRelation('posts', new Collection([
-        new Post({id: 1}), new Post({id: 2})
-      ]));
-      
-      const data = testModel.toData();
+        new Post({ id: 1 }), new Post({ id: 2 })
+      ]))
 
-      expect(Object.keys(data)).toEqual(['id', 'firstName', 'lastName', 'address', 'posts']);
-      expect(data.posts.length).toBe(2);
-    });
+      const data = testModel.toData()
+
+      expect(Object.keys(data)).toEqual(['id', 'firstName', 'lastName', 'address', 'posts'])
+      expect(data.posts.length).toBe(2)
+    })
 
     it('serializes correctly', () => {
-      testModel.setVisible(['firstName']);
-      expect(testModel.toJson()).toBe('{"firstName":"Joe"}');
-      expect(testModel.toString()).toBe('{"firstName":"Joe"}');
-    });
+      testModel.setVisible(['firstName'])
+      expect(testModel.toJson()).toBe('{"firstName":"Joe"}')
+      expect(testModel.toString()).toBe('{"firstName":"Joe"}')
+    })
 
     describe('#visible & #hidden', () => {
       it('only shows the fields specified in the model\'s "visible" property', () => {
-        testModel.visible = ['firstName'];
-        expect(testModel.toData()).toEqual({firstName: 'Joe'});
-      });
+        testModel.visible = ['firstName']
+        expect(testModel.toData()).toEqual({ firstName: 'Joe' })
+      })
 
       it('hides the fields specified in the model\'s "hidden" property', () => {
-        expect(testModel.setHidden(['firstName']).toData()).toEqual({id: 1, lastName: 'Shmoe', address: '123 Main St.'});
-        testModel.setHidden(['firstName', 'lastName']).makeVisible('firstName');
-        expect(testModel.getHidden()).toEqual(['lastName']);
-        expect(testModel.toData()).toEqual({id: 1, firstName: 'Joe', address: '123 Main St.'});
-      });
+        expect(testModel.setHidden(['firstName']).toData()).toEqual({ id: 1, lastName: 'Shmoe', address: '123 Main St.' })
+        testModel.setHidden(['firstName', 'lastName']).makeVisible('firstName')
+        expect(testModel.getHidden()).toEqual(['lastName'])
+        expect(testModel.toData()).toEqual({ id: 1, firstName: 'Joe', address: '123 Main St.' })
+      })
 
       it('hides the fields specified in the "options.hidden" property', () => {
-        testModel.setHidden(['firstName', 'id']);
-        expect(testModel.toData()).toEqual({lastName: 'Shmoe', address: '123 Main St.'});
-      });
+        testModel.setHidden(['firstName', 'id'])
+        expect(testModel.toData()).toEqual({ lastName: 'Shmoe', address: '123 Main St.' })
+      })
 
       it('prioritizes "hidden" if there are conflicts when using both "hidden" and "visible"', () => {
-        testModel.setVisible(['firstName', 'lastName']);
-        testModel.setHidden(['lastName']);
-        expect(testModel.toData()).toEqual({ firstName: 'Joe' });
-      });
+        testModel.setVisible(['firstName', 'lastName'])
+        testModel.setHidden(['lastName'])
+        expect(testModel.toData()).toEqual({ firstName: 'Joe' })
+      })
 
       it('allows overriding the model\'s "hidden" property with a "setHidden" argument', () => {
-        testModel.hidden = ['lastName'];
-        testModel.setHidden(['firstName', 'id']);
-        const data = testModel.toData();
+        testModel.hidden = ['lastName']
+        testModel.setHidden(['firstName', 'id'])
+        const data = testModel.toData()
         expect(data).toEqual({
           lastName: 'Shmoe',
           address: '123 Main St.'
-        });
-      });
+        })
+      })
 
       it('allows overriding the model\'s "hidden" property with a "makeHidden" argument', () => {
-        testModel.hidden = ['lastName'];
-        testModel.makeHidden(['firstName', 'id']);
-        const data = testModel.toData();
+        testModel.hidden = ['lastName']
+        testModel.makeHidden(['firstName', 'id'])
+        const data = testModel.toData()
         expect(data).toEqual({
           address: '123 Main St.'
-        });
-      });
+        })
+      })
 
       it('prioritizes "setHidden" when overriding both the model\'s "hidden" and "visible" properties with "setHidden" and "setVisible" arguments', () => {
-        testModel.visible = ['lastName', 'address'];
-        testModel.hidden = ['address'];
-        const data = testModel.setVisible(['firstName', 'lastName']).setHidden(['lastName']).toData();
+        testModel.visible = ['lastName', 'address']
+        testModel.hidden = ['address']
+        const data = testModel.setVisible(['firstName', 'lastName']).setHidden(['lastName']).toData()
 
-        expect(data).toEqual({firstName: 'Joe'});
+        expect(data).toEqual({ firstName: 'Joe' })
 
-        const knex = require('knex')({ client: 'mysql' });
-        console.log(knex.client.JoinClause);
-      });
+        const knex = require('knex')({ client: 'mysql' })
+        console.log(knex.client.JoinClause)
+      })
 
       it('append virtual attribute', () => {
-        const data = testModel.append(['another_full_name', 'full_name']).toData();
+        const data = testModel.append(['another_full_name', 'full_name']).toData()
         expect(data).toEqual({
           address: '123 Main St.',
           firstName: 'Joe',
@@ -258,9 +258,9 @@ describe('Model', () => {
           full_name: 'Joe Shmoe',
           id: 1,
           lastName: 'Shmoe'
-        });
+        })
 
-        testModel.another_full_name = 'Bill Gates';
+        testModel.another_full_name = 'Bill Gates'
         expect(testModel.toData()).toEqual({
           address: '123 Main St.',
           firstName: 'Bill',
@@ -268,173 +268,179 @@ describe('Model', () => {
           full_name: 'Bill Gates',
           id: 1,
           lastName: 'Gates'
-        });
+        })
 
-        expect(testModel.isDirty('firstName')).toBeTruthy();
-        expect(testModel.isDirty('lastName')).toBeTruthy();
-        expect(testModel.isDirty()).toBeTruthy();
-      });
-    });
+        expect(testModel.isDirty('firstName')).toBeTruthy()
+        expect(testModel.isDirty('lastName')).toBeTruthy()
+        expect(testModel.isDirty()).toBeTruthy()
+      })
+    })
 
     it('model getter settings', () => {
-      expect(testModel.full_name).toBe('Joe Shmoe');
-    });
+      expect(testModel.full_name).toBe('Joe Shmoe')
+    })
 
     it('model setter settings', () => {
-      testModel.full_name = 'Bill Gates';
-      expect(testModel.firstName).toBe('Bill');
-      expect(testModel.lastName).toBe('Gates');
-    });
+      testModel.full_name = 'Bill Gates'
+      expect(testModel.firstName).toBe('Bill')
+      expect(testModel.lastName).toBe('Gates')
+    })
   })
 
   describe('#isDirty', () => {
     it('returns true if an attribute was set on a new model instance', () => {
-      const model = new Model({test: 'something'});
-      expect(model.isDirty('test')).toBeTruthy();
-    });
+      const model = new Model({ test: 'something' })
+      expect(model.isDirty('test')).toBeTruthy()
+    })
 
-    it("returns false if the attribute isn't set on a new model instance", () => {
-      const model = new Model({test_test: 'something'});
+    it('returns false if the attribute isn\'t set on a new model instance', () => {
+      const model = new Model({ test_test: 'something' })
       // expect(model.getDirty()).toEqual({ a: 1})
-      expect(model.isDirty('id')).toBeFalsy();
-      expect(model.isDirty()).toBeTruthy();
-    });
+      expect(model.isDirty('id')).toBeFalsy()
+      expect(model.isDirty()).toBeTruthy()
+    })
 
     it('returns true if an existing attribute is updated', () => {
-      const model = new Model;
-      model.test = 'something else';
+      const model = new Model
+      model.test = 'something else'
 
-      expect(model.isDirty('test')).toBeTruthy();
-    });
-  });
+      expect(model.isDirty('test')).toBeTruthy()
+    })
+  })
 })
 
 describe('Collection', () => {
-  let collection;
+  let collection
   class User extends Model {
-    primaryKey = 'some_id';
+    primaryKey = 'some_id'
   }
-  class Post extends Model {}
+  class Post extends Model { }
 
   beforeEach(() => {
     collection = new Collection([
-      new User({some_id: 1, name: 'Test'}),
-      new User({name: 'Test2'}),
-      new Post({id: 2, name: 'Test3'})
-    ]);
-  });
+      new User({ some_id: 1, name: 'Test' }),
+      new User({ name: 'Test2' }),
+      new Post({ id: 2, name: 'Test3' })
+    ])
+  })
 
   it('should initialize the items passed to the constructor', () => {
-    expect(collection.count()).toBe(3);
-    expect(collection.modelKeys()).toEqual([1, undefined, 2]);
+    expect(collection.count()).toBe(3)
+    expect(collection.modelKeys()).toEqual([1, undefined, 2])
     // expect(collection.get(1).getKey()).toBeUndefined();
-  });
+  })
 
   it('should ', () => {
     expect(collection.toData()).toEqual([
-      {some_id: 1, name: 'Test'},
-      {name: 'Test2'},
-      {id: 2, name: 'Test3'},
-    ]);
+      { some_id: 1, name: 'Test' },
+      { name: 'Test2' },
+      { id: 2, name: 'Test3' },
+    ])
   })
 })
 
 describe('Builder', () => {
-
+  // TODO: Please write tests for Builder
+  it('Please write tests for Builder', () => {
+    expect(1).toEqual(1)
+  })
 })
 
 describe('Paginator', () => {
-  
+  // TODO: Please write tests for Paginator
+  it('Please write tests for Paginator', () => {
+    expect(1).toEqual(1)
+  })
 })
 
-describe('Integration test', () => {
+describe('Integration test', async () => {
   const databases = [
     // {
     //   client: 'postgres',
     //   connection: config.postgres
     // }
-  ];
+  ]
 
   if (process.env.DB === 'mysql') {
-    databases.push(config.mysql);
+    databases.push(config.mysql)
   } else if (process.env.DB === 'sqlite') {
-    databases.push(config.sqlite);
+    databases.push(config.sqlite)
   } else if (process.env.DB === 'postgres') {
-    databases.push(config.postgres);
+    databases.push(config.postgres)
   }
 
   databases.map(config => {
     describe('Client: ' + config.client, () => {
-      sutando.addConnection(config, config.client);
-      const connection = sutando.connection(config.client);
+      sutando.addConnection(config, config.client)
+      const connection = sutando.connection(config.client)
 
       class Base extends Model {
-        connection = config.client;
+        connection = config.client
       }
 
       class Admin extends Base {
-        table = 'administrators';
+        table = 'administrators'
       }
 
       class User extends Base {
-        hidden = ['password', 'remember_token'];
-        
-        attributeFullName() {
+        hidden = ['password', 'remember_token']
+
+        attributeFullName () {
           return Attribute.make({
             get: (value, attributes) => `${attributes.firstName} ${attributes.name}`
           })
         }
 
-        relationPosts() {
-          return this.hasMany(Post);
+        relationPosts () {
+          return this.hasMany(Post)
         }
       }
 
       class UuidUser extends compose(Base, HasUniqueIds) {
-        newUniqueId() {
-          return crypto.randomUUID();
+        newUniqueId () {
+          return crypto.randomUUID()
         }
       }
 
       class Post extends Base {
-        scopeIdOf(query, id) {
-          return query.where('id', id);
+        scopeIdOf (query, id) {
+          return query.where('id', id)
         }
 
-        scopePublish(query) {
-          return query.where('status', 1);
+        scopePublish (query) {
+          return query.where('status', 1)
         }
 
-        relationAuthor() {
-          return this.belongsTo(User);
+        relationAuthor () {
+          return this.belongsTo(User)
         }
 
-        relationDefaultAuthor() {
+        relationDefaultAuthor () {
           return this.belongsTo(User).withDefault({
             name: 'Default Author'
-          });
+          })
         }
 
-        relationDefaultPostAuthor() {
+        relationDefaultPostAuthor () {
           return this.belongsTo(User).withDefault((user, post) => {
-            user.name = post.name + ' - Default Author';
-          });
+            user.name = post.name + ' - Default Author'
+          })
         }
 
-        relationThumbnail() {
-          return this.belongsTo(Media, 'thumbnail_id');
+        relationThumbnail () {
+          return this.belongsTo(Media, 'thumbnail_id')
         }
 
-        relationMedia() {
-          return this.belongsToMany(Media);
+        relationMedia () {
+          return this.belongsToMany(Media)
         }
 
-        relationTags() {
-          return this.belongsToMany(Tag);
+        relationTags () {
+          return this.belongsToMany(Tag)
         }
 
-        relationComments() {
-          return this.hasMany(Comment);
+        relationComments () {
+          return this.hasMany(Comment)
         }
       }
 
@@ -455,37 +461,37 @@ describe('Integration test', () => {
             name: 'Default Author'
           }),
           default_post_author: (model) => model.belongsTo(User).withDefault((user, post) => {
-            user.name = post.name + ' - Default Author';
+            user.name = post.name + ' - Default Author'
           }),
           thumbnail: (model) => model.belongsTo(Media, 'thumbnail_id'),
           media: (model) => model.belongsToMany(Media),
           tags: (model) => model.belongsToMany(Tag),
         }
-      });
+      })
 
       class Tag extends Base {
-        relationPosts() {
-          return this.belongsToMany(Post);
+        relationPosts () {
+          return this.belongsToMany(Post)
         }
       }
 
-      class Comment extends Base {}
+      class Comment extends Base { }
 
-      class Media extends Base {}
+      class Media extends Base { }
 
-      class SoftDeletePost extends compose(Base, SoftDeletes) {}
+      class SoftDeletePost extends compose(Base, SoftDeletes) { }
 
       class Json extends CastsAttributes {
-        static get(model, key, value, attributes) {
+        static get (model, key, value, attributes) {
           try {
-            return JSON.parse(value);
+            return JSON.parse(value)
           } catch (e) {
-            return null;
+            return null
           }
         }
-      
-        static set(model, key, value, attributes) {
-          return JSON.stringify(value);
+
+        static set (model, key, value, attributes) {
+          return JSON.stringify(value)
         }
       }
 
@@ -503,82 +509,93 @@ describe('Integration test', () => {
       }
 
       beforeAll(() => {
-        return Promise.all(['users', 'tags', 'posts', 'post_tag', 'administrators', 'comments', 'media'].map(table => {
-          return connection.schema.dropTableIfExists(table);
+        return Promise.all([
+          'users',
+          'tags',
+          'posts',
+          'post_tag',
+          'administrators',
+          'comments',
+          'media',
+          'cast_posts',
+          'soft_delete_posts',
+          'uuid_users',
+        ].map(table => {
+          return connection.schema.dropTableIfExists(table)
         })).then(() => {
           return connection.schema
             .createTable('users', (table) => {
-              table.increments('id');
-              table.string('name');
-              table.string('first_name');
-              table.timestamps();
+              table.increments('id')
+              table.string('name')
+              table.string('first_name')
+              table.timestamps()
             })
             .createTable('uuid_users', (table) => {
-              table.string('id').primary();
-              table.string('name');
-              table.timestamps();
+              table.string('id').primary()
+              table.string('name')
+              table.timestamps()
             })
             .createTable('media', (table) => {
-              table.increments('id');
-              table.integer('mediaable_id').defaultTo(0);
-              table.string('mediaable_type').defaultTo('');
-              table.string('uuid').defaultTo('');
-              table.timestamps();
+              table.increments('id')
+              table.integer('mediaable_id').defaultTo(0)
+              table.string('mediaable_type').defaultTo('')
+              table.string('uuid').defaultTo('')
+              table.timestamps()
             })
             .createTable('tags', (table) => {
-              table.increments('id');
-              table.string('name');
-              table.timestamps();
+              table.increments('id')
+              table.string('name')
+              table.timestamps()
             })
             .createTable('administrators', (table) => {
-              table.increments('id');
-              table.string('username');
-              table.string('password');
-              table.timestamps();
+              table.increments('id')
+              table.string('username')
+              table.string('password')
+              table.timestamps()
             })
             .createTable('posts', (table) => {
-              table.increments('id');
-              table.integer('user_id').defaultTo(0);
-              table.string('name');
-              table.text('content');
-              table.timestamps();
+              table.increments('id')
+              table.integer('user_id').defaultTo(0)
+              table.string('name')
+              table.text('content')
+              table.timestamps()
             })
             .createTable('post_tag', (table) => {
-              table.increments('id');
-              table.integer('post_id').defaultTo(0);
-              table.integer('tag_id').defaultTo(0);
-              table.timestamps();
+              table.increments('id')
+              table.integer('post_id').defaultTo(0)
+              table.integer('tag_id').defaultTo(0)
+              table.timestamps()
 
             })
-            .createTable('comments', function(table) {
-              table.increments('id');
-              table.integer('post_id').defaultTo(0);
-              table.string('name');
-              table.string('email');
-              table.text('comment');
-              table.timestamps();
+            .createTable('comments', function (table) {
+              table.increments('id')
+              table.integer('post_id').defaultTo(0)
+              table.string('name')
+              table.string('email')
+              table.text('comment')
+              table.timestamps()
             })
-            .createTable('soft_delete_posts', function(table) {
-              table.increments('id');
-              table.string('name');
-              table.text('content');
-              table.datetime('deleted_at').defaultTo(null);
-              table.timestamps();
+            .createTable('soft_delete_posts', function (table) {
+              table.increments('id')
+              table.string('name')
+              table.text('content')
+              table.datetime('deleted_at').defaultTo(null)
+              table.timestamps()
             })
-            .createTable('cast_posts', function(table) {
-              table.increments('id');
-              table.text('text_to_json');
-              table.text('text_to_collection');
-              table.text('custom_cast');
-              table.integer('some_string');
-              table.string('some_int');
-              table.datetime('some_date').defaultTo(null);
-              table.datetime('some_datetime').defaultTo(null);
-              table.tinyint('is_published').defaultTo(0);
-              table.timestamps();
+            .createTable('cast_posts', function (table) {
+              table.increments('id')
+              table.text('text_to_json')
+              table.text('text_to_collection')
+              table.text('custom_cast')
+              table.integer('some_string')
+              table.string('some_int')
+              table.datetime('some_date').defaultTo(null)
+              table.datetime('some_datetime').defaultTo(null)
+              table.tinyint('is_published').defaultTo(0)
+              table.timestamps()
             })
         }).then(() => {
-          const date = dayjs().format('YYYY-MM-DD HH:mm:ss');
+          const date = dayjs().format('YYYY-MM-DD HH:mm:ss')
           return Promise.all([
             connection.table('users').insert([
               {
@@ -756,264 +773,264 @@ describe('Integration test', () => {
               },
             ]),
           ])
-        });
-      });
+        })
+      })
 
       afterAll(() => {
-        connection.destroy();
-      });
+        connection.destroy()
+      })
 
       describe('QueryBuilder', () => {
         it('should return a QueryBuilder instance', () => {
-          expect(connection).toBeInstanceOf(QueryBuilder);
-        });
-      
+          expect(connection).toBeInstanceOf(QueryBuilder)
+        })
+
         describe('raw', () => {
           it('should execute raw SQL query and return correct result', async () => {
             if (process.env.DB === 'sqlite') {
-              const user = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1]);
+              const user = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1])
               expect(user).toEqual([{
                 id: 2
-              }]);
+              }])
             } else if (process.env.DB === 'mysql') {
-              const res = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1]);
+              const res = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1])
               expect(res[0]).toEqual([{
                 id: 2
-              }]);
+              }])
             } else if (process.env.DB === 'postgres') {
-              const res = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1]);
+              const res = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1])
               expect(res.rows).toEqual([{
                 id: 2
-              }]);
+              }])
             }
-          });
-        });
+          })
+        })
 
         describe('query', () => {
           it('calls query-builder method with the first argument, returning the query builder', () => {
-            const query = connection.table('users');
-            const q = query.where('id', 1);
-            expect(q).toStrictEqual(query);
-          });
-    
+            const query = connection.table('users')
+            const q = query.where('id', 1)
+            expect(q).toStrictEqual(query)
+          })
+
           it('allows passing an object to query', () => {
-            const query = connection.table('users');
-            expect(filter(query._statements, {grouping: 'where'}).length).toBe(0);
-            
-            const q = query.where('id', 1).orWhere('id', '>', 10);
-            expect(q).toStrictEqual(query);
-            expect(filter(query._statements, {grouping: 'where'}).length).toBe(2);
-          });
-    
+            const query = connection.table('users')
+            expect(filter(query._statements, { grouping: 'where' }).length).toBe(0)
+
+            const q = query.where('id', 1).orWhere('id', '>', 10)
+            expect(q).toStrictEqual(query)
+            expect(filter(query._statements, { grouping: 'where' }).length).toBe(2)
+          })
+
           it('allows passing a function to query', () => {
-            const query = connection.table('users');
-            expect(filter(query._statements, {grouping: 'where'}).length).toBe(0);
-    
+            const query = connection.table('users')
+            expect(filter(query._statements, { grouping: 'where' }).length).toBe(0)
+
             const q = query.where((q) => {
-              q.where('id', 1).orWhere('id', '>', '10');
-            });
-            
-            expect(q).toEqual(query);
-            expect(filter(query._statements, {grouping: 'where'}).length).toBe(1);
-          });
+              q.where('id', 1).orWhere('id', '>', '10')
+            })
+
+            expect(q).toEqual(query)
+            expect(filter(query._statements, { grouping: 'where' }).length).toBe(1)
+          })
 
           describe('#first() & #find()', () => {
             it('issues a first (get one), triggering a fetched event, returning a promise', () => {
-              const query = connection.table('users').where('id', 1);
-  
+              const query = connection.table('users').where('id', 1)
+
               return query.first().then((user) => {
-                expect(user.id).toBe(1);
-                expect(user.name).toBe('Shuri');
-              });
-            });
-      
+                expect(user.id).toBe(1)
+                expect(user.name).toBe('Shuri')
+              })
+            })
+
             it('allows specification of select columns in query', () => {
               return connection.table('users').where('id', 1).select(['id', 'first_name']).first().then((user) => {
-                expect(user).toEqual({id: 1, first_name: 'Tim'});
-              });
-            });
-          });
-  
+                expect(user).toEqual({ id: 1, first_name: 'Tim' })
+              })
+            })
+          })
+
           describe('#get()', () => {
             it('should merge models with duplicate ids by default', async () => {
-              const users = await connection.table('users').get();
-  
-              expect(users.length).toBe(2);
-              expect(users.map(user => user.name)).toEqual(['Shuri', 'Alice']);
-            });
-      
+              const users = await connection.table('users').get()
+
+              expect(users.length).toBe(2)
+              expect(users.map(user => user.name)).toEqual(['Shuri', 'Alice'])
+            })
+
             it('returns an empty collection if there are no results', async () => {
               const users = await connection.table('users')
                 .where('name', 'hal9000')
-                .get();
-  
-              expect(users.length).toBe(0);
-            });
-          });
-  
+                .get()
+
+              expect(users.length).toBe(0)
+            })
+          })
+
           describe('#chunk()', () => {
             it('fetches a single page of results with defaults', async () => {
-              const names = [];
-  
+              const names = []
+
               await connection.table('tags').orderBy('id', 'asc').chunk(2, (tags) => {
                 tags.map(tag => {
-                  names.push(tag.name);
-                });
-              });
-  
-              expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing']);
-  
+                  names.push(tag.name)
+                })
+              })
+
+              expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing'])
+
               await connection.table('tags').orderBy('id', 'desc').chunk(2, (tags) => {
                 tags.map(tag => {
-                  names.push(tag.name);
-                });
-              });
-  
-              expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing', 'amazing', 'exciting', 'boring', 'cool']);
-            });
-          });
+                  names.push(tag.name)
+                })
+              })
+
+              expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing', 'amazing', 'exciting', 'boring', 'cool'])
+            })
+          })
 
           describe('take/skip/limit/offset/forPage', () => {
             it('should allow specifying limit and offset', () => {
               return connection.table('users').limit(1).offset(1).get().then((users) => {
-                expect(users.length).toBe(1);
-                expect(users[0].id).toBe(2);
-              });
-            });
+                expect(users.length).toBe(1)
+                expect(users[0].id).toBe(2)
+              })
+            })
 
             it('should allow specifying take and skip', () => {
               return connection.table('users').take(1).skip(1).get().then((users) => {
-                expect(users.length).toBe(1);
-                expect(users[0].id).toBe(2);
-              });
-            });
+                expect(users.length).toBe(1)
+                expect(users[0].id).toBe(2)
+              })
+            })
 
             it('should allow specifying forPage', () => {
               return connection.table('users').forPage(2, 1).get().then((users) => {
-                expect(users.length).toBe(1);
-                expect(users[0].id).toBe(2);
-              });
-            });
-          });
-  
+                expect(users.length).toBe(1)
+                expect(users[0].id).toBe(2)
+              })
+            })
+          })
+
           describe('#paginate()', () => {
             it('fetches a single page of results with defaults', () => {
               return connection.table('users').paginate()
                 .then((users) => {
-                  expect(users).toBeInstanceOf(Paginator);
-                });
-            });
-      
+                  expect(users).toBeInstanceOf(Paginator)
+                })
+            })
+
             it('fetches a page of results with specified page size', () => {
               return connection.table('users').paginate(1, 2)
                 .then((results) => {
-                  expect(results).toBeInstanceOf(Paginator);
-                  expect(results.count()).toBe(2);
-                  expect(results.total()).toBe(2);
-                  expect(results.currentPage()).toBe(1);
-                });
-            });
-      
+                  expect(results).toBeInstanceOf(Paginator)
+                  expect(results.count()).toBe(2)
+                  expect(results.total()).toBe(2)
+                  expect(results.currentPage()).toBe(1)
+                })
+            })
+
             it('fetches a page by page number', () => {
               return connection.table('users').orderBy('id', 'asc').paginate(1, 2)
                 .then((results) => {
-                  expect(results.get(0).id).toBe(1);
-                  expect(results.get(1).id).toBe(2);
-                });
-            });
-      
+                  expect(results.get(0).id).toBe(1)
+                  expect(results.get(1).id).toBe(2)
+                })
+            })
+
             describe('with groupBy', () => {
               it('counts grouped rows instead of total rows', () => {
-                let total;
-  
+                let total
+
                 return connection.table('posts').count().then(count => {
-                  total = parseInt(count);
-  
+                  total = parseInt(count)
+
                   return connection.table('posts')
                     .select('user_id')
                     .groupBy('user_id')
                     .whereNotNull('user_id')
-                    .paginate();
+                    .paginate()
                 }).then(posts => {
-                  expect(posts.count()).toBeLessThanOrEqual(total);
-                });
-              });
-      
+                  expect(posts.count()).toBeLessThanOrEqual(total)
+                })
+              })
+
               it('counts grouped rows when using table name qualifier', () => {
-                let total;
-  
+                let total
+
                 connection.table('posts').count()
                   .then(count => {
-                    total = parseInt(count, 10);
-  
+                    total = parseInt(count, 10)
+
                     return connection.table('posts')
                       .select('user_id')
                       .groupBy('posts.user_id')
                       .whereNotNull('user_id')
-                      .paginate();
+                      .paginate()
                   })
                   .then(posts => {
-                    expect(posts.count()).toBeLessThanOrEqual(total);
-                  });
-              });
-            });
-      
+                    expect(posts.count()).toBeLessThanOrEqual(total)
+                  })
+              })
+            })
+
             describe('with distinct', () => {
               it('counts distinct occurences of a column instead of total rows', () => {
-                let total;
-  
+                let total
+
                 return connection.table('posts').count()
                   .then(count => {
-                    total = count;
-                    return connection.table('posts').distinct('user_id').get();
+                    total = count
+                    return connection.table('posts').distinct('user_id').get()
                   })
                   .then(distinctPostUsers => {
-                    expect(distinctPostUsers.length).toBeLessThanOrEqual(total);
-                  });
-              });
-            });
-          });
-  
+                    expect(distinctPostUsers.length).toBeLessThanOrEqual(total)
+                  })
+              })
+            })
+          })
+
           describe('orderBy', () => {
             it('returns results in the correct order', () => {
               const asc = connection.table('users')
                 .orderBy('id', 'asc')
                 .get()
                 .then(result => {
-                  return result.map(user => user.id);
-                });
-  
+                  return result.map(user => user.id)
+                })
+
               const desc = connection.table('users')
                 .orderBy('id', 'desc')
                 .get()
                 .then(result => {
-                  return result.map(user => user.id);
-                });
-      
+                  return result.map(user => user.id)
+                })
+
               return Promise.all([asc, desc]).then((results) => {
-                expect(results[0].reverse()).toEqual(results[1]);
-              });
-            });
-          });
-        });
-      });
+                expect(results[0].reverse()).toEqual(results[1])
+              })
+            })
+          })
+        })
+      })
 
       describe('Model', () => {
         it('should return a same instance', () => {
-          expect(connection).toBe(sutando.connection(config.client));
-        });
+          expect(connection).toBe(sutando.connection(config.client))
+        })
 
         it('should return a Builder instance', () => {
-          expect(User.query()).toBeInstanceOf(Builder);
-        });
+          expect(User.query()).toBeInstanceOf(Builder)
+        })
 
         describe('#make', () => {
           it('should return a Model instance', () => {
             const user = make(User, {
               id: 1
-            });
-            expect(user).toBeInstanceOf(User);
-      
+            })
+            expect(user).toBeInstanceOf(User)
+
             const anotherUser = make(User, {
               id: 1,
               posts: [
@@ -1026,13 +1043,13 @@ describe('Integration test', () => {
                   title: 'Test 2'
                 }
               ]
-            });
-            expect(anotherUser).toBeInstanceOf(User);
-            expect(anotherUser.posts).toBeInstanceOf(Collection);
-            expect(anotherUser.posts.count()).toBe(2);
-            expect(anotherUser.posts.get(1).title).toBe('Test 2');
-          });
-      
+            })
+            expect(anotherUser).toBeInstanceOf(User)
+            expect(anotherUser.posts).toBeInstanceOf(Collection)
+            expect(anotherUser.posts.count()).toBe(2)
+            expect(anotherUser.posts.get(1).title).toBe('Test 2')
+          })
+
           it('should return a Collection instance', () => {
             const data = [
               {
@@ -1043,18 +1060,18 @@ describe('Integration test', () => {
                 id: 2,
                 name: 'Test 2'
               }
-            ];
-            const users = make(User, data);
-            expect(users).toBeInstanceOf(Collection);
-            expect(users.count()).toBe(2);
-            expect(users.get(1).name).toBe('Test 2');
-      
-            const users2 = makeCollection(User, data);
-            expect(users2).toBeInstanceOf(Collection);
-            expect(users2.count()).toBe(2);
-            expect(users2.get(1).name).toBe('Test 2');
-          });
-      
+            ]
+            const users = make(User, data)
+            expect(users).toBeInstanceOf(Collection)
+            expect(users.count()).toBe(2)
+            expect(users.get(1).name).toBe('Test 2')
+
+            const users2 = makeCollection(User, data)
+            expect(users2).toBeInstanceOf(Collection)
+            expect(users2.count()).toBe(2)
+            expect(users2.get(1).name).toBe('Test 2')
+          })
+
           it('should return a Paginator instance', () => {
             const data = {
               total: 2,
@@ -1070,35 +1087,35 @@ describe('Integration test', () => {
               ],
               current_page: 1,
               per_page: 10,
-            };
-      
+            }
+
             const users = make(User, data, {
               paginated: true
-            });
-            expect(users).toBeInstanceOf(Paginator);
-            expect(users.total()).toBe(2);
-            expect(users.perPage()).toBe(10);
-            expect(users.currentPage()).toBe(1);
-            expect(users.items().count()).toBe(2);
-            expect(users.items().get(1)).toBeInstanceOf(User);
-      
+            })
+            expect(users).toBeInstanceOf(Paginator)
+            expect(users.total()).toBe(2)
+            expect(users.perPage()).toBe(10)
+            expect(users.currentPage()).toBe(1)
+            expect(users.items().count()).toBe(2)
+            expect(users.items().get(1)).toBeInstanceOf(User)
+
             const users2 = makePaginator(User, data, {
               paginated: true
-            });
-            expect(users2).toBeInstanceOf(Paginator);
-            expect(users2.total()).toBe(2);
-            expect(users2.perPage()).toBe(10);
-            expect(users2.currentPage()).toBe(1);
-            expect(users2.items().count()).toBe(2);
-            expect(users2.items().get(1)).toBeInstanceOf(User);
-          });
-      
+            })
+            expect(users2).toBeInstanceOf(Paginator)
+            expect(users2.total()).toBe(2)
+            expect(users2.perPage()).toBe(10)
+            expect(users2.currentPage()).toBe(1)
+            expect(users2.items().count()).toBe(2)
+            expect(users2.items().get(1)).toBeInstanceOf(User)
+          })
+
           it('should return a Model instance', () => {
             const user = User.make({
               id: 1
-            });
-            expect(user).toBeInstanceOf(User);
-      
+            })
+            expect(user).toBeInstanceOf(User)
+
             const anotherUser = User.make({
               id: 1,
               posts: [
@@ -1111,242 +1128,242 @@ describe('Integration test', () => {
                   title: 'Test 2'
                 }
               ]
-            });
-            expect(anotherUser).toBeInstanceOf(User);
-            expect(anotherUser.posts).toBeInstanceOf(Collection);
-            expect(anotherUser.posts.count()).toBe(2);
-            expect(anotherUser.posts.get(1).title).toBe('Test 2');
-          });
+            })
+            expect(anotherUser).toBeInstanceOf(User)
+            expect(anotherUser.posts).toBeInstanceOf(Collection)
+            expect(anotherUser.posts.count()).toBe(2)
+            expect(anotherUser.posts.get(1).title).toBe('Test 2')
+          })
         })
 
         describe('first', () => {
           it('should create a new model instance', async () => {
-            const user = await User.query().first();
-    
-            expect(user.getTable()).toBe('users');
-            expect(user).toBeInstanceOf(User);
-            expect(user).toBeInstanceOf(Model);
-          });
-        });
+            const user = await User.query().first()
+
+            expect(user.getTable()).toBe('users')
+            expect(user).toBeInstanceOf(User)
+            expect(user).toBeInstanceOf(Model)
+          })
+        })
 
         describe('query', () => {
-          let model;
-    
+          let model
+
           beforeEach(() => {
-            model = new User;
-          });
-    
+            model = new User
+          })
+
           it('returns the Builder when no arguments are passed', () => {
-            expect(User.query()).toBeInstanceOf(Builder);
-          });
-    
+            expect(User.query()).toBeInstanceOf(Builder)
+          })
+
           it('calls builder method with the first argument, returning the model', () => {
-            const query = User.query();
-            const q = query.where('id', 1);
-            expect(q).toStrictEqual(query);
-          });
-    
+            const query = User.query()
+            const q = query.where('id', 1)
+            expect(q).toStrictEqual(query)
+          })
+
           it('allows passing an object to query', () => {
-            const query = User.query();
-            expect(filter(query.query._statements, {grouping: 'where'}).length).toBe(0);
-            
-            const q = query.where('id', 1).orWhere('id', '>', 10);
-            expect(q).toStrictEqual(query);
-            expect(filter(query.query._statements, {grouping: 'where'}).length).toBe(2);
-          });
-    
+            const query = User.query()
+            expect(filter(query.query._statements, { grouping: 'where' }).length).toBe(0)
+
+            const q = query.where('id', 1).orWhere('id', '>', 10)
+            expect(q).toStrictEqual(query)
+            expect(filter(query.query._statements, { grouping: 'where' }).length).toBe(2)
+          })
+
           it('allows passing a function to query', () => {
-            const query = User.query();
-            expect(filter(query.query._statements, {grouping: 'where'}).length).toBe(0);
-    
+            const query = User.query()
+            expect(filter(query.query._statements, { grouping: 'where' }).length).toBe(0)
+
             const q = query.where((q) => {
-              q.where('id', 1).orWhere('id', '>', '10');
-            });
-            
-            expect(q).toEqual(query);
-            expect(filter(query.query._statements, {grouping: 'where'}).length).toBe(1);
-          });
-        });
+              q.where('id', 1).orWhere('id', '>', '10')
+            })
+
+            expect(q).toEqual(query)
+            expect(filter(query.query._statements, { grouping: 'where' }).length).toBe(1)
+          })
+        })
 
         describe('#first() & #find()', () => {
           it('issues a first (get one), triggering a fetched event, returning a promise', () => {
-            const query = User.query().where('id', 1);
+            const query = User.query().where('id', 1)
 
             return query.first().then((user) => {
-              expect(user).toBeInstanceOf(User);
-              expect(user.id).toBe(1);
-              expect(user.name).toBe('Shuri');
-            });
-          });
-    
+              expect(user).toBeInstanceOf(User)
+              expect(user.id).toBe(1)
+              expect(user.name).toBe('Shuri')
+            })
+          })
+
           it('allows specification of select columns in query', () => {
             return User.query().where('id', 1).select(['id', 'first_name']).first().then((user) => {
-              expect(user.toData()).toEqual({id: 1, first_name: 'Tim'});
-            });
-          });
-    
+              expect(user.toData()).toEqual({ id: 1, first_name: 'Tim' })
+            })
+          })
+
           it('resolves to null if no record exists and the {require: false} option is passed', () => {
             return User.query().where('id', 200).first().then(user => {
-              expect(user).toBeNull();
+              expect(user).toBeNull()
             })
-          });
-    
+          })
+
           it('rejects with an error if no record exists', () => {
             return User.query().where('id', 200).firstOrFail().then(user => {
               // expect(user).toBeNull();
             }).catch(e => {
-              expect(e).toBeInstanceOf(ModelNotFoundError);
-            });
-          });
-    
+              expect(e).toBeInstanceOf(ModelNotFoundError)
+            })
+          })
+
           it('locks the table when called with the forUpdate option during a transaction', async () => {
-            let userId;
+            let userId
 
-            const user = new User;
-            user.first_name = 'foo';
-            await user.save();
+            const user = new User
+            user.first_name = 'foo'
+            await user.save()
 
-            userId = user.id;
+            userId = user.id
 
             await Promise.all([
               connection.transaction(trx => {
                 return User.query(trx).forUpdate().find(user.id)
-                .then(() => {
-                  return Promise.delay(100);
-                })
-                .then(() => {
-                  return User.query(trx).find(user.id);
-                })
-                .then(user => {
-                  expect(user.first_name).toBe('foo');
-                });
+                  .then(() => {
+                    return delay(100)
+                  })
+                  .then(() => {
+                    return User.query(trx).find(user.id)
+                  })
+                  .then(user => {
+                    expect(user.first_name).toBe('foo')
+                  })
               }),
-              Promise.delay(25).then(() => {
+              delay(25).then(() => {
                 return User.query().where('id', user.id).update({
                   first_name: 'changed',
-                });
+                })
               })
-            ]);
+            ])
 
-            await User.query().where('id', userId).delete();
-          });
-    
+            await User.query().where('id', userId).delete()
+          })
+
           it('locks the table when called with the forShare option during a transaction', () => {
-            let userId;
-            const user = new User({ first_name: 'foo'});
+            let userId
+            const user = new User({ first_name: 'foo' })
 
             return user.save()
               .then(() => {
-                userId = user.id;
+                userId = user.id
 
                 return Promise.all([
                   connection.transaction(trx => {
                     return User.query(trx).forShare().find(user.id)
-                      .then(() => Promise.delay(100))
+                      .then(() => delay(100))
                       .then(() => User.query(trx).find(user.id))
                       .then(user => {
-                        expect(user.first_name).toBe('foo');
+                        expect(user.first_name).toBe('foo')
                       })
                   }),
-                  Promise.delay(60).then(() => {
+                  delay(60).then(() => {
                     return User.query().where('id', user.id).update({
                       first_name: 'changed',
-                    });
+                    })
                   })
                 ])
               })
               .then(() => {
                 return User.query().where('id', userId).delete()
-              });
-          });
-        });
+              })
+          })
+        })
 
         describe('#get()', () => {
           it('should merge models with duplicate ids by default', async () => {
-            const users = await User.query().get();
+            const users = await User.query().get()
 
-            expect(users).toBeInstanceOf(Collection);
-            expect(users.count()).toBe(2);
-            expect(users.pluck('name').all()).toEqual(['Shuri', 'Alice']);
-          });
-    
+            expect(users).toBeInstanceOf(Collection)
+            expect(users.count()).toBe(2)
+            expect(users.pluck('name').all()).toEqual(['Shuri', 'Alice'])
+          })
+
           it('returns an empty collection if there are no results', async () => {
             const users = await User.query()
               .where('name', 'hal9000')
-              .get();
+              .get()
 
-            expect(users).toBeInstanceOf(Collection);
-            expect(users.count()).toBe(0);
-          });
+            expect(users).toBeInstanceOf(Collection)
+            expect(users.count()).toBe(0)
+          })
 
           it('returns results filtered using scope', async () => {
-            let posts = await Post.query().idOf(3).get();
-            expect(posts.modelKeys()).toEqual([3]);
+            let posts = await Post.query().idOf(3).get()
+            expect(posts.modelKeys()).toEqual([3])
 
             posts = await Post.query().idOf(3).orWhere(q => {
-              q.idOf(4);
-            }).get();
-            expect(posts.modelKeys()).toEqual([3, 4]);
-          });
-        });
+              q.idOf(4)
+            }).get()
+            expect(posts.modelKeys()).toEqual([3, 4])
+          })
+        })
 
         describe('#chunk()', () => {
           it('fetches a single page of results with defaults', async () => {
-            const names = [];
+            const names = []
 
             await Tag.query().chunk(2, (tags) => {
               tags.map(tag => {
-                names.push(tag.name);
-              });
-            });
+                names.push(tag.name)
+              })
+            })
 
-            expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing']);
+            expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing'])
 
             await Tag.query().orderBy('id', 'desc').chunk(2, (tags) => {
               tags.map(tag => {
-                names.push(tag.name);
-              });
-            });
+                names.push(tag.name)
+              })
+            })
 
-            expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing', 'amazing', 'exciting', 'boring', 'cool']);
-          });
-        });
+            expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing', 'amazing', 'exciting', 'boring', 'cool'])
+          })
+        })
 
         describe('#paginate()', () => {
           it('fetches a single page of results with defaults', () => {
             return User.query().paginate()
               .then((users) => {
-                expect(users).toBeInstanceOf(Paginator);
-              });
-          });
-    
+                expect(users).toBeInstanceOf(Paginator)
+              })
+          })
+
           it('returns an empty collection if there are no results', () => {
             return Comment.query().delete()
               .then(() => Comment.query().paginate())
               .then(results => {
-                expect(results).toBeInstanceOf(Paginator);
-                expect(results.count()).toBe(0);
-              });
-          });
-    
+                expect(results).toBeInstanceOf(Paginator)
+                expect(results.count()).toBe(0)
+              })
+          })
+
           it('fetches a page of results with specified page size', () => {
             return User.query().paginate(1, 2)
               .then((results) => {
-                expect(results).toBeInstanceOf(Paginator);
-                expect(results.count()).toBe(2);
-                expect(results.total()).toBe(2);
-                expect(results.currentPage()).toBe(1);
-              });
-          });
-    
+                expect(results).toBeInstanceOf(Paginator)
+                expect(results.count()).toBe(2)
+                expect(results.total()).toBe(2)
+                expect(results.currentPage()).toBe(1)
+              })
+          })
+
           it('fetches a page by page number', () => {
             return User.query().orderBy('id', 'asc').paginate(1, 2)
               .then((results) => {
-                expect(results.get(0).id).toBe(1);
-                expect(results.get(1).id).toBe(2);
-              });
-          });
-    
+                expect(results.get(0).id).toBe(1)
+                expect(results.get(1).id).toBe(2)
+              })
+          })
+
           describe('inside a transaction', () => {
             it('returns consistent results for rowCount and number of models', async () => {
               // await Post.query().insert({
@@ -1357,67 +1374,67 @@ describe('Integration test', () => {
                 await Post.query(trx).insert({
                   user_id: 0,
                   name: 'a new post'
-                });
-                
-                const posts = await Post.query(trx).paginate(1, 25);
-                expect(posts.total()).toBe(posts.count());
-              });
-            });
-          });
-    
+                })
+
+                const posts = await Post.query(trx).paginate(1, 25)
+                expect(posts.total()).toBe(posts.count())
+              })
+            })
+          })
+
           describe('with groupBy', () => {
             it('counts grouped rows instead of total rows', () => {
-              let total;
+              let total
 
               return Post.query().count().then(count => {
-                total = parseInt(count);
+                total = parseInt(count)
 
                 return Post.query()
                   // .max('id')
                   .select('user_id')
                   .groupBy('user_id')
                   .whereNotNull('user_id')
-                  .paginate();
+                  .paginate()
               }).then(posts => {
-                expect(posts.count()).toBeLessThanOrEqual(total);
-              });
-            });
-    
+                expect(posts.count()).toBeLessThanOrEqual(total)
+              })
+            })
+
             it('counts grouped rows when using table name qualifier', () => {
-              let total;
+              let total
 
               Post.query().count()
                 .then(count => {
-                  total = parseInt(count, 10);
+                  total = parseInt(count, 10)
 
                   return Post.query()
                     // .max('id')
                     .select('user_id')
                     .groupBy('posts.user_id')
                     .whereNotNull('user_id')
-                    .paginate();
+                    .paginate()
                 })
                 .then(posts => {
-                  expect(posts.count()).toBeLessThanOrEqual(total);
-                });
-            });
-          });
-    
+                  expect(posts.count()).toBeLessThanOrEqual(total)
+                })
+            })
+          })
+
           describe('with distinct', () => {
             it('counts distinct occurences of a column instead of total rows', () => {
-              let total;
+              let total
 
               return Post.query().count()
                 .then(count => {
-                  total = count;
-                  return Post.query().distinct('user_id').get();
+                  total = count
+                  return Post.query().distinct('user_id').get()
                 })
                 .then(distinctPostUsers => {
-                  expect(distinctPostUsers.count()).toBeLessThanOrEqual(total);
-                });
-            });
-          });
-        });
+                  expect(distinctPostUsers.count()).toBeLessThanOrEqual(total)
+                })
+            })
+          })
+        })
 
         describe('orderBy', () => {
           it('returns results in the correct order', () => {
@@ -1425,20 +1442,20 @@ describe('Integration test', () => {
               .orderBy('id', 'asc')
               .get()
               .then(result => {
-                return result.pluck('id').all();
-              });
+                return result.pluck('id').all()
+              })
 
             const desc = User.query()
               .orderBy('id', 'desc')
               .get()
               .then(result => {
-                return result.pluck('id').all();
-              });
-    
+                return result.pluck('id').all()
+              })
+
             return Promise.all([asc, desc]).then((results) => {
-              expect(results[0].reverse()).toEqual(results[1]);
-            });
-          });
+              expect(results[0].reverse()).toEqual(results[1])
+            })
+          })
 
           // it('randomly sorts results', async () => {
           //   let post1 = await Post.query().oldest().first();
@@ -1455,84 +1472,84 @@ describe('Integration test', () => {
 
           //   expect(post1.is(post2) && post2.is(post3) && post3.is(post4)).toBe(false);
           // })
-        });
+        })
 
         describe('#save()', () => {
           it('saves a new object', async () => {
-            const count = await Post.query().count();
-            expect(count).toBe(6);
+            const count = await Post.query().count()
+            expect(count).toBe(6)
 
-            const post = new Post;
-            post.user_id = 0;
-            post.name = 'Fourth post';
-            const a = await post.save();
-            const count1 = await Post.query().count();
-            expect(count1).toBe(7);
+            const post = new Post
+            post.user_id = 0
+            post.name = 'Fourth post'
+            const a = await post.save()
+            const count1 = await Post.query().count()
+            expect(count1).toBe(7)
 
-            expect(Number(post.id)).toBe(7);
+            expect(Number(post.id)).toBe(7)
 
-            const posts = await Post.query().get();
-            expect(posts.last().id).toBe(7);
-            expect(posts.last().name).toBe('Fourth post');
-            expect(posts.count()).toBe(7);
-          });
+            const posts = await Post.query().get()
+            expect(posts.last().id).toBe(7)
+            expect(posts.last().name).toBe('Fourth post')
+            expect(posts.count()).toBe(7)
+          })
 
           it('saves a new object with unique id', async () => {
-            const pattern = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/;
+            const pattern = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/
 
-            const user = new UuidUser;
-            user.name = 'Joey';
-            await user.save();
+            const user = new UuidUser
+            user.name = 'Joey'
+            await user.save()
 
-            expect(pattern.test(user.id)).toBe(true);
+            expect(pattern.test(user.id)).toBe(true)
 
-            const uuser = await UuidUser.query().first();
-            expect(uuser.name).toBe('Joey');
-            expect(uuser.id).toBe(user.id);
-          });
-    
-    
+            const uuser = await UuidUser.query().first()
+            expect(uuser.name).toBe('Joey')
+            expect(uuser.id).toBe(user.id)
+          })
+
+
           it('saves all attributes that are currently set on the model plus the ones passed as argument', async () => {
             const post = new Post({
               name: 'A Cool Blog',
-            });
-            post.user_id = 1;
-            await post.save();
-            expect(post.toData()).toHaveProperty('name', 'A Cool Blog');
-            expect(post.toData()).toHaveProperty('user_id', 1);
+            })
+            post.user_id = 1
+            await post.save()
+            expect(post.toData()).toHaveProperty('name', 'A Cool Blog')
+            expect(post.toData()).toHaveProperty('user_id', 1)
 
-            await post.refresh();
-            expect(post.toData()).toHaveProperty('name', 'A Cool Blog');
-            expect(post.toData()).toHaveProperty('user_id', 1);
+            await post.refresh()
+            expect(post.toData()).toHaveProperty('name', 'A Cool Blog')
+            expect(post.toData()).toHaveProperty('user_id', 1)
 
-            await post.delete();
-          });
-    
+            await post.delete()
+          })
+
           it('updates an existing object', () => {
-            return (Post.query().where('id', 5).update({name: 'Fourth Post Updated'}))
+            return (Post.query().where('id', 5).update({ name: 'Fourth Post Updated' }))
               .then(() => {
-                return Post.query().where('name', 'Fourth Post Updated').get();
+                return Post.query().where('name', 'Fourth Post Updated').get()
               })
               .then(posts => {
-                expect(posts.last().id).toBe(5);
-                expect(posts.all()).toHaveLength(1);
-              });
-          });
-    
+                expect(posts.last().id).toBe(5)
+                expect(posts.all()).toHaveLength(1)
+              })
+          })
+
           it('allows passing a method to save, to call insert or update explicitly', () => {
             return Post.query().insert({
               user_id: 0,
               name: 'Fifth post, explicity created'
             })
               .then(() => {
-                return Post.query().all();
+                return Post.query().all()
               })
               .then(posts => {
-                expect(posts.count()).toBe(8);
-                expect(posts.last().id).toBe(9);
-              });
-          });
-    
+                expect(posts.count()).toBe(8)
+                expect(posts.last().id).toBe(9)
+              })
+          })
+
           // it('should error if updated row was not affected', async () => {
           //   return await expect(Post.query().insert({
           //     id: 7,
@@ -1540,322 +1557,322 @@ describe('Integration test', () => {
           //     name: 'Fifth post, explicity created'
           //   })).rejects.toThrow();
           // });
-        });
+        })
 
         describe('#delete()', () => {
           it('issues a delete to the builder, returning a promise', () => {
             return Post.query().where('id', 5)
               .delete()
               .then(() => {
-                return Post.query().all();
+                return Post.query().all()
               })
               .then(posts => {
-                expect(posts.count()).toBe(7);
+                expect(posts.count()).toBe(7)
               })
-          });
-    
+          })
+
           it('will not throw an error when trying to delete a non-existent object', () => {
             return Post.query().where('id', 1024).delete().then(count => {
-              expect(count).toBe(0);
-            });
-          });
-        });
+              expect(count).toBe(0)
+            })
+          })
+        })
 
         describe('#count()', () => {
           it('counts the number of models in a collection', () => {
             return Post.query().count()
               .then(count => {
-                expect(count).toBe(7);
-              });
-          });
-    
+                expect(count).toBe(7)
+              })
+          })
+
           it('counts a filtered query', () => {
             return Post.query().where('user_id', 1).count()
               .then(count => {
                 expect(count).toBe(1)
               })
-          });
-        });
+          })
+        })
 
         describe('timestamps', () => {
           describe('Date value', () => {
-            let admin;
-    
+            let admin
+
             beforeEach(() => {
-              admin = new Admin;
-              admin.username = 'a_new_user';
-              return admin.save();
-            });
-    
+              admin = new Admin
+              admin.username = 'a_new_user'
+              return admin.save()
+            })
+
             afterEach(() => {
-              return admin.delete();
-            });
-    
+              return admin.delete()
+            })
+
             it('is the same between saving and fetching models', async () => {
-              const newAdmin = await Admin.query().find(admin.id);
-              expect(dayjs(newAdmin.created_at)).toEqual(dayjs(admin.created_at));
-              expect(dayjs(newAdmin.updated_at)).toEqual(dayjs(admin.updated_at));
-            });
-    
+              const newAdmin = await Admin.query().find(admin.id)
+              expect(dayjs(newAdmin.created_at)).toEqual(dayjs(admin.created_at))
+              expect(dayjs(newAdmin.updated_at)).toEqual(dayjs(admin.updated_at))
+            })
+
             it('is the same between saving and fetching all models', () => {
               return Admin.query()
                 .where('id', admin.id)
                 .get()
                 .then(admins => {
-                  expect(dayjs(admins.get(0).created_at)).toEqual(dayjs(admin.created_at));
-                  expect(dayjs(admins.get(0).updated_at)).toEqual(dayjs(admin.updated_at));
-                });
-            });
-    
+                  expect(dayjs(admins.get(0).created_at)).toEqual(dayjs(admin.created_at))
+                  expect(dayjs(admins.get(0).updated_at)).toEqual(dayjs(admin.updated_at))
+                })
+            })
+
             it('is the same after updating model', () => {
-              admin.username = 'updated_user';
+              admin.username = 'updated_user'
               return admin.save()
                 .then(() => {
-                  return Admin.query().find(admin.id);
+                  return Admin.query().find(admin.id)
                 })
                 .then(newAdmin => {
-                  expect(dayjs(newAdmin.created_at)).toEqual(dayjs(admin.created_at));
-                  expect(dayjs(newAdmin.updated_at)).toEqual(dayjs(admin.updated_at));
-                });
-            });
-          });
-    
+                  expect(dayjs(newAdmin.created_at)).toEqual(dayjs(admin.created_at))
+                  expect(dayjs(newAdmin.updated_at)).toEqual(dayjs(admin.updated_at))
+                })
+            })
+          })
+
           describe('On update', () => {
             it('will set the updated_at timestamp to the user supplied value', () => {
-              const admin = new Admin;
-              let oldUpdatedAt;
-              const newUpdatedAt = '2022-02-02 12:13:14';
+              const admin = new Admin
+              let oldUpdatedAt
+              const newUpdatedAt = '2022-02-02 12:13:14'
 
               return admin.save()
                 .then(() => {
-                  oldUpdatedAt = dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss');
-                  admin.updated_at = newUpdatedAt;
-                  return admin.save();
+                  oldUpdatedAt = dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss')
+                  admin.updated_at = newUpdatedAt
+                  return admin.save()
                 })
                 .then(() => {
-                  expect(dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss')).toEqual(newUpdatedAt);
-                  expect(dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss')).not.toEqual(oldUpdatedAt);
-                });
-            });
-    
+                  expect(dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss')).toEqual(newUpdatedAt)
+                  expect(dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss')).not.toEqual(oldUpdatedAt)
+                })
+            })
+
             it('will set the created_at timestamp to the user supplied value', () => {
-              const admin = new Admin;
-              let oldCreatedAt;
-              const newCreatedAt = '2022-02-02 12:13:14';
+              const admin = new Admin
+              let oldCreatedAt
+              const newCreatedAt = '2022-02-02 12:13:14'
 
               return admin.save()
                 .then(() => {
-                  oldCreatedAt = dayjs(admin.created_at).format('YYYY-MM-DD HH:mm:ss');
-                  admin.created_at = newCreatedAt;
-                  return admin.save();
+                  oldCreatedAt = dayjs(admin.created_at).format('YYYY-MM-DD HH:mm:ss')
+                  admin.created_at = newCreatedAt
+                  return admin.save()
                 })
                 .then(() => {
-                  const create_at = dayjs(admin.created_at).format('YYYY-MM-DD HH:mm:ss');
-                  expect(create_at).toEqual(newCreatedAt);
-                  expect(create_at).not.toEqual(oldCreatedAt);
-                });
-            });
-          });
-    
+                  const create_at = dayjs(admin.created_at).format('YYYY-MM-DD HH:mm:ss')
+                  expect(create_at).toEqual(newCreatedAt)
+                  expect(create_at).not.toEqual(oldCreatedAt)
+                })
+            })
+          })
+
           describe('On insert', () => {
-            let model;
-    
+            let model
+
             beforeEach(() => {
-              model = new User;
-            });
-    
+              model = new User
+            })
+
             it('sets created_at and updated_at when is passed as option', () => {
               return model.save()
                 .then(() => {
-                  expect(model.create_at).not.toBeNaN();
-                  expect(model.updated_at).not.toBeNaN();
-                });
-            });
-    
-            it("sets created_at to the user specified value if present in the model's attributes", () => {
-              const date = '1999-01-01 01:01:01';
-              model.created_at = date;
+                  expect(model.create_at).not.toBeNaN()
+                  expect(model.updated_at).not.toBeNaN()
+                })
+            })
+
+            it('sets created_at to the user specified value if present in the model\'s attributes', () => {
+              const date = '1999-01-01 01:01:01'
+              model.created_at = date
               return model.save()
                 .then(() => {
-                  expect(dayjs(model.created_at).format('YYYY-MM-DD HH:mm:ss')).toBe(date);
-                });
-            });
-    
-            it("sets updated_at to the user specified value if present in the model's attributes", () => {
-              const date = '1999-01-01 01:01:01';
-              model.updated_at = date;
+                  expect(dayjs(model.created_at).format('YYYY-MM-DD HH:mm:ss')).toBe(date)
+                })
+            })
+
+            it('sets updated_at to the user specified value if present in the model\'s attributes', () => {
+              const date = '1999-01-01 01:01:01'
+              model.updated_at = date
               return model.save()
                 .then(() => {
-                  expect(dayjs(model.updated_at).format('YYYY-MM-DD HH:mm:ss')).toBe(date);
-                });
-            });
-          });
-        });
+                  expect(dayjs(model.updated_at).format('YYYY-MM-DD HH:mm:ss')).toBe(date)
+                })
+            })
+          })
+        })
 
         describe('exists', () => {
           it('uses the id to determine if the model exists', async () => {
-            const user = new User;
-            expect(user.exists).toBeFalsy();
+            const user = new User
+            expect(user.exists).toBeFalsy()
 
-            user.name = 'new_user';
-            await user.save();
-            expect(user.exists).toBeTruthy();
+            user.name = 'new_user'
+            await user.save()
+            expect(user.exists).toBeTruthy()
 
-            const newUser = await User.query().find(user.id);
-            expect(newUser.exists).toBeTruthy();
-          });
-        });
+            const newUser = await User.query().find(user.id)
+            expect(newUser.exists).toBeTruthy()
+          })
+        })
 
         describe('#isDirty()', () => {
           it('returns true if passing an attribute name that has changed since the last sync', async () => {
-            const user = await User.query().first();
-            user.name = 'changed name';
-            expect(user.isDirty('name')).toBe(true);
-          });
-    
-          it('returns false if passing an attribute name that has not changed since the last sync', async () => {
-            const user = await User.query().first();
-            user.name = 'changed name';
-            expect(user.isDirty('id')).toBe(false);
-          });
-    
-          it('returns true if no arguments are provided and an attribute of the model has changed', async () => {
-            const user = await User.query().first();
-            user.name = 'changed name';
-            expect(user.isDirty()).toBe(true);
-          });
-    
-          it("returns false if no arguments are provided and the model hasn't changed", async () => {
-            const user = await User.query().first();
-            expect(user.isDirty()).toBe(false);
-          });
-    
-          it('returns false after an attribute is changed and the model is saved', async () => {
-            let originalName;
+            const user = await User.query().first()
+            user.name = 'changed name'
+            expect(user.isDirty('name')).toBe(true)
+          })
 
-            const post = await Post.query().first();
-            originalName = post.name;
-            post.name = 'changed name';
-            await post.save();
-            expect(post.isDirty()).toBe(false);
+          it('returns false if passing an attribute name that has not changed since the last sync', async () => {
+            const user = await User.query().first()
+            user.name = 'changed name'
+            expect(user.isDirty('id')).toBe(false)
+          })
+
+          it('returns true if no arguments are provided and an attribute of the model has changed', async () => {
+            const user = await User.query().first()
+            user.name = 'changed name'
+            expect(user.isDirty()).toBe(true)
+          })
+
+          it('returns false if no arguments are provided and the model hasn\'t changed', async () => {
+            const user = await User.query().first()
+            expect(user.isDirty()).toBe(false)
+          })
+
+          it('returns false after an attribute is changed and the model is saved', async () => {
+            let originalName
+
+            const post = await Post.query().first()
+            originalName = post.name
+            post.name = 'changed name'
+            await post.save()
+            expect(post.isDirty()).toBe(false)
 
             if (originalName) {
               await Post.query().insert({
                 user_id: 0,
                 name: originalName
-              });
+              })
             }
-          });
-        });
+          })
+        })
 
         describe('#soft-delete', () => {
           // new SoftDeletePost;
           it('#count', async () => {
             const count = await SoftDeletePost.query().count()
-            expect(count).toBe(2);
-            
-            const withTrashedCount = await SoftDeletePost.query().withTrashed().count();
-            expect(withTrashedCount).toBe(4);
+            expect(count).toBe(2)
 
-            const onlyTrashedCount = await SoftDeletePost.query().onlyTrashed().count();
-            expect(onlyTrashedCount).toBe(2);
-          });
+            const withTrashedCount = await SoftDeletePost.query().withTrashed().count()
+            expect(withTrashedCount).toBe(4)
+
+            const onlyTrashedCount = await SoftDeletePost.query().onlyTrashed().count()
+            expect(onlyTrashedCount).toBe(2)
+          })
 
           it('#trashed()', async () => {
-            const posts = await SoftDeletePost.query().withTrashed().get();
-            expect(posts.count()).toBe(4);
-            expect(posts.find(1).trashed()).toBe(false);
-            expect(posts.find(2).trashed()).toBe(true);
-          });
+            const posts = await SoftDeletePost.query().withTrashed().get()
+            expect(posts.count()).toBe(4)
+            expect(posts.find(1).trashed()).toBe(false)
+            expect(posts.find(2).trashed()).toBe(true)
+          })
 
           it('#delete()', async () => {
-            await SoftDeletePost.query().where('id', 1).delete();
-            const count = await SoftDeletePost.query().count();
-            expect(count).toBe(1);
+            await SoftDeletePost.query().where('id', 1).delete()
+            const count = await SoftDeletePost.query().count()
+            expect(count).toBe(1)
 
-            const post = await SoftDeletePost.query().first();
-            expect(post.id).toBe(3);
-            await post.delete();
-            expect(post.trashed()).toBe(true);
-          });
+            const post = await SoftDeletePost.query().first()
+            expect(post.id).toBe(3)
+            await post.delete()
+            expect(post.trashed()).toBe(true)
+          })
 
           it('#restore', async () => {
-            await SoftDeletePost.query().withTrashed().whereIn('id', [1, 2]).restore();
-            let count = await SoftDeletePost.query().count();
-            expect(count).toBe(2);
+            await SoftDeletePost.query().withTrashed().whereIn('id', [1, 2]).restore()
+            let count = await SoftDeletePost.query().count()
+            expect(count).toBe(2)
 
-            const post = await SoftDeletePost.query().withTrashed().where('id', 3).first();
-            await post.restore();
-            expect(post.trashed()).toBe(false);
+            const post = await SoftDeletePost.query().withTrashed().where('id', 3).first()
+            await post.restore()
+            expect(post.trashed()).toBe(false)
 
-            count = await SoftDeletePost.query().count();
-            expect(count).toBe(3);
-          });
+            count = await SoftDeletePost.query().count()
+            expect(count).toBe(3)
+          })
 
           it('#forceDelete()', async () => {
-            await SoftDeletePost.query().where('id', 1).forceDelete();
-            let count = await SoftDeletePost.query().count();
-            expect(count).toBe(2);
+            await SoftDeletePost.query().where('id', 1).forceDelete()
+            let count = await SoftDeletePost.query().count()
+            expect(count).toBe(2)
 
-            const post = await SoftDeletePost.query().withTrashed().first();
-            await post.forceDelete();
+            const post = await SoftDeletePost.query().withTrashed().first()
+            await post.forceDelete()
 
-            count = await SoftDeletePost.query().withTrashed().count();
-            expect(count).toBe(2);
-          });
-        });
+            count = await SoftDeletePost.query().withTrashed().count()
+            expect(count).toBe(2)
+          })
+        })
 
         describe('#casts', () => {
           it('#query', async () => {
-            const post = await CastPost.query().find(1);
-            expect(post.is_published).toBe(true);
-            expect(post.some_int).toBe(1);
-            expect(post.some_string).toBe('1');
+            const post = await CastPost.query().find(1)
+            expect(post.is_published).toBe(true)
+            expect(post.some_int).toBe(1)
+            expect(post.some_string).toBe('1')
             expect(post.text_to_json).toEqual({
               a: 'foo',
               b: 'bar',
-            });
+            })
             expect(post.text_to_collection).toEqual(collect([
-              { name: 'foo1' }, 
+              { name: 'foo1' },
               { name: 'bar2' }
-            ]));
+            ]))
             expect(post.custom_cast).toEqual({
               a: 'foo',
               b: 'bar',
-            });
-          });
+            })
+          })
 
           it('update attributes', async () => {
-            const post = await CastPost.query().find(1);
-            post.text_to_json = { a: 'bar', b: 'foo' };
-            expect(post.attributes.text_to_json).toBe('{"a":"bar","b":"foo"}');
+            const post = await CastPost.query().find(1)
+            post.text_to_json = { a: 'bar', b: 'foo' }
+            expect(post.attributes.text_to_json).toBe('{"a":"bar","b":"foo"}')
             post.text_to_collection = collect([
-              { name: 'bar1' }, 
+              { name: 'bar1' },
               { name: 'foo2' }
-            ]);
-            expect(post.attributes.text_to_collection).toBe('[{"name":"bar1"},{"name":"foo2"}]');
-            post.custom_cast = { a: 'bar', b: 'foo' };
-            expect(post.attributes.custom_cast).toBe('{"a":"bar","b":"foo"}');
-          });
-        });
+            ])
+            expect(post.attributes.text_to_collection).toBe('[{"name":"bar1"},{"name":"foo2"}]')
+            post.custom_cast = { a: 'bar', b: 'foo' }
+            expect(post.attributes.custom_cast).toBe('{"a":"bar","b":"foo"}')
+          })
+        })
 
         describe('#createModel', () => {
           it('scopes/attributes/relations', async () => {
-            const { Post } = sutando.instance.models;
-            let posts = await Post.query().idOf(3).get();
-            expect(posts.modelKeys()).toEqual([3]);
+            const { Post } = sutando.instance.models
+            let posts = await Post.query().idOf(3).get()
+            expect(posts.modelKeys()).toEqual([3])
 
             posts = await Post.query().idOf(3).orWhere(q => {
-              q.idOf(4);
-            }).get();
-            expect(posts.modelKeys()).toEqual([3, 4]);
+              q.idOf(4)
+            }).get()
+            expect(posts.modelKeys()).toEqual([3, 4])
 
-            let post = await Post.query().with('default_author').find(4);
-            let xpost = post.toData();
-            unset(xpost, 'created_at');
-            unset(xpost, 'updated_at');
+            const post = await Post.query().with('default_author').find(4)
+            const xpost = post.toData()
+            unset(xpost, 'created_at')
+            unset(xpost, 'updated_at')
 
-            expect(post.default_author).toBeInstanceOf(User);
+            expect(post.default_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
               id: 4,
               user_id: 30,
@@ -1864,118 +1881,118 @@ describe('Integration test', () => {
               default_author: {
                 name: 'Default Author'
               }
-            });
-            expect(post.slug).toBe('this-is-a-new-title-4');
-          });
-        });
-      });
+            })
+            expect(post.slug).toBe('this-is-a-new-title-4')
+          })
+        })
+      })
 
       describe('Relation', () => {
         describe('Standard Relations', () => {
           it('handles belongsTo', async () => {
-            const post = await Post.query().find(1);
-            const author = await post.related('author').first();
-            expect(author).toBeInstanceOf(User);
-            expect(author.id).toBe(post.user_id);
-          });
-  
-          it('handles hasMany (posts)', async () => {
-            const user = await User.query().find(1);
-            const posts = await user.related('posts').get();
+            const post = await Post.query().find(1)
+            const author = await post.related('author').first()
+            expect(author).toBeInstanceOf(User)
+            expect(author.id).toBe(post.user_id)
+          })
 
-            expect(posts).toBeInstanceOf(Collection);
+          it('handles hasMany (posts)', async () => {
+            const user = await User.query().find(1)
+            const posts = await user.related('posts').get()
+
+            expect(posts).toBeInstanceOf(Collection)
 
             posts.map(post => {
-              expect(user.id).toBe(post.user_id);
-            });
-          });
+              expect(user.id).toBe(post.user_id)
+            })
+          })
 
           it('handles has/whereHas query', async () => {
-            let count = await User.query().has('posts').count();
-            expect(count).toBe(2);
+            let count = await User.query().has('posts').count()
+            expect(count).toBe(2)
 
-            count = await User.query().has('posts', '>', 1).count();
-            expect(count).toBe(1);
+            count = await User.query().has('posts', '>', 1).count()
+            expect(count).toBe(1)
 
             count = await User.query().whereHas('posts', (q) => {
-              return q.where('name', '=', 'This is a new Title 3!');
-            }).count();
-            expect(count).toBe(1);
+              return q.where('name', '=', 'This is a new Title 3!')
+            }).count()
+            expect(count).toBe(1)
 
             // count = await User.query().whereExists((q) => {
             //   q.select('*').from('posts').whereColumn('posts.user_id', 'users.id')
             // }).count();
 
             // expect(count).toBe(2);
-          });
+          })
 
           it('handles whereRelation', async () => {
-            let count = await User.query().whereRelation('posts', 'name', '=', 'This is a new Title 3!').count();
-            expect(count).toBe(1);
+            let count = await User.query().whereRelation('posts', 'name', '=', 'This is a new Title 3!').count()
+            expect(count).toBe(1)
 
-            count = await User.query().whereRelation('posts', 'name', '=', 'This is a new Title 6!').count();
-            expect(count).toBe(0);
-          });
-        });
+            count = await User.query().whereRelation('posts', 'name', '=', 'This is a new Title 6!').count()
+            expect(count).toBe(0)
+          })
+        })
 
         describe('Eager Loading', () => {
           it('eager loads "hasOne" relationships correctly', async () => {
             return Post.query().with('thumbnail').find(1)
               .then(post => {
-                const xpost = post.toData();
-                unset(xpost, 'created_at');
-                unset(xpost, 'updated_at');
-                expect(xpost).toEqual({"content": "Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.", "id": 1, "name": "changed name", "thumbnail": null, "user_id": 1});
-              });
-          });
-  
+                const xpost = post.toData()
+                unset(xpost, 'created_at')
+                unset(xpost, 'updated_at')
+                expect(xpost).toEqual({ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'thumbnail': null, 'user_id': 1 })
+              })
+          })
+
           it('does not load "hasOne" relationship when it doesn\'t exist', () => {
             return Post.query().with('thumbnail').find(3)
               .then(post => {
-                expect(post.toData().thumbnail).toBeNull();
-              });
-          });
-  
+                expect(post.toData().thumbnail).toBeNull()
+              })
+          })
+
           it('eager loads "hasMany" relationships correctly', () => {
             return User.query().with('posts').find(1)
               .then(user => {
-                const xuser = user.toData();
-                unset(xuser, 'created_at');
-                unset(xuser, 'updated_at');
+                const xuser = user.toData()
+                unset(xuser, 'created_at')
+                unset(xuser, 'updated_at')
                 xuser.posts.forEach(post => {
-                  unset(post, 'created_at');
-                  unset(post, 'updated_at');
+                  unset(post, 'created_at')
+                  unset(post, 'updated_at')
                 })
-                expect(xuser).toEqual({"first_name": "Tim", "id": 1, "name": "Shuri", "posts": [{"content": "Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.", "id": 1, "name": "changed name", "user_id": 1}]});
-              });
-          });
-  
+                expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1 }] })
+              })
+          })
+
           it('eager loads "belongsTo" relationships correctly', () => {
             return Post.query().with('author').find(1)
               .then(post => {
-                const author = post.toData().author;
-                unset(author, 'created_at');
-                unset(author, 'updated_at');
+                const author = post.toData().author
+                unset(author, 'created_at')
+                unset(author, 'updated_at')
                 expect(author).toEqual({
-                  "first_name": "Tim", "id": 1, "name": "Shuri",
-                });
-              });
-          });
-  
+                  'first_name': 'Tim', 'id': 1, 'name': 'Shuri',
+                })
+              })
+          })
+
           it('does not load "belongsTo" relationship when foreignKey is null', () => {
             return Post.query().with('author').find(4)
               .then(post => {
-                expect(post.toData().author).toBeNull();
-              });
-          });
+                expect(post.toData().author).toBeNull()
+              })
+          })
 
           it('eager loads "belongsTo" relationship with default values', async () => {
-            let post = await Post.query().with('default_author').find(4);
-            let xpost = post.toData();
-            unset(xpost, 'created_at');
-            unset(xpost, 'updated_at');
+            let post = await Post.query().with('default_author').find(4)
+            let xpost = post.toData()
+            unset(xpost, 'created_at')
+            unset(xpost, 'updated_at')
 
-            expect(post.default_author).toBeInstanceOf(User);
+            expect(post.default_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
               id: 4,
               user_id: 30,
@@ -1984,14 +2001,14 @@ describe('Integration test', () => {
               default_author: {
                 name: 'Default Author'
               }
-            });
+            })
 
-            post = await Post.query().with('default_post_author').find(4);
-            xpost = post.toData();
-            unset(xpost, 'created_at');
-            unset(xpost, 'updated_at');
+            post = await Post.query().with('default_post_author').find(4)
+            xpost = post.toData()
+            unset(xpost, 'created_at')
+            unset(xpost, 'updated_at')
 
-            expect(post.default_post_author).toBeInstanceOf(User);
+            expect(post.default_post_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
               id: 4,
               user_id: 30,
@@ -2000,135 +2017,136 @@ describe('Integration test', () => {
               default_post_author: {
                 name: 'This is a new Title 4! - Default Author'
               }
-            });
-          });
+            })
+          })
 
           it('eager loads "belongsToMany" models correctly', () => {
             return Post.query().with('tags').find(1)
               .then(post => {
-                const xpost = post.toData();
-                unset(xpost, 'created_at');
-                unset(xpost, 'updated_at');
+                const xpost = post.toData()
+                unset(xpost, 'created_at')
+                unset(xpost, 'updated_at')
                 xpost.tags.forEach(tag => {
-                  unset(tag, 'created_at');
-                  unset(tag, 'updated_at');
+                  unset(tag, 'created_at')
+                  unset(tag, 'updated_at')
                 })
 
                 expect(xpost).toEqual({
-                  "content": "Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.", "id": 1, "name": "changed name", "tags": [{"id": 1, "name": "cool", "pivot": {"post_id": 1, "tag_id": 1}}, {"id": 2, "name": "boring", "pivot": {"post_id": 1, "tag_id": 2}}, {"id": 3, "name": "exciting", "pivot": {"post_id": 1, "tag_id": 3}}], "user_id": 1
-                });
-              });
-          });
-  
+                  'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                  'id': 1, 'name': 'changed name', 'tags': [{ 'id': 1, 'name': 'cool', 'pivot': { 'post_id': 1, 'tag_id': 1 } }, { 'id': 2, 'name': 'boring', 'pivot': { 'post_id': 1, 'tag_id': 2 } }, { 'id': 3, 'name': 'exciting', 'pivot': { 'post_id': 1, 'tag_id': 3 } }], 'user_id': 1
+                })
+              })
+          })
+
           it('maintains eager loaded column specifications', () => {
             return Post.query().with({
               author: q => q.select('id', 'name'),
             }).find(1)
               .then(post => {
-                const xpost = post.toData();
-                unset(xpost, 'created_at');
-                unset(xpost, 'updated_at');
+                const xpost = post.toData()
+                unset(xpost, 'created_at')
+                unset(xpost, 'updated_at')
                 expect(xpost).toEqual({
-                  "author": {"id": 1, "name": "Shuri"}, "content": "Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.", "id": 1, "name": "changed name", "user_id": 1
-                });
-              });
-          });
+                  'author': { 'id': 1, 'name': 'Shuri' }, 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1
+                })
+              })
+          })
 
           it('maintains eager loaded column specifications by string', () => {
             return Post.query().with('author:id,name').find(1)
               .then(post => {
-                const xpost = post.toData();
-                unset(xpost, 'created_at');
-                unset(xpost, 'updated_at');
-                expect(xpost).toEqual({"author": {"id": 1, "name": "Shuri"}, "content": "Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.", "id": 1, "name": "changed name", "user_id": 1});
-              });
-          });
-  
+                const xpost = post.toData()
+                unset(xpost, 'created_at')
+                unset(xpost, 'updated_at')
+                expect(xpost).toEqual({ 'author': { 'id': 1, 'name': 'Shuri' }, 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1 })
+              })
+          })
+
           it('throws an error on undefined first withRelated relations', async () => {
-            await expect(Post.query().with('undefinedRelation').find(1)).rejects.toThrow();
-          });
-  
+            await expect(Post.query().with('undefinedRelation').find(1)).rejects.toThrow()
+          })
+
           it('throws an error on undefined non-first withRelated relations', async () => {
-            await expect(Post.query().with(['author', 'undefinedRelation']).find(1)).rejects.toThrow();
-          });
-        });
+            await expect(Post.query().with(['author', 'undefinedRelation']).find(1)).rejects.toThrow()
+          })
+        })
 
         describe('Nested Eager Loading', () => {
           it('eager loads "hasMany" -> "belongsToMany"', () => {
             return User.query().with('posts.tags').first()
               .then(user => {
-                const xuser = user.toData();
-                unset(xuser, 'created_at');
-                unset(xuser, 'updated_at');
+                const xuser = user.toData()
+                unset(xuser, 'created_at')
+                unset(xuser, 'updated_at')
                 xuser.posts.forEach(post => {
-                  unset(post, 'created_at');
-                  unset(post, 'updated_at');
+                  unset(post, 'created_at')
+                  unset(post, 'updated_at')
                   post.tags.forEach(tag => {
-                    unset(tag, 'created_at');
-                    unset(tag, 'updated_at');
+                    unset(tag, 'created_at')
+                    unset(tag, 'updated_at')
                   })
                 })
 
-                expect(xuser).toEqual({"first_name": "Tim", "id": 1, "name": "Shuri", "posts": [{"content": "Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.", "id": 1, "name": "changed name", "tags": [{"id": 1, "name": "cool", "pivot": {"post_id": 1, "tag_id": 1}}, {"id": 2, "name": "boring", "pivot": {"post_id": 1, "tag_id": 2}}, {"id": 3, "name": "exciting", "pivot": {"post_id": 1, "tag_id": 3}}], "user_id": 1}]});
-              });
-          });
-  
+                expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'tags': [{ 'id': 1, 'name': 'cool', 'pivot': { 'post_id': 1, 'tag_id': 1 } }, { 'id': 2, 'name': 'boring', 'pivot': { 'post_id': 1, 'tag_id': 2 } }, { 'id': 3, 'name': 'exciting', 'pivot': { 'post_id': 1, 'tag_id': 3 } }], 'user_id': 1 }] })
+              })
+          })
+
           it('does multi deep eager loads', () => {
             return User.query().with({
               'posts.tags': q => q.orderBy('tags.id', 'desc'),
             }, 'posts.thumbnail').first()
               .then(user => {
-                const xuser = user.toData();
-                unset(xuser, 'created_at');
-                unset(xuser, 'updated_at');
+                const xuser = user.toData()
+                unset(xuser, 'created_at')
+                unset(xuser, 'updated_at')
                 xuser.posts.forEach(post => {
-                  unset(post, 'created_at');
-                  unset(post, 'updated_at');
+                  unset(post, 'created_at')
+                  unset(post, 'updated_at')
                   post.tags.forEach(tag => {
-                    unset(tag, 'created_at');
-                    unset(tag, 'updated_at');
+                    unset(tag, 'created_at')
+                    unset(tag, 'updated_at')
                   })
                 })
-                expect(xuser).toEqual({"first_name": "Tim", "id": 1, "name": "Shuri", "posts": [{"content": "Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.", "id": 1, "name": "changed name", "tags": [{"id": 3, "name": "exciting", "pivot": {"post_id": 1, "tag_id": 3}}, {"id": 2, "name": "boring", "pivot": {"post_id": 1, "tag_id": 2}}, {"id": 1, "name": "cool", "pivot": {"post_id": 1, "tag_id": 1}}], "thumbnail": null, "user_id": 1}]});
-              });
-          });
-        });
+                expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'tags': [{ 'id': 3, 'name': 'exciting', 'pivot': { 'post_id': 1, 'tag_id': 3 } }, { 'id': 2, 'name': 'boring', 'pivot': { 'post_id': 1, 'tag_id': 2 } }, { 'id': 1, 'name': 'cool', 'pivot': { 'post_id': 1, 'tag_id': 1 } }], 'thumbnail': null, 'user_id': 1 }] })
+              })
+          })
+        })
 
         describe('Relation load', () => {
           it('eager loads relations on a populated model', async () => {
-            const post = await Post.query().find(1);
-            expect(post.author).toBeUndefined();
-            expect(post.tags).toBeUndefined();
+            const post = await Post.query().find(1)
+            expect(post.author).toBeUndefined()
+            expect(post.tags).toBeUndefined()
 
-            await post.load(['author', 'tags']);
-            expect(post.author).toBeInstanceOf(User);
-            expect(post.tags).toBeInstanceOf(Collection);
-            expect(post.author.id).toBe(1);
-            expect(post.tags.count()).toBe(3);
-          });
-  
+            await post.load(['author', 'tags'])
+            expect(post.author).toBeInstanceOf(User)
+            expect(post.tags).toBeInstanceOf(Collection)
+            expect(post.author.id).toBe(1)
+            expect(post.tags.count()).toBe(3)
+          })
+
           it('eager loads attributes on a collection', async () => {
-            const posts = await Post.query().get();
+            const posts = await Post.query().get()
             posts.map(post => {
-              expect(post.author).toBeUndefined();
-              expect(post.tags).toBeUndefined();
-            });
+              expect(post.author).toBeUndefined()
+              expect(post.tags).toBeUndefined()
+            })
 
-            await posts.load(['author', 'tags']);
+            await posts.load(['author', 'tags'])
             posts.map(post => {
-              expect(post.author).not.toBeUndefined();
-              expect(post.tags).not.toBeUndefined();
-            });
-          });
-        });
-      });
+              expect(post.author).not.toBeUndefined()
+              expect(post.tags).not.toBeUndefined()
+            })
+          })
+        })
+      })
 
       describe('Hooks', () => {
         beforeAll(async () => {
           await connection.schema.table('posts', (table) => {
-            table.timestamp('deleted_at').nullable();
+            table.timestamp('deleted_at').nullable()
           })
-        });
+        })
 
         beforeEach(async () => {
           hits = {
@@ -2143,51 +2161,51 @@ describe('Integration test', () => {
             trashed: 0,
             forceDeleted: 0,
           }
-        });
+        })
 
         class HookPost extends compose(Base, SoftDeletes) {
-          table = 'posts';
-          static boot() {
-            super.boot();
+          table = 'posts'
+          static boot () {
+            super.boot()
             this.creating(() => {
-              hits.creating++;
-            });
+              hits.creating++
+            })
             this.created(() => {
-              hits.created++;
-            });
+              hits.created++
+            })
             this.updating(() => {
-              hits.updating++;
-            });
+              hits.updating++
+            })
             this.updated(() => {
-              hits.updated++;
-            });
+              hits.updated++
+            })
           }
         }
 
         HookPost.saving(() => {
-          hits.saving++;
-        });
+          hits.saving++
+        })
         HookPost.saved(() => {
-          hits.saved++;
-        });
+          hits.saved++
+        })
         HookPost.deleting(() => {
-          hits.deleting++;
-        });
+          hits.deleting++
+        })
         HookPost.deleted(() => {
-          hits.deleted++;
-        });
+          hits.deleted++
+        })
         HookPost.trashed(() => {
-          hits.trashed++;
-        });
+          hits.trashed++
+        })
         HookPost.forceDeleted(() => {
-          hits.forceDeleted++;
-        });
+          hits.forceDeleted++
+        })
 
         it('hit creating, created, saving, saved hooks if use save() create post', async () => {
-          const post = new HookPost;
-          post.user_id = 0;
-          post.name = 'Test create hook';
-          await post.save();
+          const post = new HookPost
+          post.user_id = 0
+          post.name = 'Test create hook'
+          await post.save()
 
           expect(hits).toEqual({
             creating: 1,
@@ -2200,15 +2218,15 @@ describe('Integration test', () => {
             deleted: 0,
             trashed: 0,
             forceDeleted: 0,
-          });
-        });
-        
+          })
+        })
+
 
         it('hit creating, created, saving, saved hooks if use create() create post', async () => {
           await HookPost.query().create({
             user_id: 0,
             name: 'A hook post',
-          });
+          })
 
           expect(hits).toEqual({
             creating: 1,
@@ -2221,13 +2239,13 @@ describe('Integration test', () => {
             deleted: 0,
             trashed: 0,
             forceDeleted: 0,
-          });
-        });
+          })
+        })
 
         it('hit updating, updated, saving, saved hooks if use save() update post', async () => {
-          const post = await HookPost.query().find(2);
+          const post = await HookPost.query().find(2)
           post.name = 'Test update hook',
-          await post.save();
+            await post.save()
 
           expect(hits).toEqual({
             creating: 0,
@@ -2240,12 +2258,12 @@ describe('Integration test', () => {
             deleted: 0,
             trashed: 0,
             forceDeleted: 0,
-          });
-        });
+          })
+        })
 
         it('hit deleting, deleted, trashed hooks if soft delete a post', async () => {
-          const post = await HookPost.query().find(2);
-          await post.delete();
+          const post = await HookPost.query().find(2)
+          await post.delete()
 
           expect(hits).toEqual({
             creating: 0,
@@ -2258,12 +2276,12 @@ describe('Integration test', () => {
             deleted: 1,
             trashed: 1,
             forceDeleted: 0,
-          });
-        });
+          })
+        })
 
         it('hit deleting, deleted hooks if force delete a post', async () => {
-          const post = await HookPost.query().find(1);
-          await post.forceDelete();
+          const post = await HookPost.query().find(1)
+          await post.forceDelete()
 
           expect(hits).toEqual({
             creating: 0,
@@ -2276,10 +2294,10 @@ describe('Integration test', () => {
             deleted: 1,
             trashed: 0,
             forceDeleted: 1,
-          });
-        });
-      });
-      
+          })
+        })
+      })
+
       describe('Paginator', () => {
         it('should return data in a custom format', async () => {
           Paginator.setFormatter((paginator) => {
@@ -2293,9 +2311,9 @@ describe('Integration test', () => {
                 from: paginator.firstItem(),
                 to: paginator.lastItem(),
               }
-            };
-          });
-          const posts = await Tag.query().paginate(1, 3);
+            }
+          })
+          const posts = await Tag.query().paginate(1, 3)
           expect(posts.toData()).toEqual({
             data: [1, 2, 3],
             meta: {
@@ -2306,12 +2324,10 @@ describe('Integration test', () => {
               from: 1,
               to: 3,
             }
-          });
-          Paginator.setFormatter(null);
+          })
+          Paginator.setFormatter(null)
         })
-      });
-    });
+      })
+    })
   })
 })
-
-

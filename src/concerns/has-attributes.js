@@ -1,466 +1,368 @@
-const flattenDeep = require('lodash/flattenDeep');
-const unset = require('lodash/unset');
-const flatten = require('lodash/flatten');
-const dayjs = require('dayjs');
-const {
-  getAttrMethod,
-  getGetterMethod,
-  getSetterMethod,
-} = require('../utils');
-const CastsAttributes = require('../casts-attributes');
-const collect = require('collect.js');
+import { getAttrMethod, getGetterMethod, getSetterMethod } from 'src/utils'
 
+import CastsAttributes from 'src/casts-attributes'
+import collect from 'collect.js'
+import dayjs from 'dayjs/dayjs.min'
+import flatten from 'lodash/flatten'
+import flattenDeep from 'lodash/flattenDeep'
+import unset from 'lodash/unset'
 const HasAttributes = (Model) => {
   return class extends Model {
-    static castTypeCache = {};
-    attributes = {};
-    original = {};
-    casts = {};
-    changes = {};
-    appends = [];
-  
-    setAppends(appends) {
-      this.appends = appends;
-      return this;
+    static castTypeCache = {}
+    attributes = {}
+    original = {}
+    casts = {}
+    changes = {}
+    appends = []
+    setAppends (appends) {
+      this.appends = appends
+      return this
     }
-  
-    append(...keys) {
-      const appends = flattenDeep(keys);
-      this.appends = [...this.appends, ...appends];
-      return this;
+    append (...keys) {
+      const appends = flattenDeep(keys)
+      this.appends = [...this.appends, ...appends]
+      return this
     }
-
-    normalizeCastClassResponse(key, value) {
+    normalizeCastClassResponse (key, value) {
       return value?.constructor?.name === 'Object'
         ? value
         : {
           [key]: value
         }
     }
-
-    syncOriginal() {
-      this.original = this.getAttributes();
-      return this;
+    syncOriginal () {
+      this.original = this.getAttributes()
+      return this
     }
-
-    syncChanges() {
-      this.changes = this.getDirty();
-      return this;
+    syncChanges () {
+      this.changes = this.getDirty()
+      return this
     }
-
-    syncOriginalAttribute(attribute) {
-      this.syncOriginalAttributes(attribute);
+    syncOriginalAttribute (attribute) {
+      this.syncOriginalAttributes(attribute)
     }
-
-    syncOriginalAttributes(...attributes) {
-      attributes = flattenDeep(attributes);
-
-      const modelAttributes = this.getAttributes();
-
+    syncOriginalAttributes (...attributes) {
+      attributes = flattenDeep(attributes)
+      const modelAttributes = this.getAttributes()
       for (const attribute of attributes) {
-        this.original[attribute] = modelAttributes[attribute];
+        this.original[attribute] = modelAttributes[attribute]
       }
-
-      return this;
+      return this
     }
-
-    isDirty(...attributes) {
-      const changes = this.getDirty();
-      attributes = flattenDeep(attributes);
-
+    isDirty (...attributes) {
+      const changes = this.getDirty()
+      attributes = flattenDeep(attributes)
       if (attributes.length === 0) {
-        return Object.keys(changes).length > 0;
+        return Object.keys(changes).length > 0
       }
-
       for (const attribute of attributes) {
         if (attribute in changes) {
-          return true;
+          return true
         }
       }
-
-      return false;
+      return false
     }
-  
-    getDirty() {
-      const dirty = {};
-      
-      const attributes = this.getAttributes();
+    getDirty () {
+      const dirty = {}
+      const attributes = this.getAttributes()
       for (const key in attributes) {
-        const value = attributes[key];
+        const value = attributes[key]
         if (!this.originalIsEquivalent(key)) {
-          dirty[key] = value;
+          dirty[key] = value
         }
       }
-  
-      return dirty;
+      return dirty
     }
-
-    originalIsEquivalent(key) {
+    originalIsEquivalent (key) {
       if (this.original[key] === undefined) {
-        return false;
+        return false
       }
-
-      const attribute = this.attributes[key];
-      const original = this.original[key];
-
+      const attribute = this.attributes[key]
+      const original = this.original[key]
       if (attribute === original) {
-        return true;
-      } else {
-        return false;
+        return true
+      }
+      else {
+        return false
       }
     }
-  
-    setAttributes(attributes) {
-      this.attributes = { ...attributes };
+    setAttributes (attributes) {
+      this.attributes = { ...attributes }
     }
-
-    setRawAttributes(attributes, sync = false) {
-      this.attributes = attributes;
-
+    setRawAttributes (attributes, sync = false) {
+      this.attributes = attributes
       if (sync) {
-        this.syncOriginal();
+        this.syncOriginal()
       }
-
-      return this;
+      return this
     }
-  
-    getAttributes() {
-      return { ...this.attributes };
+    getAttributes () {
+      return { ...this.attributes }
     }
-  
-    setAttribute(key, value) {
-      const setterMethod = getSetterMethod(key);
+    setAttribute (key, value) {
+      const setterMethod = getSetterMethod(key)
       if (typeof this[setterMethod] === 'function') {
-        this[setterMethod](value);
-        return this;
+        this[setterMethod](value)
+        return this
       }
-
-      const attrMethod = getAttrMethod(key);
+      const attrMethod = getAttrMethod(key)
       if (typeof this[attrMethod] === 'function') {
-        const attribute = this[attrMethod]();
+        const attribute = this[attrMethod]()
         const callback = attribute.set || ((value) => {
-          this.attributes[key] = value;
-        });
-
+          this.attributes[key] = value
+        })
         this.attributes = {
           ...this.attributes,
-          ...this.normalizeCastClassResponse(
-            key, callback(value, this.attributes)
-          )
-        };
-
-        return this;
+          ...this.normalizeCastClassResponse(key, callback(value, this.attributes))
+        }
+        return this
       }
-  
-      const casts = this.getCasts();
-      const castType = casts[key];
-  
+      const casts = this.getCasts()
+      const castType = casts[key]
       if (this.isCustomCast(castType)) {
-        value = castType.set(this, key, value, this.attributes);
+        value = castType.set(this, key, value, this.attributes)
       }
-  
       if (castType === 'json') {
-        value = JSON.stringify(value);
+        value = JSON.stringify(value)
       }
-
       if (castType === 'collection') {
-        value = JSON.stringify(value);
+        value = JSON.stringify(value)
       }
-
       if (value !== null && this.isDateAttribute(key)) {
-        value = this.fromDateTime(value);
+        value = this.fromDateTime(value)
       }
-  
-      this.attributes[key] = value;
-  
-      return this;
+      this.attributes[key] = value
+      return this
     }
-  
-    getAttribute(key) {
+    getAttribute (key) {
       if (!key) {
-        return;
+        return
       }
-
-      const getterMethod = getGetterMethod(key);
+      const getterMethod = getGetterMethod(key)
       if (typeof this[getterMethod] === 'function') {
-        return this[getterMethod](this.attributes[key], this.attributes);
+        return this[getterMethod](this.attributes[key], this.attributes)
       }
-
-      const attrMethod = getAttrMethod(key);
+      const attrMethod = getAttrMethod(key)
       if (typeof this[attrMethod] === 'function') {
-        const caster = this[attrMethod]();
-        return caster.get(this.attributes[key], this.attributes);
+        const caster = this[attrMethod]()
+        return caster.get(this.attributes[key], this.attributes)
       }
-  
       if (key in this.attributes) {
         if (this.hasCast(key)) {
-          return this.castAttribute(key, this.attributes[key]);
+          return this.castAttribute(key, this.attributes[key])
         }
-        
         if (this.getDates().includes(key)) {
-          return this.asDateTime(this.attributes[key]);
+          return this.asDateTime(this.attributes[key])
         }
-
-        return this.attributes[key];
+        return this.attributes[key]
       }
-  
       if (key in this.relations) {
-        return this.relations[key];
+        return this.relations[key]
       }
-  
-      return;
+      return
     }
-  
-    castAttribute(key, value) {
-      const castType = this.getCastType(key);
-  
+    castAttribute (key, value) {
+      const castType = this.getCastType(key)
       if (!castType) {
-        return value;
+        return value
       }
-  
       if (value === null) {
-        return value;
+        return value
       }
-  
       switch (castType) {
         case 'int':
         case 'integer':
-          return parseInt(value);
+          return parseInt(value)
         case 'real':
         case 'float':
         case 'double':
-          return parseFloat(value);
+          return parseFloat(value)
         case 'decimal':
-          return this.asDecimal(value, castType.split(':')[1]);
+          return this.asDecimal(value, castType.split(':')[1])
         case 'string':
-          return String(value);
+          return String(value)
         case 'bool':
         case 'boolean':
-          return Boolean(value);
+          return Boolean(value)
         case 'object':
         case 'json':
           try {
-            return JSON.parse(value);
-          } catch (e) {
-            return null;
+            return JSON.parse(value)
+          }
+          catch (e) {
+            return null
           }
         case 'collection':
           try {
-            return collect(JSON.parse(value));
-          } catch (e) {
-            return collect([]);
+            return collect(JSON.parse(value))
+          }
+          catch (e) {
+            return collect([])
           }
         case 'date':
-          return this.asDate(value);
+          return this.asDate(value)
         case 'datetime':
         case 'custom_datetime':
-          return this.asDateTime(value);
+          return this.asDateTime(value)
         case 'timestamp':
-          return this.asTimestamp(value);
+          return this.asTimestamp(value)
       }
-      
       if (this.isCustomCast(castType)) {
-        return castType.get(this, key, value, this.attributes);
+        return castType.get(this, key, value, this.attributes)
       }
-  
-      return value;
+      return value
     }
-  
-    attributesToData() {
-      const attributes = { ...this.attributes };
-  
+    attributesToData () {
+      const attributes = { ...this.attributes }
       for (const key in attributes) {
         if (this.hidden.includes(key)) {
-          unset(attributes, key);
+          unset(attributes, key)
         }
-  
         if (this.visible.length > 0 && this.visible.includes(key) === false) {
-          unset(attributes, key);
+          unset(attributes, key)
         }
       }
-
       for (const key of this.getDates()) {
         if (attributes[key] === undefined) {
-          continue;
+          continue
         }
-
-        attributes[key] = this.serializeDate(
-          this.asDateTime(attributes[key])
-        );
+        attributes[key] = this.serializeDate(this.asDateTime(attributes[key]))
       }
-
-      const casts = this.getCasts();
+      const casts = this.getCasts()
       for (const key in casts) {
-        const value = casts[key];
-
+        const value = casts[key]
         if ((key in attributes) === false) {
-          continue;
+          continue
         }
-
-        attributes[key] = this.castAttribute(
-          key, attributes[key]
-        );
-
+        attributes[key] = this.castAttribute(key, attributes[key])
         if (key in attributes && ['date', 'datetime'].includes(value)) {
-          attributes[key] = this.serializeDate(attributes[key]);
+          attributes[key] = this.serializeDate(attributes[key])
         }
-
         if (key in attributes && this.isCustomDateTimeCast(value)) {
-          attributes[key] = dayjs(attributes[key]).format(value.split(':')[1]);
+          attributes[key] = dayjs(attributes[key]).format(value.split(':')[1])
         }
       }
-  
       for (const key of this.appends) {
-        attributes[key] = this.mutateAttribute(key, null);
+        attributes[key] = this.mutateAttribute(key, null)
       }
-  
-      return attributes;
+      return attributes
     }
-  
-    mutateAttribute(key, value) {
+    mutateAttribute (key, value) {
       if (typeof this[getGetterMethod(key)] === 'function') {
-        return this[getGetterMethod(key)](value);
-      } else if (typeof this[getAttrMethod(key)] === 'function') {
-        const caster = this[getAttrMethod(key)]();
-        return caster.get(key, this.attributes);
-      } else if (key in this) {
-        return this[key];
+        return this[getGetterMethod(key)](value)
       }
-
-      return value;
+      else if (typeof this[getAttrMethod(key)] === 'function') {
+        const caster = this[getAttrMethod(key)]()
+        return caster.get(key, this.attributes)
+      }
+      else if (key in this) {
+        return this[key]
+      }
+      return value
     }
-  
-    mutateAttributeForArray(key, value) {
-  
+    mutateAttributeForArray (key, value) {
     }
-
-    isDateAttribute(key) {
-      return this.getDates().includes(key) || this.isDateCastable(key);
+    isDateAttribute (key) {
+      return this.getDates().includes(key) || this.isDateCastable(key)
     }
-
-    serializeDate(date) {
-      return date ? dayjs(date).toISOString() : null;
+    serializeDate (date) {
+      return date ? dayjs(date).toISOString() : null
     }
-
-    getDates() {
+    getDates () {
       return this.usesTimestamps() ? [
         this.getCreatedAtColumn(),
         this.getUpdatedAtColumn(),
-      ] : [];
+      ] : []
     }
-  
-    getCasts() {
+    getCasts () {
       if (this.getIncrementing()) {
         return {
-          [this.getKeyName()]: this.getKeyType(), 
+          [this.getKeyName()]: this.getKeyType(),
           ...this.casts
-        };
+        }
       }
-
-      return this.casts;
+      return this.casts
     }
-
-    getCastType(key) {
-      const castType = this.getCasts()[key];
-
-      let castTypeCacheKey;
+    getCastType (key) {
+      const castType = this.getCasts()[key]
+      let castTypeCacheKey
       if (typeof castType === 'string') {
-        castTypeCacheKey = castType;
-      } else if ((new castType) instanceof CastsAttributes) {
-        castTypeCacheKey = castType.name;
+        castTypeCacheKey = castType
       }
-
+      else if ((new castType) instanceof CastsAttributes) {
+        castTypeCacheKey = castType.name
+      }
       if (castTypeCacheKey && this.constructor.castTypeCache[castTypeCacheKey] !== undefined) {
-        return this.constructor.castTypeCache[castTypeCacheKey];
+        return this.constructor.castTypeCache[castTypeCacheKey]
       }
-
-      let convertedCastType;
-
+      let convertedCastType
       if (this.isCustomDateTimeCast(castType)) {
-        convertedCastType = 'custom_datetime';
-      } else if (this.isDecimalCast(castType)) {
-        convertedCastType = 'decimal';
-      } else if (this.isCustomCast(castType)) {
-        convertedCastType = castType;
-      } else {
-        convertedCastType = castType.toLocaleLowerCase().trim();
+        convertedCastType = 'custom_datetime'
       }
-
-      return this.constructor.castTypeCache[castTypeCacheKey] = convertedCastType;
+      else if (this.isDecimalCast(castType)) {
+        convertedCastType = 'decimal'
+      }
+      else if (this.isCustomCast(castType)) {
+        convertedCastType = castType
+      }
+      else {
+        convertedCastType = castType.toLocaleLowerCase().trim()
+      }
+      return this.constructor.castTypeCache[castTypeCacheKey] = convertedCastType
     }
-  
-    hasCast(key, types = []) {
+    hasCast (key, types = []) {
       if (key in this.casts) {
-        types = flatten(types);
-        return types.length > 0 ? types.includes(this.getCastType(key)) : true;
+        types = flatten(types)
+        return types.length > 0 ? types.includes(this.getCastType(key)) : true
       }
-
-      return false;
+      return false
     }
-
-    withDayjs(date) {
-      return dayjs(date);
+    withDayjs (date) {
+      return dayjs(date)
     }
-
-    isCustomCast(cast) {
+    isCustomCast (cast) {
       return typeof cast === 'function' && (new cast) instanceof CastsAttributes
     }
-
-    isCustomDateTimeCast(cast) {
+    isCustomDateTimeCast (cast) {
       if (typeof cast !== 'string') {
-        return false;
+        return false
       }
-
-      return cast.startsWith('date:') || cast.startsWith('datetime:');
+      return cast.startsWith('date:') || cast.startsWith('datetime:')
     }
-
-    isDecimalCast(cast) {
+    isDecimalCast (cast) {
       if (typeof cast !== 'string') {
-        return false;
+        return false
       }
-      
-      return cast.startsWith('decimal:');
+      return cast.startsWith('decimal:')
     }
-
-    isDateCastable(key) {
-      return this.hasCast(key, ['date', 'datetime']);
+    isDateCastable (key) {
+      return this.hasCast(key, ['date', 'datetime'])
     }
-
-    fromDateTime(value) {
-      return dayjs(this.asDateTime(value)).format(
-        this.getDateFormat()
-      );
+    fromDateTime (value) {
+      return dayjs(this.asDateTime(value)).format(this.getDateFormat())
     }
-
-    getDateFormat() {
-      return this.dateFormat || 'YYYY-MM-DD HH:mm:ss';
+    getDateFormat () {
+      return this.dateFormat || 'YYYY-MM-DD HH:mm:ss'
     }
-  
-    asDecimal(value, decimals) {
-      return parseFloat(value).toFixed(decimals);
+    asDecimal (value, decimals) {
+      return parseFloat(value).toFixed(decimals)
     }
-  
-    asDateTime(value) {
+    asDateTime (value) {
       if (value === null) {
-        return null;
+        return null
       }
-  
       if (value instanceof Date) {
-        return value;
+        return value
       }
-  
       if (typeof value === 'number') {
-        return new Date(value * 1000);
+        return new Date(value * 1000)
       }
-  
-      return new Date(value);
+      return new Date(value)
     }
-  
-    asDate(value) {
-      const date = this.asDateTime(value);
-      return dayjs(date).startOf('day').toDate();
+    asDate (value) {
+      const date = this.asDateTime(value)
+      return dayjs(date).startOf('day').toDate()
     }
   }
 }
-
-module.exports = HasAttributes;
+export default HasAttributes
