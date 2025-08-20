@@ -1,9 +1,8 @@
+import { isArray, merge } from 'radashi'
+
 import Collection from 'src/collection'
 import { Model } from 'src/model'
 import { collect } from 'collect.js'
-import concat from 'lodash/concat'
-import isArray from 'lodash/isArray'
-import merge from 'lodash/merge'
 
 const InteractsWithPivotTable = (Relation) => {
   return class extends Relation {
@@ -23,7 +22,7 @@ const InteractsWithPivotTable = (Relation) => {
       }), detaching)
     }
     withPivot (columns) {
-      this.pivotColumns = concat(this.pivotColumns, isArray(columns) ? columns : Array.prototype.slice.call(arguments))
+      this.pivotColumns = this.pivotColumns.concat(isArray(columns) ? columns : Array.prototype.slice.call(arguments))
       return this
     }
     addTimestampsToAttachment (record, exists = false) {

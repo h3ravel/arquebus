@@ -1,6 +1,6 @@
 import { ModelNotFoundError } from 'src/errors'
 import Relation from './relation'
-import isArray from 'lodash/isArray'
+import { isArray } from 'radashi'
 import { tap } from 'src/utils'
 class HasManyThrough extends Relation {
   throughParent

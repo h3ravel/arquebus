@@ -1,4 +1,4 @@
-import { compose, getRelationMethod, getScopeMethod } from 'src/utils'
+import { compose, getRelationMethod, getScopeMethod, snakeCase } from 'src/utils'
 
 import BelongsTo from './relations/belongs-to'
 import BelongsToMany from './relations/belongs-to-many'
@@ -10,9 +10,9 @@ import HasRelations from './concerns/has-relations'
 import HasTimestamps from 'src/concerns/has-timestamps'
 import HidesAttributes from 'src/concerns/hides-attributes'
 import Pivot from './pivot'
-import merge from 'lodash/merge'
+import { assign as merge } from 'radashi'
 import pluralize from 'pluralize'
-import snakeCase from 'lodash/snakeCase'
+
 const BaseModel = compose(class {
 }, HasAttributes, HidesAttributes, HasRelations, HasTimestamps)
 class Model extends BaseModel {

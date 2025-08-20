@@ -1,4 +1,4 @@
-import { getRelationMethod, getRelationName } from 'src/utils'
+import { getRelationMethod, getRelationName, snakeCase } from 'src/utils'
 
 import BelongsTo from 'src/relations/belongs-to'
 import BelongsToMany from 'src/relations/belongs-to-many'
@@ -7,8 +7,8 @@ import HasManyThrough from 'src/relations/has-many-through'
 import HasOne from 'src/relations/has-one'
 import HasOneThrough from 'src/relations/has-one-through'
 import { RelationNotFoundError } from 'src/errors'
-import snakeCase from 'lodash/snakeCase'
-import unset from 'lodash/unset'
+import { omit } from 'radashi'
+
 const HasRelations = (Model) => {
   return class extends Model {
     relations = {}
@@ -20,7 +20,7 @@ const HasRelations = (Model) => {
       return this
     }
     unsetRelation (relation) {
-      unset(this.relations, relation)
+      this.relations = omit(this.relations, [relation])
       return this
     }
     relationLoaded (relation) {

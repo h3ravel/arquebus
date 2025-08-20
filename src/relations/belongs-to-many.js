@@ -1,11 +1,11 @@
-import { collect } from 'collect.js'
-import unset from 'lodash/unset'
-import isEqual from 'lodash/isEqual'
-import concat from 'lodash/concat'
-import Relation from './relation'
+import { compose, tap } from 'src/utils'
+import { isEqual, omit } from 'radashi'
+
 import Collection from 'src/collection'
-import { tap, compose } from 'src/utils'
 import InteractsWithPivotTable from './concerns/interacts-with-pivot-table'
+import Relation from './relation'
+import { collect } from 'collect.js'
+
 class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
   table
   foreignPivotKey
@@ -119,7 +119,8 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
       const value = model.attributes[key]
       if (key.startsWith('pivot_')) {
         values[key.substring(6)] = value
-        unset(model.attributes, key)
+        model.attributes = omit(model.attributes, [key])
+
       }
     }
     return values
@@ -133,11 +134,11 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     if (isEqual(columns, ['*'])) {
       columns = [this.related.getTable() + '.*']
     }
-    return concat(columns, this.aliasedPivotColumns())
+    return columns.concat(this.aliasedPivotColumns())
   }
   aliasedPivotColumns () {
     const defaults = [this.foreignPivotKey, this.relatedPivotKey]
-    return collect(concat(defaults, this.pivotColumns)).map((column) => {
+    return collect(defaults.concat(this.pivotColumns)).map((column) => {
       return this.qualifyPivotColumn(column) + ' as pivot_' + column
     }).unique().all()
   }

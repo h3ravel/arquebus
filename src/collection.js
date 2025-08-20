@@ -1,11 +1,8 @@
 import { Collection as BaseCollection, collect } from 'collect.js'
+import { diff as difference, isArray, isEmpty, omit, pick } from 'radashi'
 
 import Model from './model'
-import difference from 'lodash/difference'
-import isArray from 'lodash/isArray'
-import isEmpty from 'lodash/isEmpty'
-import omit from 'lodash/omit'
-import pick from 'lodash/pick'
+
 class Collection extends BaseCollection {
   async load (...relations) {
     if (this.isNotEmpty()) {

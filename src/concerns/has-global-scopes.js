@@ -1,16 +1,17 @@
+import { get, set } from 'radashi'
+
 import { InvalidArgumentError } from 'src/errors'
 import Scope from 'src/scope'
-import get from 'lodash/get'
-import set from 'lodash/set'
+
 const HasGlobalScopes = (Model) => {
   return class extends Model {
     static addGlobalScope (scope, implementation = null) {
       if (typeof scope === 'string' && implementation instanceof Scope) {
-        set(this.globalScopes, this.name + '.' + scope, implementation)
+        this.globalScopes = set(this.globalScopes, this.name + '.' + scope, implementation)
         return implementation
       }
       else if (scope instanceof Scope) {
-        set(this.globalScopes, this.name + '.' + scope.constructor.name, scope)
+        this.globalScopes = set(this.globalScopes, this.name + '.' + scope.constructor.name, scope)
         return scope
       }
       throw new InvalidArgumentError('Global scope must be an instance of Scope.')

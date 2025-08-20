@@ -1,11 +1,10 @@
-import { getAttrMethod, getGetterMethod, getSetterMethod } from 'src/utils'
+import { flat as flatten, omit } from 'radashi'
+import { flattenDeep, getAttrMethod, getGetterMethod, getSetterMethod } from 'src/utils'
 
 import CastsAttributes from 'src/casts-attributes'
 import collect from 'collect.js'
-import dayjs from 'dayjs/dayjs.min'
-import flatten from 'lodash/flatten'
-import flattenDeep from 'lodash/flattenDeep'
-import unset from 'lodash/unset'
+import dayjs from 'dayjs'
+
 const HasAttributes = (Model) => {
   return class extends Model {
     static castTypeCache = {}
@@ -213,13 +212,13 @@ const HasAttributes = (Model) => {
       return value
     }
     attributesToData () {
-      const attributes = { ...this.attributes }
+      let attributes = { ...this.attributes }
       for (const key in attributes) {
         if (this.hidden.includes(key)) {
-          unset(attributes, key)
+          attributes = omit(attributes, [key])
         }
         if (this.visible.length > 0 && this.visible.includes(key) === false) {
-          unset(attributes, key)
+          attributes = omit(attributes, [key])
         }
       }
       for (const key of this.getDates()) {

@@ -1,4 +1,4 @@
-import { compose, getRelationMethod, getScopeMethod, tap } from './utils'
+import { compose, flattenDeep, getRelationMethod, getScopeMethod, snakeCase, tap } from './utils'
 
 import BelongsTo from './relations/belongs-to'
 import BelongsToMany from './relations/belongs-to-many'
@@ -14,10 +14,8 @@ import HasTimestamps from './concerns/has-timestamps'
 import HidesAttributes from './concerns/hides-attributes'
 import UniqueIds from './concerns/unique-ids'
 import collect from 'collect.js'
-import flattenDeep from 'lodash/flattenDeep'
-import merge from 'lodash/merge'
+import { assign as merge } from 'radashi'
 import pluralize from 'pluralize'
-import snakeCase from 'lodash/snakeCase'
 import sutando from './sutando'
 
 const BaseModel = compose(class {

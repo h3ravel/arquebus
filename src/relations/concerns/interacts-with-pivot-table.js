@@ -1,11 +1,8 @@
 import { Model, Pivot } from 'src/model'
+import { diff as difference, isArray, merge } from 'radashi'
 
 import Collection from 'src/collection'
 import { collect } from 'collect.js'
-import concat from 'lodash/concat'
-import difference from 'lodash/difference'
-import isArray from 'lodash/isArray'
-import merge from 'lodash/merge'
 
 const InteractsWithPivotTable = (Relation) => {
   return class extends Relation {
@@ -78,7 +75,7 @@ const InteractsWithPivotTable = (Relation) => {
       }), detaching)
     }
     withPivot (columns) {
-      this.pivotColumns = concat(this.pivotColumns, isArray(columns) ? columns : Array.prototype.slice.call(arguments))
+      this.pivotColumns = this.pivotColumns.concat(isArray(columns) ? columns : Array.prototype.slice.call(arguments))
       return this
     }
     async attachNew (records, current, touch = true) {

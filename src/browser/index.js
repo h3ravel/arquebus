@@ -6,7 +6,7 @@ import HasUniqueIds from 'src/concerns/has-unique-ids'
 import Model from './model'
 import Paginator from './paginator'
 import Pivot from './pivot'
-import isArray from 'lodash/isArray'
+import { isArray } from 'radashi'
 import utils from 'src/utils'
 const make = (model, data, options = {}) => {
   const { paginated } = options

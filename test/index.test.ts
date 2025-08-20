@@ -9,12 +9,14 @@ import {
   Paginator,
   SoftDeletes,
   compose,
+  kebabCase,
   make,
   makeCollection,
   makePaginator,
   sutando,
 } from 'src'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest'
+import { omit, remove } from 'radashi'
 
 import QueryBuilder from 'src/query-builder'
 import { TGeneric } from 'types/generics'
@@ -23,9 +25,6 @@ import config from './config'
 import crypto from 'crypto'
 import dayjs from 'dayjs'
 import { delay } from './utils'
-import filter from 'lodash/filter'
-import kebabCase from 'lodash/kebabCase'
-import unset from 'lodash/unset'
 
 // const config = require(process.env.SUTANDO_CONFIG || './config')
 
@@ -815,23 +814,23 @@ describe('Integration test', async () => {
 
           it('allows passing an object to query', () => {
             const query = connection.table('users')
-            expect(filter(query._statements, { grouping: 'where' }).length).toBe(0)
+            expect(remove(query._statements, (e: any) => e.grouping !== 'where').length).toBe(0)
 
             const q = query.where('id', 1).orWhere('id', '>', 10)
             expect(q).toStrictEqual(query)
-            expect(filter(query._statements, { grouping: 'where' }).length).toBe(2)
+            expect(remove(query._statements, (e: any) => e.grouping !== 'where').length).toBe(2)
           })
 
           it('allows passing a function to query', () => {
             const query = connection.table('users')
-            expect(filter(query._statements, { grouping: 'where' }).length).toBe(0)
+            expect(remove(query._statements, (e: any) => e.grouping !== 'where').length).toBe(0)
 
             const q = query.where((q) => {
               q.where('id', 1).orWhere('id', '>', '10')
             })
 
             expect(q).toEqual(query)
-            expect(filter(query._statements, { grouping: 'where' }).length).toBe(1)
+            expect(remove(query._statements, (e: any) => e.grouping !== 'where').length).toBe(1)
           })
 
           describe('#first() & #find()', () => {
@@ -1165,23 +1164,23 @@ describe('Integration test', async () => {
 
           it('allows passing an object to query', () => {
             const query = User.query()
-            expect(filter(query.query._statements, { grouping: 'where' }).length).toBe(0)
+            expect(remove(query.query._statements, (e: any) => e.grouping !== 'where').length).toBe(0)
 
             const q = query.where('id', 1).orWhere('id', '>', 10)
             expect(q).toStrictEqual(query)
-            expect(filter(query.query._statements, { grouping: 'where' }).length).toBe(2)
+            expect(remove(query.query._statements, (e: any) => e.grouping !== 'where').length).toBe(2)
           })
 
           it('allows passing a function to query', () => {
             const query = User.query()
-            expect(filter(query.query._statements, { grouping: 'where' }).length).toBe(0)
+            expect(remove(query.query._statements, (e: any) => e.grouping !== 'where').length).toBe(0)
 
             const q = query.where((q) => {
               q.where('id', 1).orWhere('id', '>', '10')
             })
 
             expect(q).toEqual(query)
-            expect(filter(query.query._statements, { grouping: 'where' }).length).toBe(1)
+            expect(remove(query.query._statements, (e: any) => e.grouping !== 'where').length).toBe(1)
           })
         })
 
@@ -1868,9 +1867,7 @@ describe('Integration test', async () => {
             expect(posts.modelKeys()).toEqual([3, 4])
 
             const post = await Post.query().with('default_author').find(4)
-            const xpost = post.toData()
-            unset(xpost, 'created_at')
-            unset(xpost, 'updated_at')
+            const xpost = omit(post.toData(), ['updated_at', 'created_at'])
 
             expect(post.default_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
@@ -1939,9 +1936,7 @@ describe('Integration test', async () => {
           it('eager loads "hasOne" relationships correctly', async () => {
             return Post.query().with('thumbnail').find(1)
               .then(post => {
-                const xpost = post.toData()
-                unset(xpost, 'created_at')
-                unset(xpost, 'updated_at')
+                const xpost = omit(post.toData(), ['updated_at', 'created_at'])
                 expect(xpost).toEqual({ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'thumbnail': null, 'user_id': 1 })
               })
           })
@@ -1956,12 +1951,9 @@ describe('Integration test', async () => {
           it('eager loads "hasMany" relationships correctly', () => {
             return User.query().with('posts').find(1)
               .then(user => {
-                const xuser = user.toData()
-                unset(xuser, 'created_at')
-                unset(xuser, 'updated_at')
-                xuser.posts.forEach(post => {
-                  unset(post, 'created_at')
-                  unset(post, 'updated_at')
+                const xuser = omit(user.toData(), ['updated_at', 'created_at'])
+                xuser.posts = xuser.posts.map(post => {
+                  return omit(post, ['updated_at', 'created_at'])
                 })
                 expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1 }] })
               })
@@ -1970,9 +1962,7 @@ describe('Integration test', async () => {
           it('eager loads "belongsTo" relationships correctly', () => {
             return Post.query().with('author').find(1)
               .then(post => {
-                const author = post.toData().author
-                unset(author, 'created_at')
-                unset(author, 'updated_at')
+                const author = omit(post.toData().author, ['updated_at', 'created_at'])
                 expect(author).toEqual({
                   'first_name': 'Tim', 'id': 1, 'name': 'Shuri',
                 })
@@ -1988,9 +1978,7 @@ describe('Integration test', async () => {
 
           it('eager loads "belongsTo" relationship with default values', async () => {
             let post = await Post.query().with('default_author').find(4)
-            let xpost = post.toData()
-            unset(xpost, 'created_at')
-            unset(xpost, 'updated_at')
+            let xpost = omit(post.toData(), ['updated_at', 'created_at'])
 
             expect(post.default_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
@@ -2004,9 +1992,7 @@ describe('Integration test', async () => {
             })
 
             post = await Post.query().with('default_post_author').find(4)
-            xpost = post.toData()
-            unset(xpost, 'created_at')
-            unset(xpost, 'updated_at')
+            xpost = omit(post.toData(), ['updated_at', 'created_at'])
 
             expect(post.default_post_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
@@ -2023,12 +2009,10 @@ describe('Integration test', async () => {
           it('eager loads "belongsToMany" models correctly', () => {
             return Post.query().with('tags').find(1)
               .then(post => {
-                const xpost = post.toData()
-                unset(xpost, 'created_at')
-                unset(xpost, 'updated_at')
-                xpost.tags.forEach(tag => {
-                  unset(tag, 'created_at')
-                  unset(tag, 'updated_at')
+                const xpost = omit(post.toData(), ['updated_at', 'created_at'])
+                xpost.tags = xpost.tags.map(tag => {
+                  tag = omit(tag, ['updated_at', 'created_at'])
+                  return tag
                 })
 
                 expect(xpost).toEqual({
@@ -2043,9 +2027,7 @@ describe('Integration test', async () => {
               author: q => q.select('id', 'name'),
             }).find(1)
               .then(post => {
-                const xpost = post.toData()
-                unset(xpost, 'created_at')
-                unset(xpost, 'updated_at')
+                const xpost = omit(post.toData(), ['updated_at', 'created_at'])
                 expect(xpost).toEqual({
                   'author': { 'id': 1, 'name': 'Shuri' }, 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1
                 })
@@ -2055,9 +2037,7 @@ describe('Integration test', async () => {
           it('maintains eager loaded column specifications by string', () => {
             return Post.query().with('author:id,name').find(1)
               .then(post => {
-                const xpost = post.toData()
-                unset(xpost, 'created_at')
-                unset(xpost, 'updated_at')
+                const xpost = omit(post.toData(), ['updated_at', 'created_at'])
                 expect(xpost).toEqual({ 'author': { 'id': 1, 'name': 'Shuri' }, 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1 })
               })
           })
@@ -2075,16 +2055,13 @@ describe('Integration test', async () => {
           it('eager loads "hasMany" -> "belongsToMany"', () => {
             return User.query().with('posts.tags').first()
               .then(user => {
-                const xuser = user.toData()
-                unset(xuser, 'created_at')
-                unset(xuser, 'updated_at')
-                xuser.posts.forEach(post => {
-                  unset(post, 'created_at')
-                  unset(post, 'updated_at')
-                  post.tags.forEach(tag => {
-                    unset(tag, 'created_at')
-                    unset(tag, 'updated_at')
+                const xuser = omit(user.toData(), ['updated_at', 'created_at'])
+                xuser.posts = xuser.posts.map(post => {
+                  post = omit(post, ['updated_at', 'created_at'])
+                  post.tags = post.tags.map(tag => {
+                    return omit(tag, ['updated_at', 'created_at'])
                   })
+                  return post
                 })
 
                 expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'tags': [{ 'id': 1, 'name': 'cool', 'pivot': { 'post_id': 1, 'tag_id': 1 } }, { 'id': 2, 'name': 'boring', 'pivot': { 'post_id': 1, 'tag_id': 2 } }, { 'id': 3, 'name': 'exciting', 'pivot': { 'post_id': 1, 'tag_id': 3 } }], 'user_id': 1 }] })
@@ -2096,16 +2073,13 @@ describe('Integration test', async () => {
               'posts.tags': q => q.orderBy('tags.id', 'desc'),
             }, 'posts.thumbnail').first()
               .then(user => {
-                const xuser = user.toData()
-                unset(xuser, 'created_at')
-                unset(xuser, 'updated_at')
-                xuser.posts.forEach(post => {
-                  unset(post, 'created_at')
-                  unset(post, 'updated_at')
-                  post.tags.forEach(tag => {
-                    unset(tag, 'created_at')
-                    unset(tag, 'updated_at')
+                const xuser = omit(user.toData(), ['updated_at', 'created_at'])
+                xuser.posts = xuser.posts.map(post => {
+                  post = omit(post, ['updated_at', 'created_at'])
+                  post.tags = post.tags.map(tag => {
+                    return omit(tag, ['updated_at', 'created_at'])
                   })
+                  return post
                 })
                 expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'tags': [{ 'id': 3, 'name': 'exciting', 'pivot': { 'post_id': 1, 'tag_id': 3 } }, { 'id': 2, 'name': 'boring', 'pivot': { 'post_id': 1, 'tag_id': 2 } }, { 'id': 1, 'name': 'cool', 'pivot': { 'post_id': 1, 'tag_id': 1 } }], 'thumbnail': null, 'user_id': 1 }] })
               })
