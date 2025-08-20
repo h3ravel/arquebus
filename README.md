@@ -9,7 +9,7 @@
 
 Arquebus ORM is a Beautiful, expressive framework-agnostic Object-Relational Mapper (ORM) inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework that makes it enjoyable to interact with your database. When using Arquebus, each database table has a corresponding "Model" that is used to interact with that table. In addition to retrieving records from the database table, Arquebus models allow you to insert, update, and delete records from the database as well.
 
-> Arquebus is Typescript and Modern JS rewrite of [Sutando](https://sutando.org/) and is heavily inspired by Laravel's ORM [Eloquent](https://laravel.com/docs/12.x/eloquent).
+> Arquebus is a Typescript and Modern JS rewrite of [Sutando](https://sutando.org/) and is heavily inspired by Laravel's ORM [Eloquent](https://laravel.com/docs/12.x/eloquent).
 
 ## ✨ Features
 
@@ -22,11 +22,11 @@ Arquebus ORM is a Beautiful, expressive framework-agnostic Object-Relational Map
 - Support for hooks to execute custom logic at different stages of model operations
 - Simple plugin mechanism for easy expansion
 
-## 📖 Documentation
+## Documentation
 
 Check the full documentation on [https://h3ravel.toneflix.net/arquebus](https://h3ravel.toneflix.net/arquebus)
 
-## 🚀 Quick Start
+## Quick Start
 
 Let’s take mysql as an example.
 
@@ -38,7 +38,7 @@ $ npm install @h3ravel/arquebus mysql2 --save
 
 The easiest way to make SQL queries is to use the Database query builder. It allows you to construct simple and complex SQL queries using JavaScript methods.
 
-```js
+```ts
 import { arquebus, Model } from '@h3ravel/arquebus';
 
 // Add SQL Connection Info
@@ -89,6 +89,6 @@ const users = await User.query()
 await user.load('posts');
 ```
 
-## 💖 Show Your Support
+## Show Your Support
 
 Please ⭐️ this repository if this project helped you

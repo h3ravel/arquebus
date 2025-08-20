@@ -137,4 +137,6 @@ class arquebus {
     return this.models[name]
   }
 }
+const isBrowser = false
+export { isBrowser }
 export default arquebus

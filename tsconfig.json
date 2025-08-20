@@ -16,6 +16,7 @@
     "paths": {
       "package": ["package.json"],
       "@h3ravel/arquebus": ["src/arquebus.ts"],
+      "@h3ravel/arquebus/browser": ["src/browser/index.ts"],
       "src": ["src/index.ts"],
       "src/*": ["src/*"]
     }

@@ -26,8 +26,6 @@ import crypto from 'crypto'
 import dayjs from 'dayjs'
 import { delay } from './utils'
 
-// const config = require(process.env.ARQUEBUS_CONFIG || './config')
-
 describe('node environment test', () => {
   test('should load the node version of the module', async () => {
     // Test automatically loads the node version
@@ -237,14 +235,14 @@ describe('Model', () => {
         })
       })
 
-      it('prioritizes "setHidden" when overriding both the model\'s "hidden" and "visible" properties with "setHidden" and "setVisible" arguments', () => {
+      it('prioritizes "setHidden" when overriding both the model\'s "hidden" and "visible" properties with "setHidden" and "setVisible" arguments', async () => {
         testModel.visible = ['lastName', 'address']
         testModel.hidden = ['address']
         const data = testModel.setVisible(['firstName', 'lastName']).setHidden(['lastName']).toData()
 
         expect(data).toEqual({ firstName: 'Joe' })
 
-        const knex = require('knex')({ client: 'mysql' })
+        const knex = (await import('knex')).default({ client: 'mysql' })
         console.log(knex.client.JoinClause)
       })
 

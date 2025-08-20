@@ -3,32 +3,25 @@ import {
   Collection,
   Model,
   Paginator,
-  compose,
   make,
   makeCollection,
   makePaginator,
 } from 'src/browser'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, test } from 'vitest'
 
-Promise.delay = function (duration) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve(true)
-    }, duration)
-  })
-}
+import { compose } from 'src/utils'
 
 describe('browser environment test', () => {
-  test('should load the browser version of the module', () => {
+  test('should load the browser version of the module', async () => {
     // Test automatically loads the browser version
-    const module = require('arquebus')
+    const module = (await import('@h3ravel/arquebus/browser'))
     expect(module.isBrowser).toBe(true)
   })
 
-  test('should load the node version of the module', () => {
+  test('should load the node version of the module', async () => {
     // Test that it is the browser version of the module
-    const module = require('arquebus/browser')
-    expect(module.isBrowser).toBe(true)
+    const module = (await import('@h3ravel/arquebus'))
+    expect(module.isBrowser).toBe(false)
   })
 })
 
@@ -297,14 +290,14 @@ describe('Model', () => {
         })
       })
 
-      it('prioritizes "setHidden" when overriding both the model\'s "hidden" and "visible" properties with "setHidden" and "setVisible" arguments', () => {
+      it('prioritizes "setHidden" when overriding both the model\'s "hidden" and "visible" properties with "setHidden" and "setVisible" arguments', async () => {
         testModel.visible = ['lastName', 'address']
         testModel.hidden = ['address']
         const data = testModel.setVisible(['firstName', 'lastName']).setHidden(['lastName']).toData()
 
         expect(data).toEqual({ firstName: 'Joe' })
 
-        const knex = require('knex')({ client: 'mysql' })
+        const knex = (await import('knex')).default({ client: 'mysql' })
         console.log(knex.client.JoinClause)
       })
 
