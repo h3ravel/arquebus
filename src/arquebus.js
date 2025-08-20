@@ -5,7 +5,7 @@ import Knex from 'knex'
 import { Model } from './model'
 import QueryBuilder from './query-builder'
 
-class sutando {
+class arquebus {
   static connectorFactory = null
   static instance = null
   constructor() {
@@ -15,7 +15,7 @@ class sutando {
   }
   static getInstance () {
     if (this.instance === null) {
-      this.instance = new sutando()
+      this.instance = new arquebus()
     }
     return this.instance
   }
@@ -137,4 +137,4 @@ class sutando {
     return this.models[name]
   }
 }
-export default sutando
+export default arquebus

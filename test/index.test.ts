@@ -8,12 +8,12 @@ import {
   ModelNotFoundError,
   Paginator,
   SoftDeletes,
+  arquebus,
   compose,
   kebabCase,
   make,
   makeCollection,
   makePaginator,
-  sutando,
 } from 'src'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest'
 import { omit, remove } from 'radashi'
@@ -26,21 +26,21 @@ import crypto from 'crypto'
 import dayjs from 'dayjs'
 import { delay } from './utils'
 
-// const config = require(process.env.SUTANDO_CONFIG || './config')
+// const config = require(process.env.ARQUEBUS_CONFIG || './config')
 
 describe('node environment test', () => {
   test('should load the node version of the module', async () => {
     // Test automatically loads the node version
-    const module = (await import('sutando'))
+    const module = (await import('@h3ravel/arquebus'))
     expect(module.isBrowser).toBeUndefined()
   })
 })
 
 let hits: TGeneric
 
-describe('Sutando', () => {
+describe('Arquebus', () => {
   it('should fail if passing a wrong connection info', () => {
-    sutando.addConnection({
+    arquebus.addConnection({
       client: 'abc',
       connection: {
         host: '127.0.0.1',
@@ -48,9 +48,9 @@ describe('Sutando', () => {
       }
     })
     expect(() => {
-      sutando.connection()
+      arquebus.connection()
     }).toThrow()
-    sutando.connections = {}
+    arquebus.connections = {}
   })
 })
 
@@ -96,7 +96,7 @@ describe('Model', () => {
   class Thumbnail extends Model { }
   class Media extends Model { }
 
-  const manager = new sutando
+  const manager = new arquebus
 
   manager.createModel('User', {
     plugins: [SomePlugin],
@@ -370,8 +370,8 @@ describe('Integration test', async () => {
 
   databases.map(config => {
     describe('Client: ' + config.client, () => {
-      sutando.addConnection(config, config.client)
-      const connection = sutando.connection(config.client)
+      arquebus.addConnection(config, config.client)
+      const connection = arquebus.connection(config.client)
 
       class Base extends Model {
         connection = config.client
@@ -443,7 +443,7 @@ describe('Integration test', async () => {
         }
       }
 
-      sutando.createModel('Post', {
+      arquebus.createModel('Post', {
         connection: config.client,
         attributes: {
           slug: Attribute.make({
@@ -1016,7 +1016,7 @@ describe('Integration test', async () => {
 
       describe('Model', () => {
         it('should return a same instance', () => {
-          expect(connection).toBe(sutando.connection(config.client))
+          expect(connection).toBe(arquebus.connection(config.client))
         })
 
         it('should return a Builder instance', () => {
@@ -1857,7 +1857,7 @@ describe('Integration test', async () => {
 
         describe('#createModel', () => {
           it('scopes/attributes/relations', async () => {
-            const { Post } = sutando.instance.models
+            const { Post } = arquebus.instance.models
             let posts = await Post.query().idOf(3).get()
             expect(posts.modelKeys()).toEqual([3])
 

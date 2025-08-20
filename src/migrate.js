@@ -1,8 +1,8 @@
-import { getMigrationPaths } from '../bin/utils'
-import sutando from './sutando'
 import MigrationRepository from './migrations/migration-repository'
 import Migrator from './migrations/migrator'
-async function prepareDatabase(migrator) {
+import arquebus from './arquebus'
+import { getMigrationPaths } from '../bin/utils'
+async function prepareDatabase (migrator) {
     const exists = await migrator.repositoryExists()
     if (!exists) {
         console.log('Preparing database.')
@@ -11,18 +11,18 @@ async function prepareDatabase(migrator) {
         console.log('Migration table created successfully.')
     }
 }
-async function setupConnection(config) {
+async function setupConnection (config) {
     const table = config?.migration?.table || 'migrations'
-    sutando.addConnection(config, 'default')
+    arquebus.addConnection(config, 'default')
     Object.entries(config.connections || {}).forEach(([name, connection]) => {
-        sutando.addConnection(connection, name)
+        arquebus.addConnection(connection, name)
     })
-    const repository = new MigrationRepository(sutando, table)
-    const migrator = new Migrator(repository, sutando)
-    return { sutando, migrator }
+    const repository = new MigrationRepository(arquebus, table)
+    const migrator = new Migrator(repository, arquebus)
+    return { arquebus, migrator }
 }
-async function migrateRun(config, options = {}, destroyAll = false) {
-    const { sutando, migrator } = await setupConnection(config)
+async function migrateRun (config, options = {}, destroyAll = false) {
+    const { arquebus, migrator } = await setupConnection(config)
     await prepareDatabase(migrator)
     const paths = await getMigrationPaths(process.cwd(), migrator, config?.migrations?.path, options.path)
     await migrator.setOutput(true).run(paths, {
@@ -30,11 +30,11 @@ async function migrateRun(config, options = {}, destroyAll = false) {
         pretend: options.pretend,
     })
     if (destroyAll) {
-        await sutando.destroyAll()
+        await arquebus.destroyAll()
     }
 }
-async function migrateRollback(config, options = {}, destroyAll = false) {
-    const { sutando, migrator } = await setupConnection(config)
+async function migrateRollback (config, options = {}, destroyAll = false) {
+    const { arquebus, migrator } = await setupConnection(config)
     const paths = await getMigrationPaths(process.cwd(), migrator, config?.migrations?.path, options.path)
     await migrator.setOutput(true).rollback(paths, {
         step: options.step || 0,
@@ -42,15 +42,15 @@ async function migrateRollback(config, options = {}, destroyAll = false) {
         batch: options.batch || 0,
     })
     if (destroyAll) {
-        await sutando.destroyAll()
+        await arquebus.destroyAll()
     }
 }
-async function migrateStatus(config, options = {}, destroyAll = false) {
-    const { sutando, migrator } = await setupConnection(config)
-    async function getAllMigrationFiles() {
+async function migrateStatus (config, options = {}, destroyAll = false) {
+    const { arquebus, migrator } = await setupConnection(config)
+    async function getAllMigrationFiles () {
         return await migrator.getMigrationFiles(await getMigrationPaths(process.cwd(), migrator, config?.migrations?.path, options.path))
     }
-    async function getStatusFor(ran, batches) {
+    async function getStatusFor (ran, batches) {
         const files = await getAllMigrationFiles()
         return Object.values(files).map(function (migration) {
             const migrationName = migrator.getMigrationName(migration)
@@ -70,7 +70,7 @@ async function migrateStatus(config, options = {}, destroyAll = false) {
     const batches = await migrator.getRepository().getMigrationBatches()
     const migrations = await getStatusFor(ran, batches)
     if (destroyAll) {
-        await sutando.destroyAll()
+        await arquebus.destroyAll()
     }
     return migrations
 }

@@ -2,7 +2,7 @@ import { Knex } from 'knex'
 import { Collection as BaseCollection } from 'collect.js'
 import { TFunction, TGeneric } from './generics'
 
-declare module 'sutando' {
+declare module 'arquebus' {
   type AnyQueryBuilder = QueryBuilder<any, any>;
   export interface Constructor<T> {
     new(): T;
@@ -232,9 +232,9 @@ declare module 'sutando' {
 
   type OrderByRawMethod<QB extends AnyQueryBuilder> = RawInterface<QB> & {}
 
-  export class sutando {
+  export class arquebus {
     static connectorFactory: any | null
-    static instance: sutando | null
+    static instance: arquebus | null
     static connection (connection?: string | null): AnyQueryBuilder;
     static setConnectorFactory (connectorFactory: any): void;
     static getConnectorFactory (): any;

@@ -1,4 +1,4 @@
-import { Migration } from 'sutando'
+import { Migration } from '@h3ravel/arquebus'
 
 export class extends Migration {
   /**

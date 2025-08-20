@@ -1,7 +1,7 @@
 import { Collection as BaseCollection } from 'collect.js'
 import { TGeneric } from 'types/generics'
 
-declare module 'sutando' {
+declare module 'arquebus' {
   export interface Constructor<T> {
     new(): T;
   }

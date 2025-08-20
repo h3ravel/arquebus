@@ -1,4 +1,0 @@
-import Sutando from './index.js'
-const { Paginator, Collection, Model, Pivot, Attribute, CastsAttributes, HasUniqueIds, make, makeCollection, makePaginator, now, getRelationName, getScopeName, getRelationMethod, getScopeMethod, getAttrMethod, getGetterMethod, getSetterMethod, getAttrName, compose, tap, ModelNotFoundError, RelationNotFoundError, InvalidArgumentError, isBrowser, } = Sutando
-export default Sutando
-export { Paginator, Collection, Model, Pivot, Attribute, CastsAttributes, HasUniqueIds, make, makeCollection, makePaginator, now, getRelationName, getScopeName, getRelationMethod, getScopeMethod, getAttrMethod, getGetterMethod, getSetterMethod, getAttrName, compose, tap, ModelNotFoundError, RelationNotFoundError, InvalidArgumentError, isBrowser, }

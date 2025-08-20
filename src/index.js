@@ -12,7 +12,7 @@ import Paginator from './paginator'
 import Pivot from './pivot'
 import Scope from './scope'
 import SoftDeletes from './soft-deletes'
-import sutando from './sutando'
+import arquebus from './arquebus'
 import utils from './utils'
 
 const make = (model, data, options = {}) => {
@@ -27,7 +27,7 @@ const make = (model, data, options = {}) => {
 }
 const makeCollection = (model, data) => new Collection(data.map(item => model.make(item)))
 const makePaginator = (model, data) => new Paginator(data.data.map(item => model.make(item)), data.total, data.per_page, data.current_page)
-export { sutando }
+export { arquebus }
 export { Paginator }
 export { Collection }
 export { Model }
@@ -48,7 +48,7 @@ export { migrateStatus }
 export * from './errors'
 export * from './utils'
 export default {
-  sutando,
+  arquebus,
   Paginator,
   Collection,
   Model,

@@ -15,7 +15,7 @@
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "package": ["package.json"],
-      "sutando": ["src/sutando.ts"],
+      "@h3ravel/arquebus": ["src/arquebus.ts"],
       "src": ["src/index.ts"],
       "src/*": ["src/*"]
     }

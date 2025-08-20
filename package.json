@@ -5,9 +5,9 @@
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.net/arquebus",
   "bin": {
-    "sutando": "./bin/cli.js"
+    "arquebus": "./bin/cli.js"
   },
-  "main": "sutando",
+  "main": "arquebus",
   "type": "module",
   "types": "./types/index.d.ts",
   "exports": {
@@ -15,52 +15,52 @@
       "worker": {
         "import": {
           "types": "./types/index.d.ts",
-          "default": "./sutando.mjs"
+          "default": "./arquebus.mjs"
         },
         "require": {
           "types": "./types/index.d.ts",
-          "default": "./sutando.js"
+          "default": "./arquebus.js"
         }
       },
       "node": {
         "import": {
           "types": "./types/index.d.ts",
-          "default": "./sutando.mjs"
+          "default": "./arquebus.mjs"
         },
         "require": {
           "types": "./types/index.d.ts",
-          "default": "./sutando.js"
+          "default": "./arquebus.js"
         }
       },
       "browser": {
         "import": {
           "types": "./types/browser/index.d.ts",
-          "default": "./src/browser/sutando.mjs"
+          "default": "./src/browser/arquebus.mjs"
         },
         "require": {
           "types": "./types/browser/index.d.ts",
-          "default": "./src/browser/sutando.js"
+          "default": "./src/browser/arquebus.js"
         }
       },
       "default": {
         "import": {
           "types": "./types/index.d.ts",
-          "default": "./sutando.mjs"
+          "default": "./arquebus.mjs"
         },
         "require": {
           "types": "./types/index.d.ts",
-          "default": "./sutando.js"
+          "default": "./arquebus.js"
         }
       }
     },
     "./browser": {
       "import": {
         "types": "./types/browser/index.d.ts",
-        "default": "./src/browser/sutando.mjs"
+        "default": "./src/browser/arquebus.mjs"
       },
       "require": {
         "types": "./types/browser/index.d.ts",
-        "default": "./src/browser/sutando.js"
+        "default": "./src/browser/arquebus.js"
       }
     },
     "./package.json": "./package.json"
@@ -125,7 +125,7 @@
     "vitest": "^3.2.4"
   },
   "keywords": [
-    "sutando",
+    "arquebus",
     "ORM",
     "mysql",
     "mariadb",

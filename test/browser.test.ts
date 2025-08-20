@@ -21,13 +21,13 @@ Promise.delay = function (duration) {
 describe('browser environment test', () => {
   test('should load the browser version of the module', () => {
     // Test automatically loads the browser version
-    const module = require('sutando')
+    const module = require('arquebus')
     expect(module.isBrowser).toBe(true)
   })
 
   test('should load the node version of the module', () => {
     // Test that it is the browser version of the module
-    const module = require('sutando/browser')
+    const module = require('arquebus/browser')
     expect(module.isBrowser).toBe(true)
   })
 })

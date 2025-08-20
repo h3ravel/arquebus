@@ -1,0 +1,4 @@
+import Arquebus from './index.js'
+const { Paginator, Collection, Model, Pivot, Attribute, CastsAttributes, HasUniqueIds, make, makeCollection, makePaginator, now, getRelationName, getScopeName, getRelationMethod, getScopeMethod, getAttrMethod, getGetterMethod, getSetterMethod, getAttrName, compose, tap, ModelNotFoundError, RelationNotFoundError, InvalidArgumentError, isBrowser, } = Arquebus
+export default Arquebus
+export { Paginator, Collection, Model, Pivot, Attribute, CastsAttributes, HasUniqueIds, make, makeCollection, makePaginator, now, getRelationName, getScopeName, getRelationMethod, getScopeMethod, getAttrMethod, getGetterMethod, getSetterMethod, getAttrName, compose, tap, ModelNotFoundError, RelationNotFoundError, InvalidArgumentError, isBrowser, }

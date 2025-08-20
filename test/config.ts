@@ -10,7 +10,7 @@ export default {
       port: process.env.MYSQL_PORT || 3306,
       user: 'root',
       password: process.env.MYSQL_PASSWORD || 'password',
-      database: 'sutando_test',
+      database: 'arquebus_test',
     },
     // pool: {
     //   afterCreate: (connection, callback) => {
@@ -33,9 +33,9 @@ export default {
     connection: {
       host: process.env.POSTGRES_HOST || 'localhost',
       port: process.env.POSTGRES_PORT || 5432,
-      user: process.env.POSTGRES_USER || 'sutando',
-      password: process.env.POSTGRES_PASSWORD || 'sutando',
-      database: 'sutando_test',
+      user: process.env.POSTGRES_USER || 'arquebus',
+      password: process.env.POSTGRES_PASSWORD || 'arquebus',
+      database: 'arquebus_test',
     },
   }
 }

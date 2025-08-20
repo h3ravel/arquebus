@@ -13,9 +13,9 @@ const writeFile = promisify(fs.writeFile)
 const readFile = promisify(fs.readFile)
 
 const env = {
-  modulePath: findModulePkg('sutando') || resolveFrom.silent(process.cwd(), 'sutando') || findUpModulePath(process.cwd(), 'sutando'),
+  modulePath: findModulePkg('arquebus') || resolveFrom.silent(process.cwd(), 'arquebus') || findUpModulePath(process.cwd(), 'arquebus'),
   cwd: process.cwd(),
-  configPath: findUpConfig(process.cwd(), 'sutando.config', ['js', 'cjs'])
+  configPath: findUpConfig(process.cwd(), 'arquebus.config', ['js', 'cjs'])
 }
 let modulePackage = {}
 try {
@@ -24,23 +24,23 @@ try {
 catch {
   /* empty */
 }
-function getSutandoModule (modulePath) {
+function getArquebusModule (modulePath) {
   localModuleCheck(env)
 }
 const cliVersion = [
-  'Sutando CLI version:',
+  'Arquebus CLI version:',
   color.green(cliPkg.version),
 ].join(' ')
 const localVersion = [
-  'Sutando Local version:',
+  'Arquebus Local version:',
   color.green(modulePackage.version || 'None'),
 ].join(' ')
 program
-  .name('sutando')
+  .name('arquebus')
   .version(`${cliVersion}\n${localVersion}`)
 program
   .command('init')
-  .description('Create a fresh sutando config.')
+  .description('Create a fresh arquebus config.')
   .action(async () => {
     localModuleCheck(env)
     const type = 'js'
@@ -48,9 +48,9 @@ program
       exit(`Error: ${env.configPath} already exists`)
     }
     try {
-      const stubPath = `./sutando.config.${type}`
+      const stubPath = `./arquebus.config.${type}`
       const code = await readFile(env.modulePath +
-        '/src/stubs/sutando.config-' +
+        '/src/stubs/arquebus.config-' +
         type +
         '.stub')
       await writeFile(stubPath, code)
@@ -67,7 +67,7 @@ program
   .option('--create', 'The table to be created')
   .action(async (name, opts) => {
     if (!env.configPath) {
-      exit('Error: sutando config not found. Run `sutando init` first.')
+      exit('Error: arquebus config not found. Run `arquebus init` first.')
     }
     try {
       name = snake(name)
@@ -82,7 +82,7 @@ program
         table = guessed[0]
         create = guessed[1]
       }
-      const MigrationCreator = getSutandoModule('src/migrations/migration-creator')
+      const MigrationCreator = getArquebusModule('src/migrations/migration-creator')
       const creator = new MigrationCreator('')
       const fileName = await creator.create(name, env.cwd + `/${config?.migrations?.path || 'migrations'}`, table, create)
       success(color.green(`Created Migration: ${fileName}`))
@@ -96,14 +96,14 @@ program
   .description('Publish any migration files from packages.')
   .action(async (pkg, opts) => {
     if (!env.configPath) {
-      exit('Error: sutando config not found. Run `sutando init` first.')
+      exit('Error: arquebus config not found. Run `arquebus init` first.')
     }
     try {
       const packagePath = findModulePkg(pkg)
       if (!packagePath) {
         exit(`Error: package ${pkg} not found`)
       }
-      const MigrationCreator = getSutandoModule('src/migrations/migration-creator')
+      const MigrationCreator = getArquebusModule('src/migrations/migration-creator')
       const creator = new MigrationCreator(path.join(packagePath, 'migrations'))
       console.log(color.green('Publishing migrations:'))
       const fileNames = await creator.publish(env.cwd + `/${config?.migrations?.path || 'migrations'}`, (fileName, oldPath, newPath) => {
@@ -121,10 +121,10 @@ program
   .option('--path <path>', 'The path to the migrations directory.')
   .action(async (opts) => {
     if (!env.configPath) {
-      exit('Error: sutando config not found. Run `sutando init` first.')
+      exit('Error: arquebus config not found. Run `arquebus init` first.')
     }
     try {
-      const { migrateRun } = getSutandoModule('src/migrate')
+      const { migrateRun } = getArquebusModule('src/migrate')
       await migrateRun(config, opts, true)
     }
     catch (err) {
@@ -138,10 +138,10 @@ program
   .option('--path <path>', 'The path to the migrations directory.')
   .action(async (opts) => {
     if (!env.configPath) {
-      exit('Error: sutando config not found. Run `sutando init` first.')
+      exit('Error: arquebus config not found. Run `arquebus init` first.')
     }
     try {
-      const { migrateRollback } = getSutandoModule('src/migrate')
+      const { migrateRollback } = getArquebusModule('src/migrate')
       await migrateRollback(config, opts, true)
     }
     catch (err) {
@@ -154,10 +154,10 @@ program
   .option('--path <path>', 'The path to the migrations directory.')
   .action(async (opts) => {
     if (!env.configPath) {
-      exit('Error: sutando config not found. Run `sutando init` first.')
+      exit('Error: arquebus config not found. Run `arquebus init` first.')
     }
     try {
-      const { migrateStatus } = getSutandoModule('src/migrate')
+      const { migrateStatus } = getArquebusModule('src/migrate')
       const migrations = await migrateStatus(config, opts, true)
       if (migrations.length > 0) {
         twoColumnDetail(color.gray('Migration name'), color.gray('Batch / Status'))
@@ -182,7 +182,7 @@ program
   .option('--force', 'Force creation if model already exists.', false)
   .action(async (name, opts) => {
     if (!env.configPath) {
-      exit('Error: sutando config not found. Run `sutando init` first.')
+      exit('Error: arquebus config not found. Run `arquebus init` first.')
     }
     try {
       const modelPath = path.join(env.cwd, config?.models?.path || 'models', name?.toLowerCase() + '.js')

@@ -88,8 +88,8 @@ async function getMigrationPaths (cwd, migrator, defaultPath, path) {
 
 function localModuleCheck (env) {
   if (!env.modulePath) {
-    console.log(color.red('No local sutando install found.'))
-    exit('Try running: npm install sutando --save')
+    console.log(color.red('No local arquebus install found.'))
+    exit('Try running: npm install arquebus --save')
   }
 }
 class TableGuesser {

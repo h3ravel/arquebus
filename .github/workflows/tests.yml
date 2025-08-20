@@ -15,9 +15,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: sutando
-          POSTGRES_PASSWORD: sutando
-          POSTGRES_DB: sutando_test
+          POSTGRES_USER: arquebus
+          POSTGRES_PASSWORD: arquebus
+          POSTGRES_DB: arquebus_test
         ports:
           # will assign a random free host port
           - 5432/tcp
@@ -28,7 +28,7 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: sutando_test
+          MYSQL_DATABASE: arquebus_test
         ports:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -55,7 +55,7 @@ jobs:
         env:
           MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
           MYSQL_PASSWORD: password
-      
+
       - name: Run sqlite tests
         run: pnpm test:sqlite
 
@@ -63,8 +63,8 @@ jobs:
         run: pnpm test:postgres
         env:
           POSTGRES_HOST: localhost
-          POSTGRES_USER: sutando
-          POSTGRES_PASSWORD: sutando
+          POSTGRES_USER: arquebus
+          POSTGRES_PASSWORD: arquebus
           POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
 
       - name: Run browser tests

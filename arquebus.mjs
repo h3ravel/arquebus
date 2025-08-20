@@ -1,7 +1,7 @@
-import Sutando from 'src'
+import Arquebus from 'src'
 
 const {
-  sutando,
+  arquebus,
   Paginator,
   Collection,
   Model,
@@ -33,10 +33,10 @@ const {
   migrateRun,
   migrateRollback,
   migrateStatus,
-} = Sutando
+} = Arquebus
 
 export {
-  sutando,
+  arquebus,
   Paginator,
   Collection,
   Model,

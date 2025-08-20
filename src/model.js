@@ -13,10 +13,10 @@ import HasRelations from './concerns/has-relations'
 import HasTimestamps from './concerns/has-timestamps'
 import HidesAttributes from './concerns/hides-attributes'
 import UniqueIds from './concerns/unique-ids'
+import arquebus from './arquebus'
 import collect from 'collect.js'
 import { assign as merge } from 'radashi'
 import pluralize from 'pluralize'
-import sutando from './sutando'
 
 const BaseModel = compose(class {
 }, HasAttributes, HidesAttributes, HasRelations, HasTimestamps, HasHooks, HasGlobalScopes, UniqueIds)
@@ -173,7 +173,7 @@ export class Model extends BaseModel {
     if (this.constructor.resolver) {
       return this.constructor.resolver.getConnection(this.connection)
     }
-    return sutando.connection(this.connection)
+    return arquebus.connection(this.connection)
   }
   setConnection (connection) {
     this.connection = connection
