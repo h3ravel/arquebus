@@ -7,7 +7,7 @@
   <br />
 </div>
 
-Arquebus is an object-relational mapper (ORM) that makes it enjoyable to interact with your database. When using Arquebus, each database table has a corresponding "Model" that is used to interact with that table. In addition to retrieving records from the database table, Arquebus models allow you to insert, update, and delete records from the table as well.
+Arquebus ORM is a Beautiful, expressive framework-agnostic Object-Relational Mapper (ORM) inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework that makes it enjoyable to interact with your database. When using Arquebus, each database table has a corresponding "Model" that is used to interact with that table. In addition to retrieving records from the database table, Arquebus models allow you to insert, update, and delete records from the database as well.
 
 > Arquebus is Typescript and Modern JS rewrite of [Sutando](https://sutando.org/) and is heavily inspired by Laravel's ORM [Eloquent](https://laravel.com/docs/12.x/eloquent).
 
