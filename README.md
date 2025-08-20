@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://h3ravel.toneflix.net/logo-full.svg" width="100" alt="H3ravel logo" />
-  <h1 align="center"><a href="https://h3ravel.toneflix.net/guide/arquebus">H3ravel Arquebus</a></h1>
+  <h1 align="center"><a href="https://h3ravel.toneflix.net/arquebus">H3ravel Arquebus</a></h1>
   <a href="https://www.npmjs.com/package/@h3ravel/arquebus"><img alt="NPM version" src="https://img.shields.io/npm/v/@h3ravel/arquebus.svg"></a>
   <a href="https://github.com/h3ravel/arquebus/workflows/tests"><img alt="ci" src="https://github.com/h3ravel/arquebus/workflows/tests/badge.svg"></a>
   <a href="https://github.com/h3ravel/arquebus/blob/main/README.md"><img alt="GitHub" src="https://img.shields.io/github/license/h3ravel/arquebus"></a>
@@ -9,7 +9,7 @@
 
 Arquebus is an object-relational mapper (ORM) that makes it enjoyable to interact with your database. When using Arquebus, each database table has a corresponding "Model" that is used to interact with that table. In addition to retrieving records from the database table, Arquebus models allow you to insert, update, and delete records from the table as well.
 
-> Heavily inspired by Laravel's ORM [Eloquent](https://laravel.com/docs/10.x/eloquent).
+> Heavily inspired by Laravel's ORM [Eloquent](https://laravel.com/docs/12.x/eloquent).
 
 ## ✨ Features
 
@@ -24,7 +24,7 @@ Arquebus is an object-relational mapper (ORM) that makes it enjoyable to interac
 
 ## 📖 Documentation
 
-Check the full documentation on [https://h3ravel.toneflix.net/guide/arquebus](https://h3ravel.toneflix.net/guide/arquebus)
+Check the full documentation on [https://h3ravel.toneflix.net/arquebus](https://h3ravel.toneflix.net/arquebus)
 
 ## 🚀 Quick Start
 
