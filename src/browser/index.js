@@ -1,13 +1,11 @@
 import Attribute from 'src/casts/attribute'
 import CastsAttributes from 'src/casts-attributes'
 import Collection from './collection'
-import Errors from 'src/errors'
 import HasUniqueIds from 'src/concerns/has-unique-ids'
 import Model from './model'
 import Paginator from './paginator'
 import Pivot from './pivot'
 import { isArray } from 'radashi'
-import utils from 'src/utils'
 const make = (model, data, options = {}) => {
   const { paginated } = options
   if (paginated) {
@@ -32,6 +30,8 @@ export { HasUniqueIds }
 export { make }
 export { makeCollection }
 export { makePaginator }
+export * from 'src/utils'
+export * from 'src/errors'
 export default {
   isBrowser,
   Paginator,
@@ -44,6 +44,4 @@ export default {
   make,
   makeCollection,
   makePaginator,
-  ...Errors,
-  ...utils
 }

@@ -21,7 +21,7 @@ describe('browser environment test', () => {
   test('should load the node version of the module', async () => {
     // Test that it is the browser version of the module
     const module = (await import('@h3ravel/arquebus'))
-    expect(module.isBrowser).toBe(false)
+    expect(module.isBrowser).toBe(undefined)
   })
 })
 

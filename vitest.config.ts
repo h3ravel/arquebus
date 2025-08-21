@@ -19,10 +19,10 @@ export default defineConfig({
                 // Browser environment test configuration
                 extends: true,
                 test: {
-                    name: 'jsdom',
+                    name: 'browser',
                     environment: 'jsdom',
                     root: './test',
-                    include: ['{browser}.test.{ts,js}']
+                    include: ['browser.test.{ts,js}']
                 }
             }
         ],

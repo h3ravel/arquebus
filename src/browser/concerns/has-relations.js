@@ -1,11 +1,11 @@
 import { getRelationMethod, getRelationName, snakeCase } from 'src/utils'
 
-import BelongsTo from 'src/relations/belongs-to'
-import BelongsToMany from 'src/relations/belongs-to-many'
-import HasMany from 'src/relations/has-many'
-import HasManyThrough from 'src/relations/has-many-through'
-import HasOne from 'src/relations/has-one'
-import HasOneThrough from 'src/relations/has-one-through'
+import BelongsTo from 'src/browser/relations/belongs-to'
+import BelongsToMany from 'src/browser/relations/belongs-to-many'
+import HasMany from 'src/browser/relations/has-many'
+import HasManyThrough from 'src/browser/relations/has-many-through'
+import HasOne from 'src/browser/relations/has-one'
+import HasOneThrough from 'src/browser/relations/has-one-through'
 import { RelationNotFoundError } from 'src/errors'
 import { omit } from 'radashi'
 
@@ -91,6 +91,7 @@ const HasRelations = (Model) => {
     }
     belongsToMany (related, table = null, foreignPivotKey = null, relatedPivotKey = null, parentKey = null, relatedKey = null) {
       const instance = new related
+      const query = related.query()
       table = table || this.joiningTable(related, instance)
       foreignPivotKey = foreignPivotKey || this.getForeignKey()
       relatedPivotKey = relatedPivotKey || instance.getForeignKey()
