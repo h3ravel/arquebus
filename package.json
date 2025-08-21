@@ -13,6 +13,13 @@
   "main": "arquebus",
   "type": "module",
   "types": "./types/index.d.ts",
+  "files": [
+    "src",
+    "bin",
+    "types",
+    "arquebus.js",
+    "arquebus.mjs"
+  ],
   "exports": {
     ".": {
       "worker": {

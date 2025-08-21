@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { Collection as BaseCollection } from 'collect.js'
-import { TFunction, TGeneric } from './generics'
+import { MixinConstructor, MixinReturn, TFunction, TGeneric } from './generics'
 
 declare module 'arquebus' {
   type AnyQueryBuilder = QueryBuilder<any, any>;
@@ -801,7 +801,12 @@ declare module 'arquebus' {
 
   export function getRelationMethod (name: string): string;
   export function getScopeMethod (name: string): string;
-  export const compose: MixinFunction
+  export const compose: DeepMixinFunction
+  // export const compose: MixinFunction
+  export function tap<I> (instance: I, callback: (ins: I) => Promise<I> | I): Promise<I> | I
+  export function flattenDeep (arr: any): any[]
+  export function kebabCase (str: string): string
+  export function snakeCase (str: string): string
 
   export function make<T extends new (...args: any[]) => Model> (modelClass: T, attributes: Record<string, any>[]): Collection<T>;
   export function makeCollection<T extends new (...args: any[]) => Model> (modelClass: T, attributes: Record<string, any>[]): Collection<T>;
@@ -813,6 +818,10 @@ declare module 'arquebus' {
 
   export interface MixinFunction {
     <MC extends AnyModelConstructor> (modelClass: MC, ...plugins: Plugin[]): MC;
+  }
+
+  export interface DeepMixinFunction {
+    <MC extends MixinConstructor, P extends ((base: any) => any)[]> (Base: MC, ...mixins: P): MixinReturn<MC, P>
   }
 
   export function migrateRun (
