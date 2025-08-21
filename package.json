@@ -7,6 +7,9 @@
   "bin": {
     "arquebus": "./bin/cli.js"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "arquebus",
   "type": "module",
   "types": "./types/index.d.ts",
