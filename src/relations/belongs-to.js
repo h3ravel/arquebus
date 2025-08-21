@@ -1,7 +1,7 @@
-import { Model } from 'src/model'
+import { Model } from '../model'
 import Relation from './relation'
 import SupportsDefaultModels from './concerns/supports-default-models'
-import { compose } from 'src/utils'
+import { compose } from '../utils'
 
 class BelongsTo extends compose(Relation, SupportsDefaultModels) {
   foreignKey

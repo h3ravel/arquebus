@@ -1,7 +1,7 @@
 import { get, set } from 'radashi'
 
-import { InvalidArgumentError } from 'src/errors'
-import Scope from 'src/scope'
+import { InvalidArgumentError } from '../errors'
+import Scope from '../scope'
 
 const HasGlobalScopes = (Model) => {
   return class extends Model {

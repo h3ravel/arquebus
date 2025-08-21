@@ -1,7 +1,7 @@
 import { flat as flatten, omit } from 'radashi'
-import { flattenDeep, getAttrMethod, getGetterMethod, getSetterMethod } from 'src/utils'
+import { flattenDeep, getAttrMethod, getGetterMethod, getSetterMethod } from '../utils'
 
-import CastsAttributes from 'src/casts-attributes'
+import CastsAttributes from '../casts-attributes'
 import collect from 'collect.js'
 import dayjs from 'dayjs'
 

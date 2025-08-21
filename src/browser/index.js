@@ -1,7 +1,7 @@
-import Attribute from 'src/casts/attribute'
-import CastsAttributes from 'src/casts-attributes'
+import Attribute from '../casts/attribute'
+import CastsAttributes from '../casts-attributes'
 import Collection from './collection'
-import HasUniqueIds from 'src/concerns/has-unique-ids'
+import HasUniqueIds from '../concerns/has-unique-ids'
 import Model from './model'
 import Paginator from './paginator'
 import Pivot from './pivot'
@@ -30,8 +30,8 @@ export { HasUniqueIds }
 export { make }
 export { makeCollection }
 export { makePaginator }
-export * from 'src/utils'
-export * from 'src/errors'
+export * from '../utils'
+export * from '../errors'
 export default {
   isBrowser,
   Paginator,

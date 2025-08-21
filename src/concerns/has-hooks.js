@@ -1,4 +1,5 @@
-import Hooks from 'src/hooks'
+import Hooks from '../hooks'
+
 const HasHooks = (Model) => {
   return class extends Model {
     static hooks = null

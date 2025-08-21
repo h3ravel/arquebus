@@ -1,7 +1,7 @@
 import { isArray, merge } from 'radashi'
 
-import Collection from 'src/collection'
-import { Model } from 'src/model'
+import Collection from '../../collection'
+import { Model } from '../../model'
 import { collect } from 'collect.js'
 
 const InteractsWithPivotTable = (Relation) => {

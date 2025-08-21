@@ -1,5 +1,5 @@
 import { diff as difference } from 'radashi'
-import { flattenDeep } from 'src/utils'
+import { flattenDeep } from '../utils'
 
 const HidesAttributes = (Model) => {
   return class extends Model {

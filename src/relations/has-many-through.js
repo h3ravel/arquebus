@@ -1,7 +1,7 @@
-import { ModelNotFoundError } from 'src/errors'
+import { ModelNotFoundError } from '../errors'
 import Relation from './relation'
 import { isArray } from 'radashi'
-import { tap } from 'src/utils'
+import { tap } from '../utils'
 class HasManyThrough extends Relation {
   throughParent
   farParent

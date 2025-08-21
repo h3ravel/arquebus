@@ -1,8 +1,8 @@
-import Collection from 'src/collection'
+import Collection from '../collection'
 import HasOneOrMany from './has-one-or-many'
 import Relation from './relation'
 import { collect } from 'collect.js'
-import { compose } from 'src/utils'
+import { compose } from '../utils'
 class HasMany extends compose(Relation, HasOneOrMany) {
   foreignKey
   localKey

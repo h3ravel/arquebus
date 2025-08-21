@@ -1,6 +1,6 @@
 import HasManyThrough from './has-many-through'
 import SupportsDefaultModels from './concerns/supports-default-models'
-import { compose } from 'src/utils'
+import { compose } from '../utils'
 class HasOneThrough extends compose(HasManyThrough, SupportsDefaultModels) {
   async getResults () {
     return (await this.first()) || this.getDefaultFor(this.farParent)

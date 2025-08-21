@@ -1,7 +1,7 @@
-import { Model, Pivot } from 'src/model'
+import { Model, Pivot } from '../../model'
 import { diff as difference, isArray, merge } from 'radashi'
 
-import Collection from 'src/collection'
+import Collection from '../../collection'
 import { collect } from 'collect.js'
 
 const InteractsWithPivotTable = (Relation) => {

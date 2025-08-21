@@ -1,7 +1,7 @@
 import HasOneOrMany from './has-one-or-many'
 import Relation from './relation'
 import SupportsDefaultModels from './concerns/supports-default-models'
-import { compose } from 'src/utils'
+import { compose } from '../utils'
 class HasOne extends compose(Relation, HasOneOrMany, SupportsDefaultModels) {
   foreignKey
   localKey

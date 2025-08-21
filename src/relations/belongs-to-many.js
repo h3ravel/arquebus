@@ -1,7 +1,7 @@
-import { compose, tap } from 'src/utils'
+import { compose, tap } from '../utils'
 import { isEqual, omit } from 'radashi'
 
-import Collection from 'src/collection'
+import Collection from '../collection'
 import InteractsWithPivotTable from './concerns/interacts-with-pivot-table'
 import Relation from './relation'
 import { collect } from 'collect.js'

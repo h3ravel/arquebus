@@ -1,6 +1,6 @@
-import Collection from 'src/collection'
+import Collection from '../collection'
 import collect from 'collect.js'
-import { tap } from 'src/utils'
+import { tap } from '../utils'
 const HasOneOrMany = (Relation) => {
   return class extends Relation {
     getRelationValue (dictionary, key, type) {

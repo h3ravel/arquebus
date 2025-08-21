@@ -1,14 +1,14 @@
-import { compose, getRelationMethod, getScopeMethod, snakeCase } from 'src/utils'
+import { compose, getRelationMethod, getScopeMethod, snakeCase } from '../utils'
 
 import BelongsTo from './relations/belongs-to'
 import BelongsToMany from './relations/belongs-to-many'
 import Collection from './collection'
-import HasAttributes from 'src/concerns/has-attributes'
+import HasAttributes from '../concerns/has-attributes'
 import HasMany from './relations/has-many'
 import HasOne from './relations/has-one'
 import HasRelations from './concerns/has-relations'
-import HasTimestamps from 'src/concerns/has-timestamps'
-import HidesAttributes from 'src/concerns/hides-attributes'
+import HasTimestamps from '../concerns/has-timestamps'
+import HidesAttributes from '../concerns/hides-attributes'
 import { assign as merge } from 'radashi'
 import pluralize from 'pluralize'
 

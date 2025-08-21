@@ -1,12 +1,12 @@
-import { getRelationMethod, getRelationName, snakeCase } from 'src/utils'
+import { getRelationMethod, getRelationName, snakeCase } from '../utils'
 
-import BelongsTo from 'src/relations/belongs-to'
-import BelongsToMany from 'src/relations/belongs-to-many'
-import HasMany from 'src/relations/has-many'
-import HasManyThrough from 'src/relations/has-many-through'
-import HasOne from 'src/relations/has-one'
-import HasOneThrough from 'src/relations/has-one-through'
-import { RelationNotFoundError } from 'src/errors'
+import BelongsTo from '../relations/belongs-to'
+import BelongsToMany from '../relations/belongs-to-many'
+import HasMany from '../relations/has-many'
+import HasManyThrough from '../relations/has-many-through'
+import HasOne from '../relations/has-one'
+import HasOneThrough from '../relations/has-one-through'
+import { RelationNotFoundError } from '../errors'
 import { omit } from 'radashi'
 
 const HasRelations = (Model) => {
