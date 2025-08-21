@@ -23,22 +23,20 @@ const external = [
 ]
 export default defineConfig([
     {
-        cjsInterop: true,
         entry: ['src/index.js'],
         format: ['esm', 'cjs'],
         outDir: 'dist',
         dts: true,
-        sourcemap: true,
+        // sourcemap: true,
         external,
         clean: true
     },
     {
-        cjsInterop: true,
         entry: ['src/browser/index.js'],
         format: ['esm', 'cjs'],
         outDir: 'dist/browser',
         dts: true,
-        sourcemap: true,
+        // sourcemap: true,
         external,
         clean: true
     }
