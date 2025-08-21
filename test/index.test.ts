@@ -7,6 +7,7 @@ import {
   Model,
   ModelNotFoundError,
   Paginator,
+  QueryBuilder,
   SoftDeletes,
   arquebus,
   compose,
@@ -18,13 +19,19 @@ import {
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest'
 import { omit, remove } from 'radashi'
 
-import QueryBuilder from 'src/query-builder'
 import { TGeneric } from 'types/generics'
 import collect from 'collect.js'
 import config from './config'
 import crypto from 'crypto'
 import dayjs from 'dayjs'
 import { delay } from './utils'
+
+(async () => {
+  console.log('arquebus (src):', (await import('src')).arquebus)
+  console.log('arquebus (dist):', (await import('dist')).arquebus)
+  console.log('arquebus.default (dist):', (await import('dist')).default)
+})()
+
 
 describe('node environment test', () => {
   test('should load the node version of the module', async () => {

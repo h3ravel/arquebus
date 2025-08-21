@@ -23,7 +23,8 @@ const external = [
 ]
 export default defineConfig([
     {
-        entry: ['arquebus.ts'],
+        cjsInterop: true,
+        entry: ['src/index.js'],
         format: ['esm', 'cjs'],
         outDir: 'dist',
         dts: true,
@@ -32,6 +33,7 @@ export default defineConfig([
         clean: true
     },
     {
+        cjsInterop: true,
         entry: ['src/browser/index.js'],
         format: ['esm', 'cjs'],
         outDir: 'dist/browser',
