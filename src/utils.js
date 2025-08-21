@@ -1,6 +1,6 @@
 import { camel, dash, snake, trim } from 'radashi'
 
-import advancedFormat from 'dayjs/plugin/advancedFormat'
+import advancedFormat from 'dayjs/plugin/advancedFormat.js'
 import dayjs from 'dayjs'
 
 dayjs.extend(advancedFormat)
