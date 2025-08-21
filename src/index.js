@@ -4,7 +4,6 @@ import Attribute from './casts/attribute'
 import Builder from './builder'
 import CastsAttributes from './casts-attributes'
 import Collection from './collection'
-import Errors from './errors'
 import HasUniqueIds from './concerns/has-unique-ids'
 import Migration from './migrations/migration'
 import Model from './model'
@@ -13,7 +12,6 @@ import Pivot from './pivot'
 import Scope from './scope'
 import SoftDeletes from './soft-deletes'
 import arquebus from './arquebus'
-import utils from './utils'
 
 const make = (model, data, options = {}) => {
   const { paginated } = options
@@ -25,7 +23,9 @@ const make = (model, data, options = {}) => {
   }
   return model.make(data)
 }
+
 const makeCollection = (model, data) => new Collection(data.map(item => model.make(item)))
+
 const makePaginator = (model, data) => new Paginator(data.data.map(item => model.make(item)), data.total, data.per_page, data.current_page)
 export { arquebus }
 export { Paginator }
@@ -66,6 +66,4 @@ export default {
   migrateRun,
   migrateRollback,
   migrateStatus,
-  ...Errors,
-  ...utils
 }

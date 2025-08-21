@@ -74,6 +74,7 @@
     "pnpm": ">=4"
   },
   "scripts": {
+    "build": "tsup",
     "lint": "eslint . --ext .ts",
     "test:mysql": "cross-env DB=mysql vitest --project node",
     "test:postgres": "cross-env DB=postgres vitest --project node",
@@ -119,6 +120,7 @@
     "sqlite3": "5.1.7",
     "tedious": "15.1.0",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
     "typescript": "^5.4.5",
     "typescript-eslint": "^8.39.0",
     "vite-tsconfig-paths": "^5.1.4",
