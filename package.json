@@ -162,6 +162,11 @@
     "mssql",
     "active record"
   ],
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sqlite3"
+    ]
+  },
   "readmeFilename": "README.md",
   "license": "MIT"
 }

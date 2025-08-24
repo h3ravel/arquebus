@@ -46,8 +46,8 @@ export default defineConfig([
     },
     {
         entry: ['src/browser/index.ts'],
-        // format: ['esm', 'cjs'],
-        format: ['esm'],
+        format: ['esm', 'cjs'],
+        // format: ['esm'],
         outDir: 'dist/browser',
         dts: true,
         external,
@@ -55,8 +55,8 @@ export default defineConfig([
     },
     {
         entry: ['src/cli/index.ts'],
-        format: ['esm'],
-        // format: ['esm', 'cjs'],
+        // format: ['esm'],
+        format: ['esm', 'cjs'],
         outDir: 'bin',
         dts: true,
         external,
