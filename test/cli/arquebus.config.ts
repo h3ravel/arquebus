@@ -1,4 +1,4 @@
-import { defineConfig } from 'arquebus'
+import { defineConfig } from '@h3ravel/arquebus'
 
 export default defineConfig({
     client: 'mysql2',

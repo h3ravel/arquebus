@@ -99,10 +99,20 @@ class MigrationCreator {
     }
 
     stubPath (stub: string = '') {
-        const __filename = fileURLToPath(import.meta.url)
-        const __dirname = dirname(__filename)
-
+        const __dirname = this.getDirname(import.meta as any)
         return path.join(__dirname, 'stubs', stub)
+    }
+
+    getDirname (meta: ImportMeta | null) {
+        if (typeof __dirname !== 'undefined') {
+            // CJS build
+            return __dirname
+        }
+        if (meta && meta.url) {
+            // ESM build
+            return dirname(fileURLToPath(meta.url))
+        }
+        throw new Error('Unable to determine dirname')
     }
 }
 export default MigrationCreator

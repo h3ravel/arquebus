@@ -48,8 +48,8 @@ describe('Arquebus', () => {
     })
     expect(() => {
       arquebus.connection()
-    }).toThrow()
-    arquebus.connections = {}
+    }).toThrow();
+    (arquebus as any).connections = {}
   })
 })
 
@@ -856,7 +856,7 @@ describe('Integration test', async () => {
               const users = await connection.table('users').get()
 
               expect(users.length).toBe(2)
-              expect(users.map(user => user.name)).toEqual(['Shuri', 'Alice'])
+              expect(users.map((user: any) => user.name)).toEqual(['Shuri', 'Alice'])
             })
 
             it('returns an empty collection if there are no results', async () => {
@@ -944,7 +944,7 @@ describe('Integration test', async () => {
                 let total: number
 
                 return connection.table('posts').count().then(count => {
-                  total = parseInt(count)
+                  total = parseInt(String(count))
 
                   return connection.table('posts')
                     .select('user_id')
@@ -957,11 +957,11 @@ describe('Integration test', async () => {
               })
 
               it('counts grouped rows when using table name qualifier', () => {
-                let total
+                let total: number
 
                 connection.table('posts').count()
-                  .then(count => {
-                    total = parseInt(count, 10)
+                  .then((count) => {
+                    total = parseInt(String(count), 10)
 
                     return connection.table('posts')
                       .select('user_id')
@@ -1385,10 +1385,10 @@ describe('Integration test', async () => {
 
           describe('with groupBy', () => {
             it('counts grouped rows instead of total rows', () => {
-              let total
+              let total: number
 
               return Post.query().count().then(count => {
-                total = parseInt(count)
+                total = parseInt(String(count))
 
                 return Post.query()
                   // .max('id')
@@ -1402,11 +1402,11 @@ describe('Integration test', async () => {
             })
 
             it('counts grouped rows when using table name qualifier', () => {
-              let total
+              let total: number
 
               Post.query().count()
                 .then(count => {
-                  total = parseInt(count, 10)
+                  total = parseInt(String(count), 10)
 
                   return Post.query()
                     // .max('id')

@@ -5,7 +5,7 @@ import type Builder from 'src/builder'
 import type { Knex } from 'knex'
 import type Model from 'src/model'
 import type Relation from 'src/relations/relation'
-import type { arquebus } from 'arquebus'
+import type { arquebus } from 'src'
 
 export interface TBaseConfig {
     client: 'mysql' | 'mysql2' | 'sqlite3' | 'oracle' | 'mariadb' | 'pg'

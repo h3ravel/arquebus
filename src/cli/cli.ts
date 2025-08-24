@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { Argument, Option, program } from 'commander'
-import { TableGuesser, Utils } from 'cli/utils'
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { TableGuesser, Utils } from 'src/cli/utils'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
 import { Migrate } from 'src/migrate'
 import MigrationCreator from 'src/migrations/migration-creator'
@@ -58,6 +58,9 @@ export class Cli {
   async loadConfig () {
     try {
       this.config = (await import(this.configPath ?? '----')).default
+      if (this.config.migrations?.path) {
+        await mkdir(path.join(this.cwd, this.config.migrations?.path), { recursive: true })
+      }
     } catch {
       this.config = {} as TBaseConfig
     }

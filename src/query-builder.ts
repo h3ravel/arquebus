@@ -19,6 +19,7 @@ export class QueryBuilder<M extends Model = Model, R = M[] | M> extends Inferenc
         this.connector = connector(config)
         return this.asProxy()
     }
+
     asProxy () {
         const handler = {
             get: function (target: QueryBuilder<M, R>, prop: keyof QueryBuilder<M, R>) {

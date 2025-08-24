@@ -1,11 +1,11 @@
 {
   "name": "@h3ravel/arquebus",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "packageManager": "pnpm@10.14.0",
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.net/arquebus",
   "bin": {
-    "arquebus": "./bin/cli.js"
+    "arquebus": "./bin/index.js"
   },
   "publishConfig": {
     "access": "public"
@@ -22,13 +22,23 @@
   ],
   "exports": {
     ".": {
+      "cli": {
+        "import": {
+          "types": "./bin/index.d.ts",
+          "default": "./bin/index.js"
+        },
+        "require": {
+          "types": "./bin/index.d.cts",
+          "default": "./bin/index.cjs"
+        }
+      },
       "worker": {
         "import": {
           "types": "./dist/index.d.ts",
           "default": "./dist/index.js"
         },
         "require": {
-          "types": "./dist/index.d.ts",
+          "types": "./dist/index.d.cts",
           "default": "./dist/index.cjs"
         }
       },
@@ -38,7 +48,7 @@
           "default": "./dist/index.js"
         },
         "require": {
-          "types": "./dist/index.d.ts",
+          "types": "./dist/index.d.cts",
           "default": "./dist/index.cjs"
         }
       },
@@ -48,7 +58,7 @@
           "default": "./dist/browser/index.js"
         },
         "require": {
-          "types": "./dist/browser/index.d.ts",
+          "types": "./dist/browser/index.d.cts",
           "default": "./dist/browser/index.cjs"
         }
       },
@@ -58,7 +68,7 @@
           "default": "./dist/index.js"
         },
         "require": {
-          "types": "./dist/index.d.ts",
+          "types": "./dist/index.d.cts",
           "default": "./dist/index.cjs"
         }
       }
@@ -69,7 +79,7 @@
         "default": "./dist/browser/index.js"
       },
       "require": {
-        "types": "./dist/browser/index.d.ts",
+        "types": "./dist/browser/index.d.cts",
         "default": "./dist/browser/index.cjs"
       }
     },
