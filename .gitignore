@@ -5,3 +5,4 @@ dist
 !bin
 bin/*
 !bin/.gitkeep
+/arquebus.config.ts

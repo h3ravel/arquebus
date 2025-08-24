@@ -47,9 +47,15 @@ describe('Arquebus', () => {
       }
     })
     expect(() => {
-      arquebus.connection()
+      arquebus.connection('abc' as any)
     }).toThrow();
     (arquebus as any).connections = {}
+  })
+
+  it('Should be able to autoload config.', async () => {
+    const config = await arquebus.autoLoad()
+    expect(arquebus.connection(config.client)).toBeInstanceOf(QueryBuilder)
+    expect(1).toBe(1)
   })
 })
 

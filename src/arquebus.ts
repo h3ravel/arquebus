@@ -6,6 +6,8 @@ import { Model } from './model'
 import QueryBuilder from './query-builder'
 import type { ModelOptions, TBaseConfig, TConfig } from 'types/container'
 import type { TFunction, TGeneric } from 'types/generics'
+import path from 'path'
+import { existsSync } from 'fs'
 
 class arquebus<M extends Model = Model> {
   static connectorFactory: typeof Knex | null = null
@@ -30,36 +32,52 @@ class arquebus<M extends Model = Model> {
     }
     return this.instance
   }
-  static connection (connection: TBaseConfig['client'] | null = null) {
-    return this.getInstance().getConnection(connection)
+
+  /**
+   * Initialize a database connection 
+   * 
+   * @returns 
+   */
+  static connection<C extends TBaseConfig['client']> (connection: C | null = null): QueryBuilder<Model> {
+    return this.getInstance().getConnection(connection) as any
   }
+
   static setConnectorFactory (connectorFactory: typeof Knex) {
     this.connectorFactory = connectorFactory
   }
+
   static getConnectorFactory () {
     return this.connectorFactory ?? Knex
   }
+
   static addConnection (config: TConfig | TBaseConfig, name: string = 'default') {
     return this.getInstance().addConnection(config, name)
   }
+
   static beginTransaction (connection = null) {
     return this.getInstance().beginTransaction(connection)
   }
+
   static transaction (callback: TFunction, connection = null) {
     return this.getInstance().transaction(callback, connection)
   }
+
   static table (name: string, connection = null) {
     return this.getInstance().table(name, connection)
   }
+
   static schema (connection = null) {
     return this.getInstance().schema(connection)
   }
+
   static async destroyAll () {
     await this.getInstance().destroyAll()
   }
+
   static createModel<X extends TGeneric> (name: string, options: X) {
     return this.getInstance().createModel(name, options)
   }
+
   connection (connection: string | null = null) {
     return this.getConnection(connection)
   }
@@ -88,23 +106,54 @@ class arquebus<M extends Model = Model> {
       }
     }
   }
+
+  static async autoLoad (): Promise<TBaseConfig> {
+    let config: TBaseConfig
+    const jsPath = path.resolve('arquebus.config.js')
+    const tsPath = path.resolve('arquebus.config.ts')
+    const instance = this.getInstance()
+
+    if (existsSync(jsPath)) {
+      config = (await import(jsPath)).default
+      instance.addConnection(config, config.client)
+      return config
+    }
+
+    if (existsSync(tsPath)) {
+      if (process.env.NODE_ENV !== 'production') {
+        config = (await import(tsPath)).default
+        instance.addConnection(config, config.client)
+        return config
+      } else {
+        throw new Error('arquebus.config.ts found in production without build step')
+      }
+    }
+
+    return {} as TBaseConfig
+  }
+
   beginTransaction (connection = null) {
     return this.connection(connection).beginTransaction()
   }
+
   transaction (callback: TFunction, connection = null) {
     return this.connection(connection).transaction(callback)
   }
+
   table (name: string, connection = null) {
     return this.connection(connection).table(name)
   }
+
   schema (connection = null) {
     return this.connection(connection).schema
   }
+
   async destroyAll () {
     await Promise.all(Object.values(this.manager).map((connection) => {
       return connection?.destroy()
     }))
   }
+
   createModel (name: string, options: ModelOptions = {}) {
     let BaseModel = Model
     if ('plugins' in options) {
