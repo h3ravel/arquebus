@@ -1,7 +1,9 @@
-import type { MixinConstructor, XGeneric } from 'types/generics'
+import * as comp from 'src/mixin'
+
 import { camel, dash, snake, trim } from 'radashi'
 
 import type { TConfig } from 'types/container'
+import type { XGeneric } from 'types/generics'
 import advancedFormat from 'dayjs/plugin/advancedFormat.js'
 import dayjs from 'dayjs'
 
@@ -55,32 +57,7 @@ export const tap = <I> (instance: I, callback: (ins: I) => Promise<I> | I): Prom
   return result instanceof Promise ? result.then(() => instance) : instance
 }
 
-/* Utility: turns union into intersection */
-type UnionToIntersection<U> =
-  (U extends any ? (x: U) => void : never) extends (x: infer I) => void ? I : never
-
-type Mixin<TBase extends MixinConstructor, TReturn extends MixinConstructor> =
-  (base: TBase) => TReturn
-
-/**
- * Compose functional mixins
- * 
- * @param Base 
- * @param mixins 
- * @returns 
- */
-export function compose<
-  MC extends MixinConstructor,
-  P extends Mixin<MC, MixinConstructor>[]
-> (
-  Base: MC,
-  ...mixins: P
-): new (...args: any[]) =>
-    InstanceType<MC> &
-    UnionToIntersection<InstanceType<ReturnType<P[number]>>> {
-
-  return mixins.reduce((acc, mixin) => mixin(acc) as any, Base) as any
-}
+export const { compose } = comp
 
 export const flattenDeep = (arr: any) => Array.isArray(arr)
   ? arr.reduce((a, b) => a.concat(flattenDeep(b)), [])

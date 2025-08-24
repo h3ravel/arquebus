@@ -1,13 +1,12 @@
-import {
+import { beforeEach, describe, expect, it, test } from 'vitest'
+import browser, {
   Attribute,
   Collection,
   Model,
   Paginator,
   make,
   makeCollection,
-  makePaginator,
 } from 'src/browser'
-import { beforeEach, describe, expect, it, test } from 'vitest'
 
 import { compose } from 'src/utils'
 
@@ -20,7 +19,7 @@ describe('browser environment test', () => {
 
   test('should load the node version of the module', async () => {
     // Test that it is the browser version of the module
-    const module = (await import('@h3ravel/arquebus'))
+    const module = (await import('@h3ravel/arquebus')) as any
     expect(module.isBrowser).toBe(undefined)
   })
 })
@@ -36,6 +35,7 @@ describe('Model', () => {
   }
 
   class User extends compose(
+    class { },
     Model,
     SomePlugin,
   ) {
@@ -43,6 +43,8 @@ describe('Model', () => {
       return this.hasMany(Post)
     }
   }
+
+  Model.make()
 
   class Post extends Model {
     relationAuthor () {
@@ -159,9 +161,7 @@ describe('Model', () => {
       expect(users.items().count()).toBe(2)
       expect(users.items().get(1)).toBeInstanceOf(User)
 
-      const users2 = makePaginator(User, data, {
-        paginated: true
-      })
+      const users2 = browser.makePaginator(User, data)
       expect(users2).toBeInstanceOf(Paginator)
       expect(users2.total()).toBe(2)
       expect(users2.perPage()).toBe(10)

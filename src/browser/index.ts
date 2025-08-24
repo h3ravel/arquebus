@@ -49,7 +49,6 @@ export { CastsAttributes }
 export { HasUniqueIds }
 export { make }
 export { makeCollection }
-export { makePaginator }
 export * from '../utils'
 export * from '../errors'
 export default {
