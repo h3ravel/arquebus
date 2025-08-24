@@ -1,10 +1,15 @@
 <div align="center">
-  <img src="https://h3ravel.toneflix.net/logo-full.svg" width="100" alt="H3ravel logo" />
+  <a href="https://h3ravel.toneflix.net"  target="_blank">
+    <img src="https://raw.githubusercontent.com/h3ravel/assets/refs/heads/main/logo-full.svg" width="200" alt="H3ravel Logo">
+  </a>
   <h1 align="center"><a href="https://h3ravel.toneflix.net/arquebus">H3ravel Arquebus</a></h1>
-  <a href="https://www.npmjs.com/package/@h3ravel/arquebus"><img alt="NPM version" src="https://img.shields.io/npm/v/@h3ravel/arquebus.svg"></a>
-  <a href="https://github.com/h3ravel/arquebus/workflows/tests"><img alt="ci" src="https://github.com/h3ravel/arquebus/workflows/tests/badge.svg"></a>
-  <a href="https://github.com/h3ravel/arquebus/blob/main/README.md"><img alt="GitHub" src="https://img.shields.io/github/license/h3ravel/arquebus"></a>
-  <br />
+
+[![Framework][ix]][lx]
+[![Console Package Version][i1]][l1]
+[![Downloads][d1]][d1]
+[![Tests][tei]][tel]
+[![License][lini]][linl]
+
 </div>
 
 Arquebus ORM is a Beautiful, expressive framework-agnostic Object-Relational Mapper (ORM) inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework that makes it enjoyable to interact with your database. When using Arquebus, each database table has a corresponding "Model" that is used to interact with that table. In addition to retrieving records from the database table, Arquebus models allow you to insert, update, and delete records from the database as well.
@@ -92,3 +97,13 @@ await user.load('posts');
 ## Show Your Support
 
 Please ⭐️ this repository if this project helped you
+
+[ix]: https://img.shields.io/npm/v/%40h3ravel%2Fcore?style=flat-square&label=Framework&color=%230970ce
+[lx]: https://www.npmjs.com/package/@h3ravel/core
+[i1]: https://img.shields.io/npm/v/%40h3ravel%2Farquebus?style=flat-square&label=@h3ravel/arquebus&color=%230970ce
+[l1]: https://www.npmjs.com/package/@h3ravel/arquebus
+[d1]: https://img.shields.io/npm/dt/%40h3ravel%2Farquebus?style=flat-square&label=Downloads&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40h3ravel%2Farquebus
+[linl]: https://github.com/h3ravel/arquebus/blob/main/LICENSE
+[lini]: https://img.shields.io/github/license/h3ravel/arquebus
+[tel]: https://github.com/h3ravel/arquebus/workflows/tests
+[tei]: https://github.com/h3ravel/arquebus/workflows/tests/badge.svg
