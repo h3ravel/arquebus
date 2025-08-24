@@ -35,9 +35,10 @@ const external = [
 ]
 export default defineConfig([
     {
+        treeshake: true,
         entry: ['src/index.ts'],
-        format: ['esm'],
-        // format: ['esm', 'cjs'],
+        // format: ['esm'],
+        format: ['esm', 'cjs'],
         outDir: 'dist',
         dts: true,
         // sourcemap: true,
@@ -45,6 +46,7 @@ export default defineConfig([
         clean: true
     },
     {
+        treeshake: true,
         entry: ['src/browser/index.ts'],
         format: ['esm', 'cjs'],
         // format: ['esm'],
@@ -54,6 +56,7 @@ export default defineConfig([
         clean: true
     },
     {
+        treeshake: true,
         entry: ['src/cli/index.ts'],
         // format: ['esm'],
         format: ['esm', 'cjs'],
@@ -64,7 +67,7 @@ export default defineConfig([
             setTimeout(async () => {
                 for await (const entry of glob(path.join(process.cwd(), 'src/**/*.stub')))
                     await copyFile(entry, entry.replace('src', 'bin'))
-            }, 3000)
+            }, 5000)
 
         },
     }

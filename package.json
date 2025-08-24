@@ -94,7 +94,7 @@
     "pnpm": ">=4"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup --minify terser",
     "lint": "eslint . --ext .ts",
     "cmd": "cross-env TEST=true tsx --experimental-specifier-resolution=node src/cli",
     "cmd:watch": "cross-env TEST=true tsx watch --experimental-specifier-resolution=node src/cli",
@@ -132,6 +132,7 @@
     "@types/pluralize": "^0.0.33",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.40.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "cross-env": "^7.0.3",
     "eslint": "^9.33.0",
     "husky": "^8.0.3",
@@ -142,6 +143,7 @@
     "prettier": "2.6.2",
     "sqlite3": "5.1.7",
     "tedious": "15.1.0",
+    "terser": "^5.43.1",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "tsx": "^4.20.4",
