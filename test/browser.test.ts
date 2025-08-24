@@ -25,7 +25,7 @@ describe('browser environment test', () => {
 })
 
 describe('Model', () => {
-  const SomePlugin = (Model) => {
+  const SomePlugin = (Model: any) => {
     return class extends Model {
       pluginAttribtue = 'plugin'
       pluginMethod () {
@@ -35,7 +35,6 @@ describe('Model', () => {
   }
 
   class User extends compose(
-    class { },
     Model,
     SomePlugin,
   ) {
@@ -44,7 +43,6 @@ describe('Model', () => {
     }
   }
 
-  Model.make()
 
   class Post extends Model {
     relationAuthor () {

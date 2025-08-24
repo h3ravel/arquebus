@@ -15,6 +15,13 @@ type UnionToIntersection<U> =
     : never
 
 /**
+ * Helper type to get static side of a constructor
+ */
+type Static<T> = {
+    [K in keyof T]: T[K]
+}
+
+/**
  * Compose function that merges multiple classes and mixins
  * 
  * @example
@@ -75,7 +82,17 @@ export function compose<
             : never
         }[number]
     >
-> {
+> &
+    UnionToIntersection<
+        {
+            [K in keyof TMixins]: TMixins[K] extends Mixin<any>
+            ? Static<ReturnType<TMixins[K]>>
+            : TMixins[K] extends Constructor
+            ? Static<TMixins[K]>
+            : never
+        }[number]
+    > &
+    Static<TBase> {
     /**
      * Apply each mixin or class in sequence
      */
