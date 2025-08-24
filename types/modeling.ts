@@ -3,11 +3,15 @@ import type { Hook, RelationNames, ReturnTypeOfMethod, SnakeToCamelCase, TFuncti
 
 import type { IBuilder } from './builder'
 import type { ICollection } from './utils'
+import type Model from 'src/model'
+import type { TBaseConfig } from './container'
 
 export interface Attribute {
     make (config: { get?: TFunction | null, set?: TFunction | null }): Attribute;
-    get: TFunction | null;
+    get: TFunction | null
     set: TFunction | null
+    withCaching?: boolean
+    withObjectCaching?: boolean
 }
 
 export interface CastsAttributes {
@@ -15,31 +19,31 @@ export interface CastsAttributes {
     set (): void;
 }
 
-export type Relation<M> = IBuilder<M, any> & {
+export type Relation<M extends Model> = IBuilder<M, any> & {
 }
 
-export interface HasOneOrMany<M> extends Relation<M> {
+export interface HasOneOrMany<M extends Model> extends Relation<M> {
     save (model: M): Promise<M>;
     saveMany (models: M[] | ICollection<M>): Promise<ICollection<M>>;
     create (attributes?: any): Promise<M>;
     createMany (records: any[]): Promise<ICollection<M>>;
 }
 
-export interface HasOne<M> extends HasOneOrMany<M> {
+export interface HasOne<M extends Model> extends HasOneOrMany<M> {
     getResults (): Promise<M | null>;
     withDefault (callback?: TFunction | object): this;
 }
 
-export interface HasMany<M> extends HasOneOrMany<M> {
+export interface HasMany<M extends Model> extends HasOneOrMany<M> {
     getResults (): Promise<ICollection<M>>;
 }
 
-export interface BelongsTo<M> extends Relation<M> {
+export interface BelongsTo<M extends Model> extends Relation<M> {
     getResults (): Promise<M | null>;
     withDefault (callback?: TFunction | object): this;
 }
 
-export interface BelongsToMany<M> extends Relation<M> {
+export interface BelongsToMany<M extends Model> extends Relation<M> {
     getResults (): Promise<ICollection<M>>;
     withTimestamps (): this;
     wherePivot (column: any, operator?: any, value?: any, boolean?: string, ...args: any[]): this;
@@ -65,21 +69,21 @@ export interface IModel {
     relations: any
     exists: boolean
     primaryKey: string
-    builder: IBuilder<any, any>
-    table: string
-    connection: string
+    builder?: IBuilder<any, any> | null
+    table: string | null
+    connection?: TBaseConfig['client'] | null
     keyType: string
     incrementing: boolean
     perPage: number
-    with: string[]
+    with: string | string[] | TGeneric<(...args: any[]) => IBuilder<Model>>
     withCount: string[]
     trx: AnyQueryBuilder | null
     timestamps: boolean
     dateFormat: string
     visible: string[]
     hidden: string[]
-    query<T extends { prototype: unknown }> (this: T, client?: AnyQueryBuilder | null): IBuilder<T['prototype']>;
-    on<T extends { prototype: unknown }> (this: T, connection: string | null): IBuilder<T['prototype']>;
+    query<T extends { prototype: unknown }> (this: T, client?: AnyQueryBuilder | null): IBuilder<Model>;
+    on<T extends { prototype: unknown }> (this: T, connection: string | null): IBuilder<Model>;
     boot (): void;
     make<T extends IModel> (this: new () => T, attributes?: TGeneric): T;
     addHook (hook: Hook, callback: TFunction): void;
@@ -104,7 +108,7 @@ export interface IModel {
     getKeyName (): string;
     getConnectionName (): string;
     getConnection (): any;
-    setConnection (connection: string): this;
+    setConnection (connection: TBaseConfig['client'] | null): this;
     usesUniqueIds (): boolean;
     uniqueIds (): string[];
     newUniqueId (): string;
@@ -122,13 +126,13 @@ export interface IModel {
     fill (attributes: any): this;
     setAppends (appends: string[]): this;
     append (key: string | string[]): this;
-    getRelation<T extends IModel> (relation: string): T | ICollection<T> | null | undefined;
-    setRelation<T extends IModel> (relation: string, value: T | ICollection<T> | null): this;
+    getRelation<T extends Model> (relation: string): T | ICollection<T> | null | undefined;
+    setRelation<T extends Model> (relation: string, value: T | ICollection<T> | null): this;
     unsetRelation (relation: string): this;
     relationLoaded (relation: string): boolean;
     makeVisible (attributes: string | string[]): this;
     makeHidden (attributes: string | string[]): this;
-    newCollection (models?: any[]): ICollection<this>;
+    newCollection (models?: any[]): ICollection<Model>;
     load (relations: WithRelationType): Promise<this>;
     load (...relations: WithRelationType[]): Promise<this>;
     loadAggregate (relations: WithRelationType, column: any, callback?: any): Promise<this>;
@@ -166,7 +170,7 @@ export interface IModel {
     restore (options?: any): Promise<boolean>;
     trashed (): boolean;
     fresh (): Promise<this>;
-    refresh (): Promise<this>;
+    refresh (): Promise<this | undefined>;
     push (): Promise<boolean>;
     is (model: this): boolean;
     isNot (model: this): boolean;
@@ -177,13 +181,10 @@ export interface IModel {
         `relation${Capitalize<SnakeToCamelCase<T>>}`
     >;
     getRelated<T extends RelationNames<this>> (relation: T): ReturnTypeOfMethod<
-        ReturnTypeOfMethod<this, `relation${Capitalize<SnakeToCamelCase<T>>}`>,
-        'getResults'
-    >;
-    hasOne<T extends IModel> (model: new () => T, foreignKey?: string, localKey?: string): HasOne<T>;
-    hasMany<T extends IModel> (model: new () => T, foreignKey?: string, localKey?: string): HasMany<T>;
-    belongsTo<T extends IModel> (model: new () => T, foreignKey?: string, ownerKey?: string, relation?: string): BelongsTo<T>;
-    belongsToMany<T extends IModel> (model: new () => T, table?: string, foreignPivotKey?: string, relatedPivotKey?: string, parentKey?: string, relatedKey?: string): BelongsToMany<T>;
+        ReturnTypeOfMethod<this, `relation${Capitalize<SnakeToCamelCase<T>>}`>, any>//'getResults'>;
+    hasOne<T extends Model> (model: new () => T, foreignKey?: string, localKey?: string): HasOne<T>;
+    hasMany<T extends Model> (model: new () => T, foreignKey?: string, localKey?: string): HasMany<T>;
+    belongsTo<T extends Model> (model: new () => T, foreignKey?: string, ownerKey?: string, relation?: string): BelongsTo<T>;
+    belongsToMany<T extends Model> (model: new () => T, table?: string, foreignPivotKey?: string, relatedPivotKey?: string, parentKey?: string, relatedKey?: string): BelongsToMany<T>;
 }
-
 export type IPivot = IModel & {}

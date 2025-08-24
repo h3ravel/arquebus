@@ -23,7 +23,7 @@ const external = [
 ]
 export default defineConfig([
     {
-        entry: ['src/index.js'],
+        entry: ['src/index.ts'],
         format: ['esm', 'cjs'],
         outDir: 'dist',
         dts: true,
@@ -32,12 +32,18 @@ export default defineConfig([
         clean: true
     },
     {
-        entry: ['src/browser/index.js'],
+        entry: ['src/browser/index.ts'],
         format: ['esm', 'cjs'],
         outDir: 'dist/browser',
         dts: true,
-        // sourcemap: true,
         external,
         clean: true
+    },
+    {
+        entry: ['src/cli/cli.ts'],
+        format: ['esm', 'cjs'],
+        outDir: 'bin',
+        dts: true,
+        external,
     }
 ]) 

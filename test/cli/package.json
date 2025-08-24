@@ -1,0 +1,6 @@
+{
+  "name": "arquebus",
+  "type": "module",
+  "version": "1.1.0",
+  "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework."
+}

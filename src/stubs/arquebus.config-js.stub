@@ -1,18 +1,25 @@
-// Update with your config settings.
+import { defineConfig } from 'arquebus'
 
-export default {
-  client: 'mysql2',
-  connection: {
-    host: 'localhost',
-    database: 'database',
-    user:     'user',
-    password: 'password'
-  },
-  migrations: {
-    table: 'migrations',
-    path: './migrations',
-  },
-  models: {
-    path: './models'
-  }
-};
+export default defineConfig({
+    client: 'mysql2',
+    connection: {
+        host: 'localhost',
+        database: 'database',
+        user: 'user',
+        password: 'password'
+    },
+    migrations: {
+        table: 'migrations',
+        path: './migrations',
+    },
+    factories: {
+        path: './factories',
+    },
+    seeders: {
+        path: './seeders',
+    },
+    models: {
+        path: './models'
+    }
+})
+

@@ -1,6 +1,9 @@
-import Model from 'src/model'
+import type Model from 'src/model'
 
-export type TGeneric = Record<string, any>
+export type TGeneric<V = any, K extends string = string> = Record<K, V>
+export type XGeneric<V = TGeneric, T = any> = {
+    [key: string]: T
+} & V
 
 export interface Plugin {
     (model: Model, config: TGeneric): void
@@ -43,7 +46,7 @@ export type RelationNames<T> = FunctionPropertyNames<T> extends infer R
     ? R extends `relation${infer P}` ? P extends ('sToData' | 'loaded') ? never : CamelToSnakeCase<P> : never
     : never;
 
-export type MixinConstructor<T = any> = new (...args: T[]) => T
+export type MixinConstructor<T = TGeneric> = new (...args: any[]) => T
 
 // Helper type: combine all mixin instance types into a single intersection
 export type MixinReturn<Base extends MixinConstructor, Mixins extends ((base: any) => any)[]> =
@@ -62,3 +65,7 @@ export type InstanceTypeOfMixins<T extends ((base: any) => any)[]> =
 
 export type IntersectionOfInstances<U> =
     (U extends any ? (x: U) => any : never) extends (x: infer I) => any ? I : never
+
+export interface DeepMixinFunction {
+    <MC extends MixinConstructor, P extends ((base: any) => any)[]> (Base: MC, ...mixins: P): MixinReturn<MC, P>
+}

@@ -1,35 +1,47 @@
-import { AnyQueryBuilder, GroupByMethod, JoinMethod, JoinRawMethod, OrderByMethod, OrderByRawMethod, Raw, RawInterface, SelectMethod, SetOperationsMethod, UnionMethod, WhereBetweenMethod, WhereColumnMethod, WhereExistsMethod, WhereFieldExpressionMethod, WhereInMethod, WhereJsonExpressionMethod, WhereMethod, WhereNullMethod, WhereRawMethod, WhereWrappedMethod } from './query-methods'
+import type { AnyQueryBuilder, GroupByMethod, JoinMethod, JoinRawMethod, OrderByMethod, OrderByRawMethod, RawInterface, SelectMethod, SetOperationsMethod, UnionMethod, WhereBetweenMethod, WhereColumnMethod, WhereExistsMethod, WhereFieldExpressionMethod, WhereInMethod, WhereJsonExpressionMethod, WhereMethod, WhereNullMethod, WhereRawMethod, WhereWrappedMethod } from './query-methods'
+import type { ICollection, IPaginator, IPaginatorParams } from './utils'
+import type { TFunction, TGeneric } from './generics'
 
+import type BModel from 'src/browser/model'
 import type { Knex } from 'knex'
-import type { Paginator } from './utils'
+import type Model from 'src/model'
 
-export type SchemaBuilder = Knex.SchemaBuilder;
-
-type Trx = AnyQueryBuilder & {
-    commit (): Promise<void>;
-    rollback (): Promise<void>;
+export interface SchemaBuilder extends Knex.SchemaBuilder {
+    [k: string]: any
 };
 
 interface AsMethod<QB extends AnyQueryBuilder> {
     (alias: string): QB;
 }
 
-export type IConnector = Knex & Knex.QueryBuilder
+export interface IStatement {
+    grouping: string
+    direction: string
+    type: string
+    value: () => any,
+    not: boolean
+    nulls: boolean
+    bool: 'and' | 'or' | 'not'
+}
 
-export interface IQueryBuilder<M, R = M[] | M> {
-    connector: IConnector
+export type IConnector<M extends TGeneric = any, R = any> = Knex & Knex.QueryBuilder<M, R>
+
+export interface IQueryBuilder<M extends Model | BModel = Model, R = M[] | M> {
+    // connector: IQueryBuilder<M, R>
     schema: SchemaBuilder
-    table (name: string): this;
+    _statements: IStatement[],
+    table (name: string): IQueryBuilder<M, R>
     select: SelectMethod<this>
     columns: SelectMethod<this>
     column: SelectMethod<this>
     distinct: SelectMethod<this>
     distinctOn: SelectMethod<this>
     as: AsMethod<this>
-
+    asProxy (): IQueryBuilder<M, R>
     where: WhereMethod<this>
     andWhere: WhereMethod<this>
-    orWhere: WhereMethod<this>
+    // orWhere: WhereMethod<this>
+    orWhere (...args: any[]): this
     whereNot: WhereMethod<this>
     andWhereNot: WhereMethod<this>
     orWhereNot: WhereMethod<this>
@@ -130,18 +142,17 @@ export interface IQueryBuilder<M, R = M[] | M> {
 
     groupBy: GroupByMethod<this>
     groupByRaw: RawInterface<this>
-
-    beginTransaction (): Promise<Trx>;
-    transaction (callback: (trx: Trx) => Promise<any>): Promise<any>;
-    destroy (): void;
+    transaction (callback?: TFunction): Promise<Knex.Transaction> | undefined;
+    destroy (callback: TFunction): Promise<number>;
+    destroy (): Promise<number>;
     clone (): IQueryBuilder<M, R>;
-    raw (sql: string, bindings?: any[]): Raw;
-    get<T = M> (columns?: string[]): Promise<T[]>;
-    first<T = M> (columns?: string[]): Promise<T | null | undefined>;
-    find<T = M> (key: string | number, columns?: string[]): Promise<T>;
+    raw: Knex.RawQueryBuilder<TGeneric, M>;
+    get (columns?: string[]): Promise<any>;
+    first (columns?: string[]): Promise<M | null | undefined>;
+    find (key: string | number, columns?: string[]): Promise<M | null | undefined>;
     insert (attributes: any): Promise<unknown>;
-    update (attributes: any): Promise<unknown>;
-    delete (): Promise<number>;
+    update (...attributes: any[]): Promise<number>;
+    delete (): Promise<boolean | number>;
     exists (): Promise<boolean>;
     count (column?: string): Promise<number>;
     min (column: string): Promise<number>;
@@ -152,7 +163,8 @@ export interface IQueryBuilder<M, R = M[] | M> {
     take (count: number): this;
     limit (count: number): this;
     offset (count: number): this;
+    // pluck<X extends Model = any> (column: string): Promise<ICollection<X>>;
     chunk (count: number, callback: (rows: M[]) => any): Promise<boolean>;
     forPage (page: number, perPage?: number): this;
-    paginate<F = { current_page: number, data: M[], per_page: number, total: number, last_page: number, count: number, }> (page: number, perPage?: number): Promise<Paginator<M, F>>;
+    paginate<F extends IPaginatorParams> (page?: number, perPage?: number): Promise<IPaginator<M, F>>;
 }

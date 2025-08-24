@@ -15,13 +15,20 @@
     "useDefineForClassFields": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
+      "cli/*": ["src/cli/*"],
       "package": ["package.json"],
-      "@h3ravel/arquebus": ["src/index.js"],
+      "@h3ravel/arquebus": ["src/index.ts"],
       "@h3ravel/arquebus/browser": ["src/browser/index.ts"],
-      "src": ["src/index.js"],
+      "src": ["src/index.ts"],
       "src/*": ["src/*"]
     }
   },
-  "include": ["./**/*.d.ts", "./**/*", "src", "types"],
+  "include": [
+    "./**/*.d.ts",
+    "./**/*",
+    "src",
+    "types",
+    "node_modules/.pnpm/tedious@15.1.0/node_modules/tedious/migrations/2025_08_23_182350_create_dave_table.js"
+  ],
   "exclude": ["./bin", "./dist", "./**/dist", "/.node_modules"]
 }

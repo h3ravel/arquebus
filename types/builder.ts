@@ -1,29 +1,37 @@
 import type { AnyQueryBuilder, WithRelationType } from './query-methods'
-import type { ICollection, Paginator } from './utils'
+import type { ICollection, IPaginator, IPaginatorParams } from './utils'
 
-import { IModel } from './modeling'
+import type BModel from 'src/browser/model'
+import type Builder from 'src/builder'
+import type { IModel } from './modeling'
 import type { IQueryBuilder } from './query-builder'
+import type Model from 'src/model'
 
-type BaseBuilder<M, R> = Omit<
-    IQueryBuilder<M, R>,
-    'destroy' | 'clone' | 'get' | 'skip' | 'limit' | 'take' | 'offset' | 'chunk' | 'forPage'
->
+// type BaseBuilder<M extends Model, R> = Omit<
+//     IQueryBuilder<M, R>,
+//     'destroy' | 'clone' | 'get' | 'skip' | 'limit' | 'take' | 'offset' | 'chunk' | 'forPage'
+// >
 
-export interface IBuilder<M, R = ICollection<M> | IModel> extends BaseBuilder<M, R> {
-    asProxy (): ProxyConstructor;
-    chunk (count: number, callback: (rows: ICollection<M>) => any): Promise<boolean>;
+export interface IScope {
+    apply (builder: Builder<any>, model: Model): void;
+}
+
+
+export interface IBuilder<M extends Model | BModel, R = ICollection<M> | IModel> extends IQueryBuilder<M, R> {
+    asProxy (): IQueryBuilder<M, R>;
+    // chunk (count: number, callback: (rows: ICollection<M>) => any): Promise<boolean>;
     enforceOrderBy (): void;
-    clone (): IBuilder<M, R>;
-    forPage (page: number, perPage?: number): this;
+    // clone (): IBuilder<M, R>;
+    // forPage (page: number, perPage?: number): this;
     insert (attributes: any): Promise<any>;
     update (attributes: any): Promise<any>;
     increment (column: string, amount?: number, extra?: any): Promise<any>;
     decrement (column: string, amount?: number, extra?: any): Promise<any>;
     addUpdatedAtColumn (values: any): any;
-    delete (): Promise<any>;
-    softDelete (): Promise<any>;
-    forceDelete (): Promise<any>;
-    restore (): Promise<any>;
+    delete (): Promise<boolean | number>;
+    softDelete (): boolean | Promise<any>;
+    forceDelete (): boolean | Promise<any>;
+    restore (): boolean | Promise<any>;
     withTrashed (): this;
     withoutTrashed (): this;
     onlyTrashed (): this;
@@ -38,7 +46,7 @@ export interface IBuilder<M, R = ICollection<M> | IModel> extends BaseBuilder<M,
     applyScopes (): this;
     scopes (scopes: string[]): this;
     withGlobalScope (identifier: string | number, scope: string | (() => void)): this;
-    withoutGlobalScope (identifier: string | number): this;
+    withoutGlobalScope (scope: IScope | string): this;
     with (relation: WithRelationType): this;
     with (...relations: WithRelationType[]): this;
     has (relation: string, operator?: any, count?: number, boolean?: any, callback?: (builder: IBuilder<any>) => void | null): this;
@@ -60,33 +68,27 @@ export interface IBuilder<M, R = ICollection<M> | IModel> extends BaseBuilder<M,
     withSum (relation: WithRelationType, column: string): this;
     withExists (relation: WithRelationType): this;
     related (relation: string): this;
-    take (count: number): this;
-    skip (count: number): this;
-    limit (count: number): this;
-    offset (count: number): this;
-    first<T = M> (column?: string | string[]): Promise<T | null>;
-    firstOrFail<T = M> (column?: string | string[]): Promise<T>;
-    findOrFail<T = M> (key: string | number, columns?: string[]): Promise<T>;
-    findOrFail<T = M> (key: string[] | number[] | ICollection<any>, columns?: string[]): Promise<ICollection<T>>;
-    findOrFail<T = M> (key: string | number | string[] | number[] | ICollection<any>, columns?: string[]): Promise<T | ICollection<T>>;
-    findOrNew<T = M> (id: string | number, columns?: string[]): Promise<T>;
-    firstOrNew<T = M> (attributes?: object, values?: object): Promise<T>;
-    firstOrCreate<T = M> (attributes?: object, values?: object): Promise<T>;
+    // take (count: number): this;
+    // skip (count: number): this;
+    // limit (count: number): this;
+    // offset (count: number): this;
+    first (column?: string | string[]): Promise<M | null | undefined>;
+    firstOrFail (column?: string | string[]): Promise<M>;
+    findOrFail (key: string | number, columns?: string[]): Promise<M>;
+    findOrFail (key: string[] | number[] | ICollection<any>, columns?: string[]): Promise<M>;
+    findOrFail (key: string | number | string[] | number[] | ICollection<any>, columns?: string[]): Promise<M>;
+    findOrNew (id: string | number, columns?: string[]): Promise<M>;
+    firstOrNew (attributes?: object, values?: object): Promise<M>;
+    firstOrCreate (attributes?: object, values?: object): Promise<M>;
     updateOrCreate (attributes: object, values?: object): Promise<M>;
     latest (column?: string): this;
     oldest (column?: string): this;
-    find<T = M> (key: string | number, columns?: string[]): Promise<T | null>;
-    find<T = M> (key: string[] | number[] | ICollection<any>, columns?: string[]): Promise<ICollection<T>>;
-    find<T = M> (key: string | number | string[] | number[] | ICollection<any>, columns?: string[]): Promise<T | ICollection<T> | null>;
-    findMany<T = M> (keys: string[] | number[] | ICollection<any>, columns?: string[]): Promise<ICollection<T>>;
-    pluck (column: string): Promise<ICollection<any>>;
-    destroy (ids: string | number | string[] | number[] | ICollection<any>): Promise<number>;
-    get<T = M> (columns?: string[]): Promise<ICollection<T>>;
-    all<T = M> (columns?: string[]): Promise<ICollection<T>>;
-    paginate<F = { current_page: number, data: any[], per_page: number, total: number, last_page: number, count: number, }> (page?: number, perPage?: number): Promise<Paginator<M, F>>;
+    find (key: string | number, columns?: string[]): Promise<M | null | undefined>;
+    findMany (keys: string[] | number[] | ICollection<any>, columns?: string[]): Promise<ICollection<M>>;
+    pluck<X extends Model = any | M> (column: string): Promise<ICollection<X>>;
+    // destroy (ids: string | number | string[] | number[] | ICollection<any>): Promise<number>;
+    // get (columns?: string[]): Promise<ICollection<M>>;
+    all (columns?: string[]): Promise<ICollection<M>>;
+    paginate<F extends IPaginatorParams> (page?: number, perPage?: number): Promise<IPaginator<M, F>>;
     [value: string]: any;
-}
-
-export interface Scope {
-    apply (builder: IBuilder<any>, model: IModel): void;
 }

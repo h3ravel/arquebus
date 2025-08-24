@@ -9,6 +9,7 @@ export default tseslint.config(
     globalIgnores([
       'dist/**',
       '**/dist',
+      '**/bin',
       '**/dist/**',
       'node_modules/**'
     ])
@@ -17,6 +18,10 @@ export default tseslint.config(
     rules: {
       'semi': ['error', 'never'],
       'quotes': ['error', 'single'],
+      '@typescript-eslint/consistent-type-imports': [
+        'warn',
+        { prefer: 'type-imports' }
+      ],
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn', {

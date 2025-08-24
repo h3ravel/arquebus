@@ -16,27 +16,21 @@ import {
   makeCollection,
   makePaginator,
 } from 'src'
+import type { MixinConstructor, TGeneric } from 'types/generics'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest'
 import { omit, remove } from 'radashi'
 
-import { TGeneric } from 'types/generics'
 import collect from 'collect.js'
 import config from './config'
 import crypto from 'crypto'
 import dayjs from 'dayjs'
 import { delay } from './utils'
-
-(async () => {
-  console.log('arquebus (src):', (await import('src')).arquebus)
-  console.log('arquebus (dist):', (await import('dist')).arquebus)
-  console.log('arquebus.default (dist):', (await import('dist')).default)
-})()
-
+import type { IBuilder } from 'types/builder'
 
 describe('node environment test', () => {
   test('should load the node version of the module', async () => {
     // Test automatically loads the node version
-    const module = (await import('@h3ravel/arquebus'))
+    const module = (await import('@h3ravel/arquebus')) as any
     expect(module.isBrowser).toBeUndefined()
   })
 })
@@ -45,7 +39,7 @@ let hits: TGeneric
 
 describe('Arquebus', () => {
   it('should fail if passing a wrong connection info', () => {
-    arquebus.addConnection({
+    arquebus.addConnection(<any>{
       client: 'abc',
       connection: {
         host: '127.0.0.1',
@@ -60,7 +54,7 @@ describe('Arquebus', () => {
 })
 
 describe('Model', () => {
-  const SomePlugin = (Model) => {
+  const SomePlugin = <TBase extends MixinConstructor> (Model: TBase) => {
     return class extends Model {
       pluginAttribtue = 'plugin'
       pluginMethod () {
@@ -106,7 +100,9 @@ describe('Model', () => {
   manager.createModel('User', {
     plugins: [SomePlugin],
     relations: {
-      post: (model) => model.hasMany(manager.models.Post),
+      post: (model: Model) => {
+        return model.hasMany(manager.models.Post)
+      },
     }
   })
 
@@ -153,7 +149,7 @@ describe('Model', () => {
       attributeFullName () {
         return Attribute.make({
           get: (value, attributes) => `${attributes.firstName} ${attributes.lastName}`,
-          set: (value, attributes) => ({
+          set: (value) => ({
             firstName: value.split(' ')[0],
             lastName: value.split(' ')[1]
           })
@@ -314,7 +310,7 @@ describe('Model', () => {
 })
 
 describe('Collection', () => {
-  let collection
+  let collection: Collection<any>
   class User extends Model {
     primaryKey = 'some_id'
   }
@@ -407,11 +403,11 @@ describe('Integration test', async () => {
       }
 
       class Post extends Base {
-        scopeIdOf (query, id) {
+        scopeIdOf (query: IBuilder<Model>, id: string) {
           return query.where('id', id)
         }
 
-        scopePublish (query) {
+        scopePublish (query: IBuilder<Model>) {
           return query.where('status', 1)
         }
 
@@ -426,7 +422,7 @@ describe('Integration test', async () => {
         }
 
         relationDefaultPostAuthor () {
-          return this.belongsTo(User).withDefault((user, post) => {
+          return this.belongsTo(User).withDefault((user: User, post: Post) => {
             user.name = post.name + ' - Default Author'
           })
         }
@@ -456,20 +452,20 @@ describe('Integration test', async () => {
           })
         },
         scopes: {
-          idOf: (query, id) => query.where('id', id),
-          publish: (query) => query.where('status', 1)
+          idOf: (query: IBuilder<Model>, id: string) => query.where('id', id),
+          publish: (query: IBuilder<Model>) => query.where('status', 1)
         },
         relations: {
-          author: (model) => model.belongsTo(User),
-          default_author: (model) => model.belongsTo(User).withDefault({
+          author: (model: Model) => model.belongsTo(User),
+          default_author: (model: Model) => model.belongsTo(User).withDefault({
             name: 'Default Author'
           }),
-          default_post_author: (model) => model.belongsTo(User).withDefault((user, post) => {
+          default_post_author: (model: Model) => model.belongsTo(User).withDefault((user: User, post: Post) => {
             user.name = post.name + ' - Default Author'
           }),
-          thumbnail: (model) => model.belongsTo(Media, 'thumbnail_id'),
-          media: (model) => model.belongsToMany(Media),
-          tags: (model) => model.belongsToMany(Tag),
+          thumbnail: (model: Model) => model.belongsTo(Media, 'thumbnail_id'),
+          media: (model: Model) => model.belongsToMany(Media),
+          tags: (model: Model) => model.belongsToMany(Tag),
         }
       })
 
@@ -486,15 +482,15 @@ describe('Integration test', async () => {
       class SoftDeletePost extends compose(Base, SoftDeletes) { }
 
       class Json extends CastsAttributes {
-        static get (model, key, value, attributes) {
+        static get (model: Model, key: string, value: string, _attributes: TGeneric): string | null {
           try {
             return JSON.parse(value)
-          } catch (e) {
+          } catch {
             return null
           }
         }
 
-        static set (model, key, value, attributes) {
+        static set (model: Model, key: string, value: string, _attributes: TGeneric) {
           return JSON.stringify(value)
         }
       }
@@ -840,11 +836,11 @@ describe('Integration test', async () => {
 
           describe('#first() & #find()', () => {
             it('issues a first (get one), triggering a fetched event, returning a promise', () => {
-              const query = connection.table('users').where('id', 1)
+              const query = connection.table<User>('users').where('id', 1)
 
               return query.first().then((user) => {
-                expect(user.id).toBe(1)
-                expect(user.name).toBe('Shuri')
+                expect(user!.id).toBe(1)
+                expect(user!.name).toBe('Shuri')
               })
             })
 
@@ -874,7 +870,7 @@ describe('Integration test', async () => {
 
           describe('#chunk()', () => {
             it('fetches a single page of results with defaults', async () => {
-              const names = []
+              const names: string[] = []
 
               await connection.table('tags').orderBy('id', 'asc').chunk(2, (tags) => {
                 tags.map(tag => {
@@ -938,14 +934,14 @@ describe('Integration test', async () => {
             it('fetches a page by page number', () => {
               return connection.table('users').orderBy('id', 'asc').paginate(1, 2)
                 .then((results) => {
-                  expect(results.get(0).id).toBe(1)
-                  expect(results.get(1).id).toBe(2)
+                  expect(results.get(0)!.id).toBe(1)
+                  expect(results.get(1)!.id).toBe(2)
                 })
             })
 
             describe('with groupBy', () => {
               it('counts grouped rows instead of total rows', () => {
-                let total
+                let total: number
 
                 return connection.table('posts').count().then(count => {
                   total = parseInt(count)
@@ -1151,10 +1147,11 @@ describe('Integration test', async () => {
         })
 
         describe('query', () => {
-          let model
+          // let model
 
           beforeEach(() => {
-            model = new User
+            new User
+            // model = new User
           })
 
           it('returns the Builder when no arguments are passed', () => {
@@ -1213,7 +1210,7 @@ describe('Integration test', async () => {
           })
 
           it('rejects with an error if no record exists', () => {
-            return User.query().where('id', 200).firstOrFail().then(user => {
+            return User.query().where('id', 200).firstOrFail().then((_user) => {
               // expect(user).toBeNull();
             }).catch(e => {
               expect(e).toBeInstanceOf(ModelNotFoundError)
@@ -1221,7 +1218,7 @@ describe('Integration test', async () => {
           })
 
           it('locks the table when called with the forUpdate option during a transaction', async () => {
-            let userId
+            let userId = 0
 
             const user = new User
             user.first_name = 'foo'
@@ -1486,7 +1483,8 @@ describe('Integration test', async () => {
             const post = new Post
             post.user_id = 0
             post.name = 'Fourth post'
-            const a = await post.save()
+            await post.save()
+            // const a = await post.save()
             const count1 = await Post.query().count()
             expect(count1).toBe(7)
 
@@ -1752,7 +1750,7 @@ describe('Integration test', async () => {
           })
 
           it('returns false after an attribute is changed and the model is saved', async () => {
-            let originalName
+            let originalName = ''
 
             const post = await Post.query().first()
             originalName = post.name
@@ -2223,8 +2221,8 @@ describe('Integration test', async () => {
 
         it('hit updating, updated, saving, saved hooks if use save() update post', async () => {
           const post = await HookPost.query().find(2)
-          post.name = 'Test update hook',
-            await post.save()
+          post.name = 'Test update hook'
+          await post.save()
 
           expect(hits).toEqual({
             creating: 0,

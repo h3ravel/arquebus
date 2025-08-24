@@ -201,7 +201,7 @@ describe('Model', () => {
       attributeFullName () {
         return Attribute.make({
           get: (value, attributes) => `${attributes.firstName} ${attributes.lastName}`,
-          set: (value, attributes) => ({
+          set: (value, _attributes) => ({
             firstName: value.split(' ')[0],
             lastName: value.split(' ')[1]
           })

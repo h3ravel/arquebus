@@ -1,8 +1,9 @@
 import { config as dotenv } from 'dotenv'
+import type { TConfig } from 'types/container'
 
 dotenv()
 
-export default {
+export default <Record<string, TConfig>>{
   mysql: {
     client: 'mysql2',
     connection: {

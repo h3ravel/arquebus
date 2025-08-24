@@ -1,6 +1,7 @@
 import type { IBuilder } from './builder'
 import type { IQueryBuilder } from './query-builder'
 import type { Knex } from 'knex'
+import type { Model } from 'src/model'
 import type { PrimitiveValue } from './generics'
 
 type Operator = string;
@@ -25,7 +26,7 @@ export interface OrderByDescriptor {
     order?: OrderByDirection;
 }
 
-export type AnyQueryBuilder = IQueryBuilder<any, any>;
+export type AnyQueryBuilder<M extends Model = any, R = any> = IQueryBuilder<M, R> | IBuilder<M, R>;
 
 export type Expression<T> = T | Raw | AnyQueryBuilder;
 
