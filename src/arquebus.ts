@@ -107,7 +107,17 @@ class arquebus<M extends Model = Model> {
     }
   }
 
-  static async autoLoad (): Promise<TBaseConfig> {
+  /**
+   * Autoload the config file
+   * 
+   * @param addConnection 
+   * @default true
+   * If set to `false` we will no attempt add the connection, we 
+   * will just go ahead and return the config
+   * 
+   * @returns 
+   */
+  static async autoLoad (addConnection: boolean = true): Promise<TBaseConfig> {
     let config: TBaseConfig
     const jsPath = path.resolve('arquebus.config.js')
     const tsPath = path.resolve('arquebus.config.ts')
@@ -115,14 +125,14 @@ class arquebus<M extends Model = Model> {
 
     if (existsSync(jsPath)) {
       config = (await import(jsPath)).default
-      instance.addConnection(config, config.client)
+      if (addConnection) instance.addConnection(config, config.client)
       return config
     }
 
     if (existsSync(tsPath)) {
       if (process.env.NODE_ENV !== 'production') {
         config = (await import(tsPath)).default
-        instance.addConnection(config, config.client)
+        if (addConnection) instance.addConnection(config, config.client)
         return config
       } else {
         throw new Error('arquebus.config.ts found in production without build step')
