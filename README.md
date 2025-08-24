@@ -5,7 +5,7 @@
   <h1 align="center"><a href="https://h3ravel.toneflix.net/arquebus">H3ravel Arquebus</a></h1>
 
 [![Framework][ix]][lx]
-[![Console Package Version][i1]][l1]
+[![Arquebus ORM][i1]][l1]
 [![Downloads][d1]][d1]
 [![Tests][tei]][tel]
 [![License][lini]][linl]
