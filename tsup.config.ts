@@ -37,11 +37,9 @@ export default defineConfig([
     {
         treeshake: true,
         entry: ['src/index.ts'],
-        // format: ['esm'],
         format: ['esm', 'cjs'],
         outDir: 'dist',
         dts: true,
-        // sourcemap: true,
         external,
         clean: true
     },
@@ -49,7 +47,6 @@ export default defineConfig([
         treeshake: true,
         entry: ['src/browser/index.ts'],
         format: ['esm', 'cjs'],
-        // format: ['esm'],
         outDir: 'dist/browser',
         dts: true,
         external,
@@ -57,8 +54,16 @@ export default defineConfig([
     },
     {
         treeshake: true,
+        entry: ['src/migrations/index.ts'],
+        format: ['esm', 'cjs'],
+        outDir: 'dist/migrations',
+        dts: true,
+        external,
+        clean: true
+    },
+    {
+        treeshake: true,
         entry: ['src/cli/index.ts'],
-        // format: ['esm'],
         format: ['esm', 'cjs'],
         outDir: 'bin',
         dts: true,
