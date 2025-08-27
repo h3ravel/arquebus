@@ -2,6 +2,7 @@ import MigrationRepository from './migrations/migration-repository'
 import Migrator from './migrations/migrator'
 import type { TBaseConfig } from 'types/container'
 import { Utils } from 'src/cli/utils'
+import type { XGeneric } from 'types/generics'
 import arquebus from './arquebus'
 
 interface MigrationStatus {
@@ -17,7 +18,7 @@ interface MigrateOptions {
     batch?: number
 }
 
-interface TXBaseConfig extends TBaseConfig {
+interface TXBaseConfig extends XGeneric<TBaseConfig> {
     /**
      * Set this to true if you alread have an active connection and dont wan to create a new one
      */
