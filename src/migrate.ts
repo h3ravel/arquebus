@@ -2,7 +2,6 @@ import MigrationRepository from './migrations/migration-repository'
 import Migrator from './migrations/migrator'
 import type { TBaseConfig } from 'types/container'
 import { Utils } from 'src/cli/utils'
-import type { XGeneric } from 'types/generics'
 import arquebus from './arquebus'
 
 interface MigrationStatus {
@@ -17,12 +16,11 @@ interface MigrateOptions {
     pretend?: boolean
     batch?: number
 }
-
-interface TXBaseConfig extends XGeneric<TBaseConfig> {
+type TXBaseConfig<S = boolean> = (S extends true ? Partial<TBaseConfig> : TBaseConfig) & {
     /**
-     * Set this to true if you alread have an active connection and dont wan to create a new one
+     * Set this to true if you already have an active connection and dont want to create a new one
      */
-    skipConnection?: boolean
+    skipConnection?: S
 }
 
 interface TCallback {
@@ -181,8 +179,8 @@ export class Migrate {
     async setupConnection (config: TXBaseConfig): Promise<{ arquebus: typeof arquebus, migrator: Migrator }> {
         const table = config?.migrations?.table || 'migrations'
 
-        if (!config.skipConnection) {
-            arquebus.addConnection(config, 'default')
+        if (config.skipConnection !== true) {
+            arquebus.addConnection(config as TBaseConfig, 'default')
             Object.entries(config.connections || {}).forEach(([name, connection]) => {
                 arquebus.addConnection(connection, name)
             })
