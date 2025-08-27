@@ -112,7 +112,8 @@
     "test:mysql": "cross-env DB=mysql vitest --project node",
     "test:postgres": "cross-env DB=postgres vitest --project node",
     "test:sqlite": "cross-env DB=sqlite vitest --project node",
-    "test:browser": "vitest --project browser"
+    "test:browser": "vitest --project browser",
+    "release:patch": "git add . && git commit -m \"version: bump version and publish\" && version patch && pnpm publish --tag latest"
   },
   "husky": {
     "hooks": {
