@@ -3,7 +3,7 @@
   "version": "0.2.14",
   "packageManager": "pnpm@10.14.0",
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
-  "homepage": "https://h3ravel.net/arquebus",
+  "homepage": "https://h3ravel.toneflix.net/arquebus",
   "bin": {
     "arquebus": "./bin/index.js"
   },
