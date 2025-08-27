@@ -105,5 +105,5 @@ Please ⭐️ this repository if this project helped you
 [d1]: https://img.shields.io/npm/dt/%40h3ravel%2Farquebus?style=flat-square&label=Downloads&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40h3ravel%2Farquebus
 [linl]: https://github.com/h3ravel/arquebus/blob/main/LICENSE
 [lini]: https://img.shields.io/github/license/h3ravel/arquebus
-[tel]: https://github.com/h3ravel/arquebus/workflows/tests
+[tel]: https://github.com/h3ravel/arquebus/actions/workflows/tests.yml
 [tei]: https://github.com/h3ravel/arquebus/workflows/tests/badge.svg
