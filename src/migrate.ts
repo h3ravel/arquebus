@@ -17,6 +17,13 @@ interface MigrateOptions {
     batch?: number
 }
 
+interface TXBaseConfig extends TBaseConfig {
+    /**
+     * Set this to true if you alread have an active connection and dont wan to create a new one
+     */
+    skipConnection?: boolean
+}
+
 interface TCallback {
     (message: string, status?: 'success' | 'error' | 'info' | 'quiet'): void
 }
@@ -40,7 +47,7 @@ export class Migrate {
      * @param destroyAll 
      */
     async run (
-        config: TBaseConfig,
+        config: TXBaseConfig,
         options: MigrateOptions = {},
         destroyAll = false
     ): Promise<void> {
@@ -73,7 +80,7 @@ export class Migrate {
      * @param destroyAll 
      */
     async rollback (
-        config: TBaseConfig,
+        config: TXBaseConfig,
         options: MigrateOptions = {},
         destroyAll = false
     ): Promise<void> {
@@ -121,7 +128,7 @@ export class Migrate {
      * @param destroyAll 
      * @returns 
      */
-    async status (config: TBaseConfig, options: MigrateOptions = {}, destroyAll = false): Promise<MigrationStatus[]> {
+    async status (config: TXBaseConfig, options: MigrateOptions = {}, destroyAll = false): Promise<MigrationStatus[]> {
         const { arquebus, migrator } = await this.setupConnection(config)
 
         const getAllMigrationFiles = async (): Promise<Record<string, string>> => {
@@ -170,13 +177,16 @@ export class Migrate {
      * @param config 
      * @returns 
      */
-    async setupConnection (config: TBaseConfig): Promise<{ arquebus: typeof arquebus, migrator: Migrator }> {
+    async setupConnection (config: TXBaseConfig): Promise<{ arquebus: typeof arquebus, migrator: Migrator }> {
         const table = config?.migrations?.table || 'migrations'
 
-        arquebus.addConnection(config, 'default')
-        Object.entries(config.connections || {}).forEach(([name, connection]) => {
-            arquebus.addConnection(connection, name)
-        })
+        if (!config.skipConnection) {
+            arquebus.addConnection(config, 'default')
+            Object.entries(config.connections || {}).forEach(([name, connection]) => {
+                arquebus.addConnection(connection, name)
+            })
+        }
+
         const repository = new MigrationRepository(arquebus, table)
         const migrator = new Migrator(repository, arquebus)
         return { arquebus, migrator }
