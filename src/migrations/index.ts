@@ -1,4 +1,5 @@
 
+export { Migrate } from 'src/migrate'
 export * as Migration from './migration'
 export * as Migrator from './migrator'
 export * as MigrationCreator from './migration-creator'
