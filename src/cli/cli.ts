@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { Argument, Option, program } from 'commander'
 import { TableGuesser, Utils } from 'src/cli/utils'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
