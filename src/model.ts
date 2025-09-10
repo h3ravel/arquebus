@@ -195,7 +195,7 @@ export class Model extends BaseModel {
     if (this.constructor.resolver) {
       return this.constructor.resolver.getConnection(this.connection)
     }
-    return arquebus.connection(this.connection)
+    return arquebus.fire(this.connection)
   }
   setConnection (connection: TBaseConfig['client'] | null) {
     this.connection = connection

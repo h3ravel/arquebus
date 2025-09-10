@@ -58,7 +58,7 @@ arquebus.addConnection({
   },
 });
 
-const db = arquebus.connection();
+const db = arquebus.fire();
 
 // Query Builder
 const users = await db.table('users').where('age', '>', 35).get();

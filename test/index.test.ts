@@ -47,20 +47,20 @@ describe('Arquebus', () => {
       }
     })
     expect(() => {
-      arquebus.connection('abc' as any)
+      arquebus.fire('abc' as any)
     }).toThrow();
     (arquebus as any).connections = {}
   })
 
   it('Should be able to autoload config.', async () => {
     const config = await arquebus.autoLoad()
-    expect(arquebus.connection(config.client)).toBeInstanceOf(QueryBuilder)
+    expect(arquebus.fire(config.client)).toBeInstanceOf(QueryBuilder)
     expect(1).toBe(1)
   })
 
-  it('Should be able to initialize connection with arquebus.fire().', async () => {
+  it('Should be able to initialize connection with the depracated arquebus.connection() method.', async () => {
     const config = await arquebus.autoLoad()
-    expect(arquebus.fire(config.client)).toBeInstanceOf(QueryBuilder)
+    expect(arquebus.connection(config.client)).toBeInstanceOf(QueryBuilder)
     expect(1).toBe(1)
   })
 })
@@ -384,7 +384,7 @@ describe('Integration test', async () => {
   databases.map(config => {
     describe('Client: ' + config.client, () => {
       arquebus.addConnection(config, config.client)
-      const connection = arquebus.connection(config.client)
+      const connection = arquebus.fire(config.client)
 
       class Base extends Model {
         connection = config.client
@@ -1029,7 +1029,7 @@ describe('Integration test', async () => {
 
       describe('Model', () => {
         it('should return a same instance', () => {
-          expect(connection).toBe(arquebus.connection(config.client))
+          expect(connection).toBe(arquebus.fire(config.client))
         })
 
         it('should return a Builder instance', () => {
