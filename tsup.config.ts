@@ -1,4 +1,4 @@
-import { copyFile, glob, mkdir } from 'node:fs/promises'
+import { copyFile, glob } from 'node:fs/promises'
 
 import { defineConfig } from 'tsup'
 import path from 'node:path'

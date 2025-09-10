@@ -57,6 +57,12 @@ describe('Arquebus', () => {
     expect(arquebus.connection(config.client)).toBeInstanceOf(QueryBuilder)
     expect(1).toBe(1)
   })
+
+  it('Should be able to initialize connection with arquebus.fire().', async () => {
+    const config = await arquebus.autoLoad()
+    expect(arquebus.fire(config.client)).toBeInstanceOf(QueryBuilder)
+    expect(1).toBe(1)
+  })
 })
 
 describe('Model', () => {

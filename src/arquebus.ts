@@ -34,12 +34,26 @@ class arquebus<M extends Model = Model> {
   }
 
   /**
-   * Initialize a database connection 
+   * Initialize a new database connection 
    * 
    * @returns 
    */
-  static connection<C extends TBaseConfig['client']> (connection: C | null = null): QueryBuilder<Model> {
-    return this.getInstance().getConnection(connection) as any
+  static fire<C extends TBaseConfig['client']> (connection: C | null = null): QueryBuilder<Model> {
+    return this.getInstance().getConnection(connection)
+  }
+
+  /**
+   * Initialize a new database connection 
+   * 
+   * This is an alias of `arquebus.fire()` and will be removed in the future
+   * 
+   * @deprecated since version 0.3.0
+   * @alias fire
+   * 
+   * @returns 
+   */
+  static connection<C extends TBaseConfig['client']> (connection: C | null = null) {
+    return this.fire(connection)
   }
 
   static setConnectorFactory (connectorFactory: typeof Knex) {
