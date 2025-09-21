@@ -86,5 +86,3 @@ export class MigrationRepository {
         this.connection = name
     }
 }
-
-export default MigrationRepository

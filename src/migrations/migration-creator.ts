@@ -115,5 +115,3 @@ export class MigrationCreator {
         throw new Error('Unable to determine dirname')
     }
 }
-
-export default MigrationCreator

@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
 import { Logger } from '@h3ravel/shared'
 import { Migrate } from 'src/migrate'
-import MigrationCreator from 'src/migrations/migration-creator'
+import { MigrationCreator } from 'src/migrations/migration-creator'
 import type { TBaseConfig } from 'types/container'
 import type { XGeneric } from 'types/generics'
 import chalk from 'chalk'

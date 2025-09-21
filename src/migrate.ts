@@ -1,4 +1,4 @@
-import MigrationRepository from './migrations/migration-repository'
+import { MigrationRepository } from './migrations/migration-repository'
 import Migrator from './migrations/migrator'
 import type { TBaseConfig } from 'types/container'
 import { Utils } from 'src/cli/utils'

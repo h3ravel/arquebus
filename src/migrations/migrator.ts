@@ -1,6 +1,6 @@
 import type { IMigration } from './migration'
 import { Logger } from '@h3ravel/shared'
-import type MigrationRepository from './migration-repository'
+import type { MigrationRepository } from './migration-repository'
 import type { QueryBuilder } from 'src/query-builder'
 import type { TBaseConfig } from 'types/container'
 import type { arquebus } from 'src'
@@ -36,7 +36,7 @@ export interface MigrationOptions {
   batch?: number
 }
 
-class Migrator {
+export class Migrator {
   events: any = null
   repository: MigrationRepository
   files: any
