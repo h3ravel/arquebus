@@ -34,6 +34,7 @@ export interface MigrationOptions {
   pretend?: boolean
   step?: number
   batch?: number
+  quiet?: boolean
 }
 
 export class Migrator {
@@ -147,7 +148,7 @@ export class Migrator {
     const migrations = await this.repository.getRan().then(r => r.map(e => ({ migration: e })).reverse())
 
     if (migrations.length === 0) {
-      Logger.info('Nothing to reset.')
+      if (!options.quiet) Logger.info('Nothing to reset.')
       return []
     }
 

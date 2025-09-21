@@ -15,6 +15,7 @@ interface MigrateOptions {
     step?: number
     pretend?: boolean
     batch?: number
+    quiet?: boolean
 }
 type TXBaseConfig<S = boolean> = (S extends true ? Partial<TBaseConfig> : TBaseConfig) & {
     /**
@@ -128,11 +129,31 @@ export class Migrate {
             step: options.step || 0,
             pretend: options.pretend,
             batch: options.batch || 0,
+            quiet: options.quiet || false,
         })
 
         if (destroyAll) {
             await arquebus.destroyAll()
         }
+    }
+
+    /**
+     * Reset and re-run all migrations
+     * 
+     * @param config 
+     * @param options 
+     * @param destroyAll 
+     */
+    async refresh (
+        config: TXBaseConfig,
+        options: MigrateOptions = {},
+        destroyAll = false
+    ): Promise<void> {
+
+        await this.reset(config, Object.assign({}, options, { quiet: true }), false)
+        console.log('')
+        await this.run(config, options, destroyAll)
+
     }
 
     /**

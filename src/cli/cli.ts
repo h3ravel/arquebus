@@ -227,7 +227,7 @@ export class Cli {
       })
 
     /**
-     * Rollaback the last migration
+     * Rollback all database migrations
      */
     program
       .command('migrate:reset')
@@ -242,6 +242,28 @@ export class Cli {
           await new Migrate(basePath, undefined, (msg, sts) => {
             if (sts) this.output[sts](msg)
           }).reset(this.config, opts, true)
+        }
+        catch (e) {
+          this.output.error('ERROR: ' + e)
+        }
+      })
+
+    /**
+     * Reset and re-run all migrations
+     */
+    program
+      .command('migrate:refresh')
+      .description('Reset and re-run all migrations.')
+      .option('-p, --path [path]', 'The path to the migrations directory.')
+      .action(async (opts) => {
+        if (!this.configPath) this.terminateNotFound()
+
+        const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
+
+        try {
+          await new Migrate(basePath, undefined, (msg, sts) => {
+            if (sts) this.output[sts](msg)
+          }).refresh(this.config, opts, true)
         }
         catch (e) {
           this.output.error('ERROR: ' + e)
