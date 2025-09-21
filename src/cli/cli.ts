@@ -227,6 +227,28 @@ export class Cli {
       })
 
     /**
+     * Rollaback the last migration
+     */
+    program
+      .command('migrate:reset')
+      .description('Rollback all database migrations.')
+      .option('-p, --path [path]', 'The path to the migrations directory.')
+      .action(async (opts) => {
+        if (!this.configPath) this.terminateNotFound()
+
+        const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
+
+        try {
+          await new Migrate(basePath, undefined, (msg, sts) => {
+            if (sts) this.output[sts](msg)
+          }).reset(this.config, opts, true)
+        }
+        catch (e) {
+          this.output.error('ERROR: ' + e)
+        }
+      })
+
+    /**
      * Check the migration status
      */
     program

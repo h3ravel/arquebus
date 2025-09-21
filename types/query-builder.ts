@@ -163,7 +163,7 @@ export interface IQueryBuilder<M extends Model | BModel = Model, R = M[] | M> {
     take (count: number): this;
     limit (count: number): this;
     offset (count: number): this;
-    pluck<X extends Model = any> (column: string): Promise<ICollection<X>>;
+    pluck<X extends Model = any> (column: string): Promise<Array<X>>;
     chunk (count: number, callback: (rows: M[]) => any): Promise<boolean>;
     forPage (page: number, perPage?: number): this;
     paginate<F extends IPaginatorParams> (page?: number, perPage?: number): Promise<IPaginator<M, F>>;

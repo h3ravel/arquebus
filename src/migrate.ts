@@ -104,6 +104,38 @@ export class Migrate {
     }
 
     /**
+     * Rollback all database migrations
+     * 
+     * @param config 
+     * @param options 
+     * @param destroyAll 
+     */
+    async reset (
+        config: TXBaseConfig,
+        options: MigrateOptions = {},
+        destroyAll = false
+    ): Promise<void> {
+        const { arquebus, migrator } = await this.setupConnection(config)
+
+        const paths = await Utils.getMigrationPaths(
+            this.basePath ?? process.cwd(),
+            migrator,
+            config.migrations!.path,
+            options.path!
+        )
+
+        await migrator.setOutput(true).reset(paths, {
+            step: options.step || 0,
+            pretend: options.pretend,
+            batch: options.batch || 0,
+        })
+
+        if (destroyAll) {
+            await arquebus.destroyAll()
+        }
+    }
+
+    /**
      * Prepares the database for migration
      * 
      * @param migrator 

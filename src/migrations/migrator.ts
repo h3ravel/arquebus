@@ -72,14 +72,14 @@ export class Migrator {
 
   async runPending (migrations: string[], options: MigrationOptions = {}): Promise<void> {
     if (migrations.length === 0) {
-      this.write('Nothing to migrate')
+      Logger.info('Nothing to migrate')
       return
     }
     let batch = await this.repository.getNextBatchNumber()
     const pretend = options.pretend || false
     const step = options.step || false
 
-    this.write('Running migrations.')
+    Logger.info('Running migrations...')
 
     for (const file of migrations) {
       await this.runUp(file, batch, pretend)
@@ -108,7 +108,7 @@ export class Migrator {
   async rollback (paths: string[] = [], options: MigrationOptions = {}): Promise<string[]> {
     const migrations = await this.getMigrationsForRollback(options)
     if (migrations.length === 0) {
-      this.write('Nothing to rollback.')
+      Logger.info('Nothing to rollback')
       return []
     }
     return await this.rollbackMigrations(migrations, paths, options)
@@ -127,7 +127,7 @@ export class Migrator {
   async rollbackMigrations (migrations: { migration: string }[], paths: string[], options: MigrationOptions): Promise<string[]> {
     const rolledBack: string[] = []
     const files = await this.getMigrationFiles(paths)
-    this.write('Rolling back migrations.')
+    Logger.info('Rolling back migrations...')
     for (const migration of migrations) {
       const file = files[migration.migration]
       if (!file) {
@@ -143,13 +143,18 @@ export class Migrator {
     return rolledBack
   }
 
-  reset (_paths: string[] = [], _pretend = false): Promise<string[]> | string[] {
-    const _migrations = this.repository.getRan().then(r => r.reverse()) // ⚠ repository.getRan is async
-    // Keeping your original but fixed return type
-    return [] // placeholder – this method should be async if using getRan()
+  async reset (paths: string[] = [], options: MigrationOptions, pretend = false): Promise<string[]> {
+    const migrations = await this.repository.getRan().then(r => r.map(e => ({ migration: e })).reverse())
+
+    if (migrations.length === 0) {
+      Logger.info('Nothing to reset.')
+      return []
+    }
+
+    return this.resetMigrations(migrations, paths, pretend)
   }
 
-  resetMigrations (migrations: { migration: string }[], paths: string[], pretend = false): Promise<string[]> {
+  async resetMigrations (migrations: { migration: string }[], paths: string[], pretend = false): Promise<string[]> {
     return this.rollbackMigrations(migrations, paths, { pretend })
   }
 
