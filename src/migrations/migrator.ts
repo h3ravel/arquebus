@@ -1,9 +1,9 @@
 import type { IMigration } from './migration'
+import { Logger } from '@h3ravel/shared'
 import type MigrationRepository from './migration-repository'
 import type { QueryBuilder } from 'src/query-builder'
 import type { TBaseConfig } from 'types/container'
 import type { arquebus } from 'src'
-import color from 'chalk'
 import fs from 'node:fs/promises'
 import path from 'path'
 
@@ -131,7 +131,10 @@ class Migrator {
     for (const migration of migrations) {
       const file = files[migration.migration]
       if (!file) {
-        this.writeTwoColumns(migration.migration, color.yellow('Migration not found'))
+        Logger.twoColumnLog(
+          Logger.parse([[migration.migration, 'green']], '', false),
+          Logger.parse([['Migration not found', 'yellow']], '', false),
+        )
         continue
       }
       rolledBack.push(file)
@@ -254,15 +257,6 @@ class Migrator {
     }
   }
 
-  writeTwoColumns (name: string, ...args: string[]): void {
-    const value = args.join(' ')
-    // eslint-disable-next-line no-control-regex
-    const regex = /\x1b\[\d+m/g
-    const width = Math.min(process.stdout.columns, 100)
-    const dots = Math.max(width - name.replace(regex, '').length - value.replace(regex, '').length - 10, 0)
-    this.write(name, color.gray('.'.repeat(dots)), value)
-  }
-
   async writeTask (description: string, task: () => Promise<any> | any): Promise<void> {
     const startTime = process.hrtime()
     let result: any = false
@@ -271,10 +265,12 @@ class Migrator {
     } finally {
       const endTime = process.hrtime(startTime)
       const duration = (endTime[0] * 1e9 + endTime[1]) / 1e6
-      this.writeTwoColumns(
-        color.green(description),
-        color.gray(`${Math.floor(duration)}ms`),
-        result !== false ? color.green('✔') : color.red('✘')
+      Logger.twoColumnLog(
+        Logger.parse([[description, 'green']], '', false),
+        [
+          Logger.parse([[`${Math.floor(duration)}ms`, 'gray']], '', false),
+          Logger.parse([[result ? '✔' : '✘', result ? 'green' : 'red']], '', false),
+        ].join(' ')
       )
     }
   }

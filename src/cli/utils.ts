@@ -1,5 +1,4 @@
 import { access } from 'fs/promises'
-import chalk from 'chalk'
 import escalade from 'escalade/sync'
 import path from 'path'
 import resolveFrom from 'resolve-from'
@@ -16,39 +15,6 @@ export class Utils {
    */
   static textFormat (txt: any, color: (txt: string) => string) {
     return String(txt).split(':').map((e, i, a) => i == 0 && a.length > 1 ? color(' ' + e + ': ') : e).join('')
-  }
-
-  /**
-   * Ouput formater object
-   * 
-   * @returns 
-   */
-  static output () {
-    return {
-      success: (msg: any, exit = false) => {
-        console.log(chalk.green('✓'), this.textFormat(msg, chalk.bgGreen), '\n')
-        if (exit) process.exit(0)
-      },
-      info: (msg: any, exit = false) => {
-        console.log(chalk.blue('ℹ'), this.textFormat(msg, chalk.bgBlue), '\n')
-        if (exit) process.exit(0)
-      },
-      error: (msg: string | string[] | Error & { detail?: string }, exit = true) => {
-        if (msg instanceof Error) {
-          if (msg.message) {
-            console.error(chalk.red('✖'), this.textFormat(msg.message, chalk.bgRed))
-          }
-          console.error(chalk.red(`${msg.detail ? `${msg.detail}\n` : ''}${msg.stack}`), '\n')
-        }
-        else {
-          console.error(chalk.red('✖'), this.textFormat(msg, chalk.bgRed), '\n')
-        }
-        if (exit) process.exit(1)
-      },
-      quiet: () => {
-        process.exit(0)
-      }
-    }
   }
 
   static findModulePkg (moduleId: string, cwd?: string) {
@@ -79,14 +45,6 @@ export class Utils {
       ...migrator.getPaths(),
       join(cwd, defaultPath),
     ]
-  }
-
-  static twoColumnDetail (name: string, value: string) {
-    // eslint-disable-next-line no-control-regex
-    const regex = /\x1b\[\d+m/g
-    const width = Math.min(process.stdout.columns, 100)
-    const dots = Math.max(width - name.replace(regex, '').length - value.replace(regex, '').length - 10, 0)
-    return console.log(name, chalk.gray('.'.repeat(dots)), value)
   }
 
   /**

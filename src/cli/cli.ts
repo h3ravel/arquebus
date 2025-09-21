@@ -2,6 +2,7 @@ import { Argument, Option, program } from 'commander'
 import { TableGuesser, Utils } from 'src/cli/utils'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
+import { Logger } from '@h3ravel/shared'
 import { Migrate } from 'src/migrate'
 import MigrationCreator from 'src/migrations/migration-creator'
 import type { TBaseConfig } from 'types/container'
@@ -14,7 +15,7 @@ import { snake } from 'radashi'
 
 export class Cli {
   private cwd!: string
-  private output = Utils.output()
+  private output = Logger.log()
   private config: XGeneric<TBaseConfig> = {} as TBaseConfig
   private basePath: string = ''
   private modulePath!: string
@@ -171,7 +172,7 @@ export class Cli {
 
           this.output.info(`INFO: Publishing migrations from ${chalk.italic.gray(pkgJson.name + '@' + pkgJson.version)}`)
           await creator.publish(basePath, (fileName) => {
-            Utils.twoColumnDetail(fileName, chalk.green('PUBLISHED'))
+            Logger.twoColumnLog(fileName, chalk.green('PUBLISHED'))
           })
         }
         catch (e) {
@@ -243,13 +244,13 @@ export class Cli {
           }).status(this.config, opts, true)
 
           if (migrations.length > 0) {
-            Utils.twoColumnDetail(chalk.gray('Migration name'), chalk.gray('Batch / Status'))
+            Logger.twoColumnLog(chalk.gray('Migration name'), chalk.gray('Batch / Status'))
 
             migrations.forEach(migration => {
               const status = migration.ran
                 ? `[${migration.batch}] ${chalk.green('Ran')}`
                 : chalk.yellow('Pending')
-              Utils.twoColumnDetail(migration.name, status)
+              Logger.twoColumnLog(migration.name, status)
             })
           }
           else {
