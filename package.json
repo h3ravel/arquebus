@@ -105,7 +105,7 @@
     "pnpm": ">=4"
   },
   "scripts": {
-    "build": "tsup --minify terser",
+    "build": "tsdown",
     "lint": "eslint . --ext .ts",
     "cmd": "cross-env TEST=true tsx --experimental-specifier-resolution=node src/cli",
     "cmd:watch": "cross-env TEST=true tsx watch --experimental-specifier-resolution=node src/cli",
@@ -157,7 +157,7 @@
     "sqlite3": "5.1.7",
     "terser": "^5.43.1",
     "ts-node": "^10.9.2",
-    "tsup": "^8.5.0",
+    "tsdown": "^0.15.4",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.40.0",

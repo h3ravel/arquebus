@@ -1,7 +1,4 @@
-import { copyFile, glob } from 'node:fs/promises'
-
-import { defineConfig } from 'tsup'
-import path from 'node:path'
+import { defineConfig } from 'tsdown'
 
 const external = [
     'fs',
@@ -41,7 +38,8 @@ export default defineConfig([
         outDir: 'dist',
         dts: true,
         external,
-        clean: true
+        clean: true,
+        copy: [{ from: 'src/migrations/stubs', to: 'dist/migrations/stubs' }, { from: 'src/stubs', to: 'dist/stubs' }],
     },
     {
         treeshake: true,
@@ -68,12 +66,5 @@ export default defineConfig([
         outDir: 'bin',
         dts: true,
         external,
-        async onSuccess () {
-            setTimeout(async () => {
-                for await (const entry of glob(path.join(process.cwd(), 'src/**/*.stub')))
-                    await copyFile(entry, entry.replace('src', 'bin'))
-            }, 5000)
-
-        },
     }
 ]) 
