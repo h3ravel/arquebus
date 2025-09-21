@@ -269,7 +269,7 @@ class Migrator {
         Logger.parse([[description, 'green']], '', false),
         [
           Logger.parse([[`${Math.floor(duration)}ms`, 'gray']], '', false),
-          Logger.parse([[result ? '✔' : '✘', result ? 'green' : 'red']], '', false),
+          Logger.parse([[result !== false ? '✔' : '✘', result !== false ? 'green' : 'red']], '', false),
         ].join(' ')
       )
     }
