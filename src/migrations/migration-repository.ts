@@ -2,7 +2,7 @@ import type { TBaseConfig } from 'types/container'
 import type { TGeneric } from 'types/generics'
 import type arquebus from 'src/arquebus'
 
-class MigrationRepository {
+export class MigrationRepository {
     resolver: typeof arquebus
     table
     connection: TBaseConfig['client'] | null = null
@@ -86,4 +86,5 @@ class MigrationRepository {
         this.connection = name
     }
 }
+
 export default MigrationRepository

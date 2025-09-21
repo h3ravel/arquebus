@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import fs from 'node:fs/promises'
 import path from 'path'
 
-class MigrationCreator {
+export class MigrationCreator {
     private postCreate: TFunction[] = []
 
     constructor(private customStubPath?: string, private type: 'ts' | 'js' = 'js') {
@@ -115,4 +115,5 @@ class MigrationCreator {
         throw new Error('Unable to determine dirname')
     }
 }
+
 export default MigrationCreator
