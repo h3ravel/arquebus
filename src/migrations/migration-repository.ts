@@ -80,7 +80,7 @@ export class MigrationRepository {
         return this.getConnection().table(this.table)
     }
     getConnection () {
-        return this.resolver.connection(this.connection)
+        return this.resolver.fire(this.connection)
     }
     setSource (name: TBaseConfig['client']) {
         this.connection = name

@@ -271,6 +271,28 @@ export class Cli {
       })
 
     /**
+     * Drop all tables and re-run all migrations
+     */
+    program
+      .command('migrate:fresh')
+      .description('Drop all tables and re-run all migrations.')
+      .option('-p, --path [path]', 'The path to the migrations directory.')
+      .action(async (opts) => {
+        if (!this.configPath) this.terminateNotFound()
+
+        const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
+
+        try {
+          await new Migrate(basePath, undefined, (msg, sts) => {
+            if (sts) this.output[sts](msg)
+          }).fresh(this.config, opts, true)
+        }
+        catch (e) {
+          this.output.error('ERROR: ' + e)
+        }
+      })
+
+    /**
      * Check the migration status
      */
     program

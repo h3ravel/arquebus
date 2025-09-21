@@ -157,6 +157,25 @@ export class Migrate {
     }
 
     /**
+     * Drop all tables and re-run all migrations
+     * 
+     * @param config 
+     * @param options 
+     * @param destroyAll 
+     */
+    async fresh (
+        config: TXBaseConfig,
+        options: MigrateOptions = {},
+        destroyAll = false
+    ): Promise<void> {
+
+        await this.reset(config, Object.assign({}, options, { quiet: true }), false)
+        console.log('')
+        await this.run(config, options, destroyAll)
+
+    }
+
+    /**
      * Prepares the database for migration
      * 
      * @param migrator 
