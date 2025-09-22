@@ -19,6 +19,7 @@
       "package": ["package.json"],
       "@h3ravel/arquebus": ["src/index.ts"],
       "@h3ravel/arquebus/browser": ["src/browser/index.ts"],
+      "@h3ravel/arquebus/inspector": ["src/inspector/index.ts"],
       "src": ["src/index.ts"],
       "src/*": ["src/*"]
     }

@@ -168,11 +168,22 @@ export class Migrate {
         options: MigrateOptions = {},
         destroyAll = false
     ): Promise<void> {
+        const { arquebus, migrator } = await this.setupConnection(config)
 
-        await this.reset(config, Object.assign({}, options, { quiet: true }), false)
-        console.log('')
-        await this.run(config, options, destroyAll)
+        const paths = await Utils.getMigrationPaths(
+            this.basePath ?? process.cwd(),
+            migrator,
+            config.migrations!.path,
+            options.path!
+        )
 
+        await migrator.setOutput(true).fresh(paths, {
+            pretend: options.pretend,
+        })
+
+        if (destroyAll) {
+            await arquebus.destroyAll()
+        }
     }
 
     /**

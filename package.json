@@ -1,6 +1,6 @@
 {
   "name": "@h3ravel/arquebus",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "packageManager": "pnpm@10.14.0",
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.toneflix.net/arquebus",
@@ -17,8 +17,6 @@
   "files": [
     "dist",
     "bin",
-    "src/stubs",
-    "src/migrations/stubs",
     "types"
   ],
   "exports": {
@@ -84,6 +82,16 @@
         "default": "./dist/migrations/index.cjs"
       }
     },
+    "./inspector": {
+      "import": {
+        "types": "./dist/inspector/index.d.ts",
+        "default": "./dist/inspector/index.js"
+      },
+      "require": {
+        "types": "./dist/inspector/index.d.cts",
+        "default": "./dist/inspector/index.cjs"
+      }
+    },
     "./browser": {
       "import": {
         "types": "./dist/browser/index.d.ts",
@@ -109,6 +117,7 @@
     "lint": "eslint . --ext .ts",
     "cmd": "cross-env TEST=true tsx --experimental-specifier-resolution=node src/cli",
     "cmd:watch": "cross-env TEST=true tsx watch --experimental-specifier-resolution=node src/cli",
+    "test": "cross-env vitest --project generic",
     "test:mysql": "cross-env DB=mysql vitest --project node",
     "test:postgres": "cross-env DB=postgres vitest --project node",
     "test:sqlite": "cross-env DB=sqlite vitest --project node",

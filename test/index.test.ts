@@ -520,7 +520,7 @@ describe('Integration test', async () => {
         }
       }
 
-      beforeAll(() => {
+      beforeAll(async () => {
         return Promise.all([
           'users',
           'tags',

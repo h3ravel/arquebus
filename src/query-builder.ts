@@ -1,6 +1,5 @@
 import type { IPaginator, IPaginatorParams } from 'types/utils'
 import type { IQueryBuilder, SchemaBuilder } from 'types/query-builder'
-
 import type { Knex } from 'knex'
 import type Model from 'src/model'
 import Paginator from './paginator'
@@ -12,7 +11,7 @@ const Inference = class { } as { new <M extends Model = Model, R = M[] | M>(): I
 export class QueryBuilder<M extends Model = Model, R = M[] | M> extends Inference<M, R> {
     model!: M
     schema!: SchemaBuilder
-    private connector: IQueryBuilder<M, R> & Knex.QueryBuilder & { _statements: any[], _single: any }
+    public connector: IQueryBuilder<M, R> & Knex.QueryBuilder & { _statements: any[], _single: any } & Knex
 
     constructor(config: TConfig | null, connector: TFunction) {
         super()

@@ -3,11 +3,47 @@ import type { ICollection, IPaginator, IPaginatorParams } from './utils'
 import type { TFunction, TGeneric } from './generics'
 
 import type BModel from 'src/browser/model'
+import type { Column } from 'src/inspector/types/column'
+import type { ForeignKey } from 'src/inspector/types/foreign-key'
 import type { Knex } from 'knex'
 import type Model from 'src/model'
+import type { Table } from 'src/inspector/types/table'
 
 export interface SchemaBuilder extends Knex.SchemaBuilder {
     [k: string]: any
+    /**
+     * Retrieve all tables in the current database.
+     */
+    tables (): Promise<string[]>
+    /**
+     * Retrieve the table info for the given table, or all tables if no table is specified.
+     * 
+     * @param table 
+     */
+    tableInfo (table?: string): Promise<Table | Table[]>
+    /**
+     * Retrieve all columns in a given table, or all columns if no table is specified.
+     * 
+     * @param table 
+     */
+    columns (table?: string): Promise<{ table: string, column: string }[]>
+    /**
+     * Retrieve all columns from a given table. Returns all columns if table parameter is undefined.
+     * 
+     * @param table 
+     * @param column 
+     */
+    columnInfo (table?: string, column?: string): Promise<Column[] | Column>
+    /**
+     * Retrieve the primary key column for a given table.
+     * 
+     * @param table 
+     */
+    primary (table: string): Promise<string>
+    /**
+     * Retrieve all configured foreign key constraints
+     */
+    foreignKeys (): Promise<ForeignKey>
 };
 
 interface AsMethod<QB extends AnyQueryBuilder> {

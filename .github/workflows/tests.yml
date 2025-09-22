@@ -55,6 +55,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Run Generic tests
+        run: pnpm test
+        env:
+          MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+          MYSQL_PASSWORD: password
+          POSTGRES_HOST: localhost
+          POSTGRES_USER: arquebus
+          POSTGRES_PASSWORD: arquebus
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+
       - name: Run mysql tests
         run: pnpm test:mysql
         env:

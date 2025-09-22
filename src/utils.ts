@@ -59,6 +59,8 @@ export const tap = <I> (instance: I, callback: (ins: I) => Promise<I> | I): Prom
 
 export const { compose } = comp
 
+export const flatten = <A = any> (arr: A[]) => arr.flat()
+
 export const flattenDeep = (arr: any) => Array.isArray(arr)
   ? arr.reduce((a, b) => a.concat(flattenDeep(b)), [])
   : [arr]

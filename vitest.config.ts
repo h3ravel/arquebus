@@ -6,6 +6,16 @@ export default defineConfig({
     test: {
         projects: [
             {
+                // Generic test configuration
+                extends: true,
+                test: {
+                    name: 'generic',
+                    environment: 'node',
+                    root: './src',
+                    include: ['**/*.active.{test,spec}.?(c|m)[jt]s?(x)']
+                },
+            },
+            {
                 // Node environment test configuration
                 extends: true,
                 test: {

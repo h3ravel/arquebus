@@ -61,6 +61,15 @@ export default defineConfig([
     },
     {
         treeshake: true,
+        entry: ['src/inspector/index.ts'],
+        format: ['esm', 'cjs'],
+        outDir: 'dist/inspector',
+        dts: true,
+        external,
+        clean: true
+    },
+    {
+        treeshake: true,
         entry: ['src/cli/index.ts'],
         format: ['esm', 'cjs'],
         outDir: 'bin',

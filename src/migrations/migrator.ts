@@ -2,6 +2,7 @@ import type { IMigration } from './migration'
 import { Logger } from '@h3ravel/shared'
 import type { MigrationRepository } from './migration-repository'
 import type { QueryBuilder } from 'src/query-builder'
+import { SchemaInspector } from '../inspector'
 import type { TBaseConfig } from 'types/container'
 import type { arquebus } from 'src'
 import fs from 'node:fs/promises'
@@ -72,15 +73,15 @@ export class Migrator {
   }
 
   async runPending (migrations: string[], options: MigrationOptions = {}): Promise<void> {
-    if (migrations.length === 0) {
-      Logger.info('Nothing to migrate')
+    if (migrations.length === 0 && !options.quiet) {
+      Logger.info('INFO: Nothing to migrate.')
       return
     }
     let batch = await this.repository.getNextBatchNumber()
     const pretend = options.pretend || false
     const step = options.step || false
 
-    Logger.info('Running migrations...')
+    Logger.info('INFO: Running migrations...')
 
     for (const file of migrations) {
       await this.runUp(file, batch, pretend)
@@ -94,7 +95,7 @@ export class Migrator {
     const migration = await this.resolvePath(file)
     const name = this.getMigrationName(file)
 
-    await this.writeTask(name, () => this.runMigration(migration, 'up'))
+    await this.taskRunner(name, () => this.runMigration(migration, 'up'))
     await this.repository.log(name, batch)
   }
 
@@ -102,14 +103,14 @@ export class Migrator {
     const instance = await this.resolvePath(file)
     const name = this.getMigrationName(file)
 
-    await this.writeTask(name, () => this.runMigration(instance, 'down'))
+    await this.taskRunner(name, () => this.runMigration(instance, 'down'))
     await this.repository.delete(migration)
   }
 
   async rollback (paths: string[] = [], options: MigrationOptions = {}): Promise<string[]> {
     const migrations = await this.getMigrationsForRollback(options)
     if (migrations.length === 0) {
-      Logger.info('Nothing to rollback')
+      Logger.info('INFO: Nothing to rollback')
       return []
     }
     return await this.rollbackMigrations(migrations, paths, options)
@@ -128,7 +129,9 @@ export class Migrator {
   async rollbackMigrations (migrations: { migration: string }[], paths: string[], options: MigrationOptions): Promise<string[]> {
     const rolledBack: string[] = []
     const files = await this.getMigrationFiles(paths)
-    Logger.info('Rolling back migrations...')
+
+    Logger.info('INFO: Rolling back migrations...')
+
     for (const migration of migrations) {
       const file = files[migration.migration]
       if (!file) {
@@ -148,11 +151,44 @@ export class Migrator {
     const migrations = await this.repository.getRan().then(r => r.map(e => ({ migration: e })).reverse())
 
     if (migrations.length === 0) {
-      if (!options.quiet) Logger.info('Nothing to reset.')
+      if (!options.quiet) Logger.info('INFO: Nothing to reset.')
       return []
     }
 
     return this.resetMigrations(migrations, paths, pretend)
+  }
+
+  /**
+   * Drop all tables and re-run all migrations
+   * 
+   * @param paths 
+   * @param options 
+   */
+  async fresh (paths: string[], options: MigrationOptions) {
+
+    /** Initialise connections */
+    const connection = this.repository.getConnection().connector
+    const inspector = SchemaInspector.inspect(connection)
+
+    await connection.raw('SET foreign_key_checks = 0')
+
+    /** Drop all existing tables */
+    for (const table of await inspector.tables()) {
+      this.taskRunner(
+        `Dropping ${Logger.parse([[table, 'grey']], '', false)} table`,
+        () => connection.schema.dropTableIfExists(table)
+      )
+    }
+
+    await connection.raw('SET foreign_key_checks = 1')
+
+    /** Create the migration repository */
+    await this.repository.createRepository()
+
+    console.log()
+
+    /** Run fresh migrations */
+    await this.run(paths, options)
   }
 
   async resetMigrations (migrations: { migration: string }[], paths: string[], pretend = false): Promise<string[]> {
@@ -231,7 +267,7 @@ export class Migrator {
   }
 
   resolveConnection (connection?: TBaseConfig['client']): any {
-    return this.resolver.connection(connection || this.connection)
+    return this.resolver.fire(connection || this.connection)
   }
 
   getRepository (): MigrationRepository {
@@ -263,11 +299,15 @@ export class Migrator {
     }
   }
 
-  async writeTask (description: string, task: () => Promise<any> | any): Promise<void> {
+  public async taskRunner (
+    description: string,
+    task: (() => Promise<any>) | (() => any)
+  ): Promise<void> {
     const startTime = process.hrtime()
     let result: any = false
+
     try {
-      result = await (task || (() => true))()
+      result = await Promise.all([(task || (() => true))()].flat())
     } finally {
       const endTime = process.hrtime(startTime)
       const duration = (endTime[0] * 1e9 + endTime[1]) / 1e6
