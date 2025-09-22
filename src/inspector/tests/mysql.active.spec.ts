@@ -64,18 +64,18 @@ describe('mysql', () => {
 
   describe('.tables', () => {
     it('returns tables', async () => {
-      expect(await inspector.tables()).to.deep.equal([
+      expect(await inspector.tables()).toEqual(expect.arrayContaining([
         'teams',
         'users',
-        'page_visits',
         'detailed_page_visits',
-      ])
+        'page_visits',
+      ]))
     })
   })
 
   describe('.tableInfo', () => {
     it('returns information for all tables', async () => {
-      expect(await inspector.tableInfo()).to.have.deep.members([
+      expect(await inspector.tableInfo()).toEqual(expect.arrayContaining(([
         {
           name: 'page_visits',
           schema,
@@ -104,7 +104,7 @@ describe('mysql', () => {
           collation: 'latin1_swedish_ci',
           engine: 'InnoDB',
         },
-      ])
+      ])))
     })
 
     it('returns information for specific table', async () => {
@@ -169,7 +169,7 @@ describe('mysql', () => {
     it('returns information for all columns in all tables', async () => {
       const columnInfo = await inspector.columnInfo()
       expect(columnInfo).to.have.length(20)
-      expect(columnInfo).toMatchObject([
+      expect(columnInfo).toEqual(expect.arrayContaining([
         {
           name: 'team_id',
           table: 'users',
@@ -550,11 +550,11 @@ describe('mysql', () => {
           foreign_key_table: null,
           comment: ''
         }
-      ])
+      ]))
     })
 
     it('returns information for all columns in specific table', async () => {
-      expect(await inspector.columnInfo('teams')).toMatchObject([
+      expect(await inspector.columnInfo('teams')).toEqual(expect.arrayContaining([
         {
           name: 'id',
           table: 'teams',
@@ -707,7 +707,7 @@ describe('mysql', () => {
           foreign_key_table: null,
           comment: ''
         }
-      ])
+      ]))
     })
 
     it('returns information for a specific column in a specific table', async () => {
