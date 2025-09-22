@@ -24,16 +24,18 @@ describe('mysql', () => {
     await database.raw('SET foreign_key_checks = 1')
     return database.schema
       .createTable('teams', function (table) {
+        table.collate('latin1_swedish_ci')
         table.increments('id')
-        table.uuid('uuid').collate('utf8mb4_general_ci').unique().notNullable()
-        table.string('name', 100).collate('utf8mb4_general_ci').nullable()
-        table.string('name_upper', 100).collate('utf8mb4_general_ci').nullable()
-        table.text('description').collate('utf8mb4_general_ci').nullable()
-        table.integer('credits', 11).comment('Remaining usage credits').nullable()
+        table.uuid('uuid').unique().notNullable().collate('latin1_swedish_ci')
+        table.string('name', 100).nullable().collate('latin1_swedish_ci')
+        table.string('name_upper', 100).nullable().collate('latin1_swedish_ci')
+        table.text('description').nullable().collate('latin1_swedish_ci')
+        table.integer('credits', 11).comment('Remaining usage credits').nullable().collate('latin1_swedish_ci')
         table.datetime('created_at').nullable()
         table.date('activated_at').nullable()
       })
       .createTable('users', function (table) {
+        table.collate('latin1_swedish_ci')
         table.increments('id')
         table.integer('team_id').unsigned().unique().notNullable()
         table.string('email', 100).unique({ indexName: 'team_id_email_unique' }).notNullable()
@@ -42,16 +44,16 @@ describe('mysql', () => {
         table.foreign('team_id', 'fk_team_id').references('id').inTable('teams').onDelete('CASCADE').onUpdate('CASCADE')
       })
       .createTable('page_visits', function (table) {
-        table.collate('utf8mb4_general_ci')
-        table.string('request_path', 1000).nullable()
-        table.string('user_agent', 1000).nullable()
+        table.collate('latin1_swedish_ci')
+        table.string('request_path', 1000).nullable().collate('latin1_swedish_ci')
+        table.string('user_agent', 1000).nullable().collate('latin1_swedish_ci')
         table.datetime('created_at').nullable()
       })
       .createTable('detailed_page_visits', function (table) {
-        table.collate('utf8mb4_general_ci')
-        table.string('domain', 100).notNullable()
-        table.string('request_path', 100).notNullable()
-        table.string('user_agent', 200).nullable()
+        table.collate('latin1_swedish_ci')
+        table.string('domain', 100).notNullable().collate('latin1_swedish_ci')
+        table.string('request_path', 100).notNullable().collate('latin1_swedish_ci')
+        table.string('user_agent', 200).nullable().collate('latin1_swedish_ci')
         table.datetime('created_at').nullable()
         table.primary(['domain', 'request_path'])
       })
@@ -78,28 +80,28 @@ describe('mysql', () => {
           name: 'page_visits',
           schema,
           comment: '',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           engine: 'InnoDB',
         },
         {
           name: 'teams',
           schema,
           comment: '',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           engine: 'InnoDB',
         },
         {
           name: 'users',
           schema: schema,
           comment: '',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           engine: 'InnoDB',
         },
         {
           name: 'detailed_page_visits',
           schema: schema,
           comment: '',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           engine: 'InnoDB',
         },
       ])
@@ -107,7 +109,7 @@ describe('mysql', () => {
 
     it('returns information for specific table', async () => {
       expect(await inspector.tableInfo('teams')).to.deep.equal({
-        collation: 'utf8mb4_general_ci',
+        collation: 'latin1_swedish_ci',
         comment: '',
         engine: 'InnoDB',
         name: 'teams',
@@ -209,7 +211,7 @@ describe('mysql', () => {
         {
           name: 'uuid',
           table: 'teams',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'char',
           default_value: null,
           generation_expression: null,
@@ -247,7 +249,7 @@ describe('mysql', () => {
         {
           name: 'email',
           table: 'users',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -266,7 +268,7 @@ describe('mysql', () => {
         {
           name: 'domain',
           table: 'detailed_page_visits',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -285,7 +287,7 @@ describe('mysql', () => {
         {
           name: 'request_path',
           table: 'detailed_page_visits',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -304,7 +306,7 @@ describe('mysql', () => {
         {
           name: 'name',
           table: 'teams',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -323,7 +325,7 @@ describe('mysql', () => {
         {
           name: 'name_upper',
           table: 'teams',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -342,7 +344,7 @@ describe('mysql', () => {
         {
           name: 'description',
           table: 'teams',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'text',
           default_value: null,
           generation_expression: null,
@@ -418,7 +420,7 @@ describe('mysql', () => {
         {
           name: 'password',
           table: 'users',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -437,7 +439,7 @@ describe('mysql', () => {
         {
           name: 'status',
           table: 'users',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: 'active',
           generation_expression: null,
@@ -456,7 +458,7 @@ describe('mysql', () => {
         {
           name: 'request_path',
           table: 'page_visits',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -475,7 +477,7 @@ describe('mysql', () => {
         {
           name: 'user_agent',
           table: 'page_visits',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -513,7 +515,7 @@ describe('mysql', () => {
         {
           name: 'user_agent',
           table: 'detailed_page_visits',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -575,7 +577,7 @@ describe('mysql', () => {
         {
           name: 'uuid',
           table: 'teams',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'char',
           default_value: null,
           generation_expression: null,
@@ -594,7 +596,7 @@ describe('mysql', () => {
         {
           name: 'name',
           table: 'teams',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -613,7 +615,7 @@ describe('mysql', () => {
         {
           name: 'name_upper',
           table: 'teams',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'varchar',
           default_value: null,
           generation_expression: null,
@@ -632,7 +634,7 @@ describe('mysql', () => {
         {
           name: 'description',
           table: 'teams',
-          collation: 'utf8mb4_general_ci',
+          collation: 'latin1_swedish_ci',
           data_type: 'text',
           default_value: null,
           generation_expression: null,
@@ -713,7 +715,7 @@ describe('mysql', () => {
         name: 'uuid',
         table: 'teams',
         data_type: 'char',
-        collation: 'utf8mb4_general_ci',
+        collation: 'latin1_swedish_ci',
         default_value: null,
         max_length: 36,
         numeric_precision: null,
