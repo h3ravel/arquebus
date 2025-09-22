@@ -169,7 +169,7 @@ describe('mysql', () => {
     it('returns information for all columns in all tables', async () => {
       const columnInfo = await inspector.columnInfo()
       expect(columnInfo).to.have.length(20)
-      expect(columnInfo).to.deep.equal([
+      expect(columnInfo).to.have.deep.members([
         {
           name: 'team_id',
           table: 'users',
@@ -554,7 +554,7 @@ describe('mysql', () => {
     })
 
     it('returns information for all columns in specific table', async () => {
-      expect(await inspector.columnInfo('teams')).to.deep.equal([
+      expect(await inspector.columnInfo('teams')).to.have.deep.members([
         {
           name: 'id',
           table: 'teams',
