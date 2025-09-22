@@ -1,5 +1,6 @@
+import { Logger, TaskManager } from '@h3ravel/shared'
+
 import type { IMigration } from './migration'
-import { Logger } from '@h3ravel/shared'
 import type { MigrationRepository } from './migration-repository'
 import type { QueryBuilder } from 'src/query-builder'
 import { SchemaInspector } from '../inspector'
@@ -95,7 +96,7 @@ export class Migrator {
     const migration = await this.resolvePath(file)
     const name = this.getMigrationName(file)
 
-    await this.taskRunner(name, () => this.runMigration(migration, 'up'))
+    await TaskManager.taskRunner(name, () => this.runMigration(migration, 'up'))
     await this.repository.log(name, batch)
   }
 
@@ -103,7 +104,7 @@ export class Migrator {
     const instance = await this.resolvePath(file)
     const name = this.getMigrationName(file)
 
-    await this.taskRunner(name, () => this.runMigration(instance, 'down'))
+    await TaskManager.taskRunner(name, () => this.runMigration(instance, 'down'))
     await this.repository.delete(migration)
   }
 
@@ -174,7 +175,7 @@ export class Migrator {
 
     /** Drop all existing tables */
     for (const table of await inspector.tables()) {
-      this.taskRunner(
+      await TaskManager.taskRunner(
         `Dropping ${Logger.parse([[table, 'grey']], '', false)} table`,
         () => connection.schema.dropTableIfExists(table)
       )
@@ -296,28 +297,6 @@ export class Migrator {
   write (...args: any[]): void {
     if (this.output) {
       console.log(...args)
-    }
-  }
-
-  public async taskRunner (
-    description: string,
-    task: (() => Promise<any>) | (() => any)
-  ): Promise<void> {
-    const startTime = process.hrtime()
-    let result: any = false
-
-    try {
-      result = await Promise.all([(task || (() => true))()].flat())
-    } finally {
-      const endTime = process.hrtime(startTime)
-      const duration = (endTime[0] * 1e9 + endTime[1]) / 1e6
-      Logger.twoColumnLog(
-        Logger.parse([[description, 'green']], '', false),
-        [
-          Logger.parse([[`${Math.floor(duration)}ms`, 'gray']], '', false),
-          Logger.parse([[result !== false ? '✔' : '✘', result !== false ? 'green' : 'red']], '', false),
-        ].join(' ')
-      )
     }
   }
 }
