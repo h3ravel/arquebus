@@ -1,10 +1,10 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 
+import { FileSystem } from '@h3ravel/shared'
 import type { TFunction } from 'types/generics'
 import dayjs from 'dayjs'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import fs from 'node:fs/promises'
 import path from 'path'
 
 export class MigrationCreator {
@@ -23,11 +23,11 @@ export class MigrationCreator {
      * @returns 
      */
     async create (name: string, dir: string, table: string, create: boolean = false) {
-        const stub = this.getStub(table, create)
+        const stub = await this.getStub(table, create)
         const filePath = this.getPath(name, dir)
 
         await this.ensureDirectoryExists(path.dirname(filePath))
-        await fs.writeFile(filePath, this.populateStub(stub, table))
+        await writeFile(filePath, this.populateStub(stub, table))
         await this.firePostCreateHooks(table, filePath)
         return filePath
     }
@@ -39,34 +39,34 @@ export class MigrationCreator {
      * @param callback 
      */
     async publish (dir: string, callback?: (name: string, source: string, dest: string) => void) {
-        const migrationFiles = await fs.readdir(this.customStubPath ?? '')
+        const migrationFiles = await readdir(this.customStubPath ?? '')
         await this.ensureDirectoryExists(dir)
 
         for (const migrationFile of migrationFiles) {
             const sourceFilePath = path.join(this.customStubPath ?? '', migrationFile)
             const destinationFilePath = path.join(dir, migrationFile)
-            await fs.copyFile(sourceFilePath, destinationFilePath)
+            await copyFile(sourceFilePath, destinationFilePath)
 
             if (callback) callback(migrationFile, sourceFilePath, destinationFilePath)
         }
     }
 
-    getStub (table?: string, create: boolean = false) {
+    async getStub (table?: string, create: boolean = false) {
         let stub: string
         if (!table) {
             const customPath = path.join(this.customStubPath ?? '', `migration-${this.type}.stub`)
             console.log('\n', customPath, '---')
-            stub = existsSync(customPath) ? customPath : this.stubPath(`/migration-${this.type}.stub`)
+            stub = await FileSystem.fileExists(customPath) ? customPath : this.stubPath(`/migration-${this.type}.stub`)
         }
         else if (create) {
             const customPath = path.join(this.customStubPath ?? '', `migration.create-${this.type}.stub`)
-            stub = existsSync(customPath) ? customPath : this.stubPath(`/migration.create-${this.type}.stub`)
+            stub = await FileSystem.fileExists(customPath) ? customPath : this.stubPath(`/migration.create-${this.type}.stub`)
         }
         else {
             const customPath = path.join(this.customStubPath ?? '', `migration.update-${this.type}.stub`)
-            stub = existsSync(customPath) ? customPath : this.stubPath(`/migration.update-${this.type}.stub`)
+            stub = await FileSystem.fileExists(customPath) ? customPath : this.stubPath(`/migration.update-${this.type}.stub`)
         }
-        return readFileSync(stub, 'utf-8')
+        return await readFile(stub, 'utf-8')
     }
 
     populateStub (stub: string, table: string) {
@@ -95,7 +95,7 @@ export class MigrationCreator {
     }
 
     async ensureDirectoryExists (dir: string) {
-        await fs.mkdir(dir, { recursive: true })
+        await mkdir(dir, { recursive: true })
     }
 
     stubPath (stub: string = '') {

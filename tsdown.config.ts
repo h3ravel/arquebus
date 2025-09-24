@@ -57,6 +57,7 @@ export default defineConfig([
         outDir: 'dist/migrations',
         dts: true,
         external,
+        shims: true,
         clean: true
     },
     {

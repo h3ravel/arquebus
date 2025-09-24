@@ -1,6 +1,6 @@
 {
   "name": "@h3ravel/arquebus",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "packageManager": "pnpm@10.14.0",
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.toneflix.net/arquebus",
@@ -122,7 +122,7 @@
     "test:postgres": "cross-env DB=postgres vitest --project node",
     "test:sqlite": "cross-env DB=sqlite vitest --project node",
     "test:browser": "vitest --project browser",
-    "release:patch": "pnpm build && git add . && git commit -m \"version: bump version and publish\" && pnpm version patch && pnpm publish --tag latest"
+    "release:patch": "pnpm build && git add . && git commit -m \"version: bump version\" && pnpm version patch && pnpm publish --tag latest"
   },
   "husky": {
     "hooks": {
@@ -136,7 +136,7 @@
     ]
   },
   "dependencies": {
-    "@h3ravel/shared": "^0.18.1",
+    "@h3ravel/shared": "^0.20.1",
     "chalk": "^5.6.2",
     "collect.js": "^4.36.1",
     "commander": "^14.0.1",
