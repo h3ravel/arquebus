@@ -9,9 +9,10 @@ const UniqueIds = <TBase extends MixinConstructor> (Model: TBase) => {
         uniqueIds () {
             return []
         }
-        newUniqueId () {
-            return null
-        }
+        // newUniqueId (): string {
+        //     return ''
+        // }
+        // newUniqueId = () => ''
         setUniqueIds () {
             const uniqueIds = this.uniqueIds()
             for (const column of uniqueIds) {

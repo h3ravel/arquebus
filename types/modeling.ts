@@ -111,7 +111,7 @@ export interface IModel {
     setConnection (connection: TBaseConfig['client'] | null): this;
     usesUniqueIds (): boolean;
     uniqueIds (): string[];
-    newUniqueId (): string;
+    // newUniqueId (): string;
     setUniqueIds (): void;
     getKeyType (): string;
     getIncrementing (): boolean;

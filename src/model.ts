@@ -15,7 +15,7 @@ import HasTimestamps from './concerns/has-timestamps'
 import HidesAttributes from './concerns/hides-attributes'
 import type { IBuilder } from 'types/builder'
 import type { IModel } from 'types/modeling'
-// import type { IModel } from 'types/modeling'
+import type { Mixins } from './mixin'
 import type { TBaseConfig } from 'types/container'
 import UniqueIds from './concerns/unique-ids'
 import type { WithRelationType } from 'types/query-methods'
@@ -24,7 +24,15 @@ import collect from 'collect.js'
 import { assign as merge } from 'radashi'
 import pluralize from 'pluralize'
 
-const ModelClass = class { } as { new(): IModel } & IModel
+const ModelClass = class { } as { new(): IModel } & IModel & Mixins<[
+  typeof HasTimestamps,
+  typeof HasAttributes,
+  typeof HidesAttributes,
+  // typeof HasRelations,
+  typeof HasHooks,
+  typeof HasGlobalScopes,
+  typeof UniqueIds,
+]>
 
 const BaseModel = compose<typeof ModelClass>(
   ModelClass,
@@ -39,6 +47,7 @@ const BaseModel = compose<typeof ModelClass>(
 
 // @ts-expect-error Errors will come from overlapping mixing methods and properties
 export class Model extends BaseModel {
+  [key: string]: any
   protected builder: IBuilder<any, any> | null = null
   protected table: string | null = null
   protected keyType = 'int'
@@ -54,6 +63,7 @@ export class Model extends BaseModel {
   eagerLoad = {}
   exists: boolean = false
   with: string | string[] | TGeneric<(...args: any[]) => IBuilder<Model>> = []
+  name!: any
   trx = null
 
   constructor(attributes = {}) {

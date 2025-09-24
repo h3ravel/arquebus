@@ -412,8 +412,7 @@ describe('Integration test', async () => {
       }
 
       class UuidUser extends compose(Base, HasUniqueIds) {
-        name!: string
-        newUniqueId = () => {
+        newUniqueId (): string {
           return crypto.randomUUID()
         }
       }
@@ -2158,7 +2157,6 @@ describe('Integration test', async () => {
 
         class HookPost extends compose(Base, SoftDeletes) {
           table = 'posts'
-          name!: string
           static boot () {
             super.boot()
             this.creating(() => {

@@ -1,5 +1,33 @@
 import type { MixinConstructor, TGeneric } from 'types/generics'
 
+// Extract the returned class (constructor) from a mixin
+export type ExtractClass<T> =
+    T extends (base: Constructor<any>) => infer R
+    ? R extends Constructor<any>
+    ? R
+    : never
+    : never;
+
+// Extract the instance type from a mixin
+export type ExtractInstance<T> =
+    T extends (base: Constructor<any>) => infer R
+    ? R extends Constructor<any>
+    ? InstanceType<R>
+    : never
+    : never;
+
+export type Mixins<T extends readonly ((base: Constructor) => Constructor)[]> =
+    UnionToIntersection<
+        {
+            [K in keyof T]:
+            T[K] extends (base: Constructor) => infer R
+            ? R extends Constructor
+            ? InstanceType<R>
+            : never
+            : never
+        }[number]
+    >;
+
 /**
  * Helper type to extract instance type from constructor or mixin function
  */

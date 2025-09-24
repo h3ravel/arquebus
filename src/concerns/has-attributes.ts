@@ -367,4 +367,5 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
     }
   }
 }
+
 export default HasAttributes

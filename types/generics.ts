@@ -47,6 +47,7 @@ export type RelationNames<T> = FunctionPropertyNames<T> extends infer R
     : never;
 
 export type MixinConstructor<T = TGeneric> = new (...args: any[]) => T
+export type AbstractConstructor<T = TGeneric> = abstract new (...args: any[]) => T;
 
 // Helper type: combine all mixin instance types into a single intersection
 export type MixinReturn<Base extends MixinConstructor, Mixins extends ((base: any) => any)[]> =
