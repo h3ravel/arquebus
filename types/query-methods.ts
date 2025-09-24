@@ -114,6 +114,26 @@ export interface WhereJsonExpressionMethod<QB extends AnyQueryBuilder> {
     (fieldExpression: FieldExpression, keys: string | string[]): QB;
 }
 
+export interface ReturningMethod<QB extends AnyQueryBuilder> {
+    (key: FieldExpression | FieldExpression[], options?: { [key: string]: any }): QB;
+}
+
+export interface FirstOrFailMethod<QB extends AnyQueryBuilder> {
+    (): Promise<QB>;
+}
+
+export interface AddSelectMethod<QB extends AnyQueryBuilder> {
+    (params: string[]): QB;
+}
+
+export interface ForceDeleteMethod {
+    (): Promise<boolean | number>;
+}
+
+export interface RestoreMethod {
+    (): Promise<number>;
+}
+
 export interface WhereColumnMethod<QB extends AnyQueryBuilder> {
     (col1: ColumnRef, op: Operator, col2: ColumnRef): QB;
     (col1: ColumnRef, col2: ColumnRef): QB;

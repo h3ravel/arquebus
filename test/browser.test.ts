@@ -360,9 +360,9 @@ describe('Model', () => {
 })
 
 describe('Collection', () => {
-  let collection
+  let collection!: Collection<any>
   class User extends Model {
-    primaryKey = 'some_id'
+    protected primaryKey = 'some_id'
   }
   class Post extends Model { }
 

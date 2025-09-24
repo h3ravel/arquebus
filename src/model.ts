@@ -14,6 +14,7 @@ import HasRelations from './concerns/has-relations'
 import HasTimestamps from './concerns/has-timestamps'
 import HidesAttributes from './concerns/hides-attributes'
 import type { IBuilder } from 'types/builder'
+import type { IModel } from 'types/modeling'
 // import type { IModel } from 'types/modeling'
 import type { TBaseConfig } from 'types/container'
 import UniqueIds from './concerns/unique-ids'
@@ -23,8 +24,10 @@ import collect from 'collect.js'
 import { assign as merge } from 'radashi'
 import pluralize from 'pluralize'
 
-const BaseModel = compose<any, any>(
-  class { },
+const ModelClass = class { } as { new(): IModel } & IModel
+
+const BaseModel = compose<typeof ModelClass>(
+  ModelClass,
   HasAttributes,
   HidesAttributes,
   HasRelations,
@@ -34,13 +37,14 @@ const BaseModel = compose<any, any>(
   UniqueIds
 )
 
+// @ts-expect-error Errors will come from overlapping mixing methods and properties
 export class Model extends BaseModel {
-  protected primaryKey = 'id'
   protected builder: IBuilder<any, any> | null = null
   protected table: string | null = null
   protected keyType = 'int'
   protected incrementing = true
   protected withCount = [] // protected
+  protected primaryKey = 'id'
   public perPage = 15
   static globalScopes = {}
   static pluginInitializers = {}
@@ -319,15 +323,16 @@ export class Model extends BaseModel {
     return this
   }
   async save (options: TGeneric = {}) {
-    // const query = this.newQuery(options.client).setModel(this);
-    const query = this.newModelQuery(options.client) as any
-    let saved
+    // const query = this.newQuery(options.client).setModel(this)
+    const query = this.newModelQuery(options.client)
+    let saved: boolean
+
     await this.execHooks('saving', options)
+
     if (this.exists) {
       if (this.isDirty() === false) {
         saved = true
-      }
-      else {
+      } else {
         await this.execHooks('updating', options)
         if (this.usesTimestamps()) {
           this.updateTimestamps()
@@ -340,8 +345,7 @@ export class Model extends BaseModel {
         }
         saved = true
       }
-    }
-    else {
+    } else {
       if (this.usesUniqueIds()) {
         this.setUniqueIds()
       }
@@ -352,10 +356,10 @@ export class Model extends BaseModel {
       const attributes = this.getAttributes()
       if (this.getIncrementing()) {
         const keyName = this.getKeyName()
+        /////////
         const data = await query.insert([attributes], [keyName])
         this.setAttribute(keyName, data[0]?.[keyName] || data[0])
-      }
-      else {
+      } else {
         if (Object.keys(attributes).length > 0) {
           await query.insert(attributes)
         }

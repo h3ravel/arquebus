@@ -67,12 +67,13 @@ type Static<T> = {
  */
 export function compose<
     TBase extends Constructor,
-    TMixins extends Array<Mixin<any> | Constructor>
+    TMixins extends Array<Mixin<any> | Constructor> = any
 > (
     Base: TBase,
     ...mixins: TMixins
 ): Constructor<
     InstanceType<TBase> &
+    TBase &
     UnionToIntersection<
         {
             [K in keyof TMixins]: TMixins[K] extends Mixin<any>

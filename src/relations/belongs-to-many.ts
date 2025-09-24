@@ -111,8 +111,8 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return results.count() > 0 ? results.first() : null
   }
 
-  async firstOrFail (columns: string[] = ['*']): Promise<any> {
-    const model = await this.first(columns)
+  async firstOrFail (...columns: any[]): Promise<any> {
+    const model = await this.first(...columns)
     if (model !== null) {
       return model
     }

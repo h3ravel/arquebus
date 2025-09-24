@@ -17,7 +17,7 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> implements 
     return this.constructor as T
   }
 
-  async load (...relations: I[]) {
+  async load (...relations: (string[] | I[] | string | I)[]) {
     if (this.isNotEmpty()) {
       const query = (this.first() as any).constructor.query().with(...relations)
       const items = await query.eagerLoadRelations(this.items)

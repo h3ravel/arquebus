@@ -68,15 +68,15 @@ export interface IModel {
     attributes: any
     relations: any
     exists: boolean
-    primaryKey: string
-    builder?: IBuilder<any, any> | null
-    table: string | null
+    // primaryKey: string
+    // builder?: IBuilder<any, any> | null
+    // table: string | null
     connection?: TBaseConfig['client'] | null
-    keyType: string
-    incrementing: boolean
+    // keyType: string
+    // incrementing: boolean
     perPage: number
     with: string | string[] | TGeneric<(...args: any[]) => IBuilder<Model>>
-    withCount: string[]
+    // withCount: string[]
     trx: AnyQueryBuilder | null
     timestamps: boolean
     dateFormat: string

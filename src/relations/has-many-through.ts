@@ -117,8 +117,8 @@ class HasManyThrough extends Relation {
     const results = await this.take(1).get(columns)
     return results.count() > 0 ? results.first() : null
   }
-  async firstOrFail (columns = ['*']) {
-    const model = await this.first(columns)
+  async firstOrFail (...columns: any[]) {
+    const model = await this.first(...columns)
     if (model) {
       return model
     }
@@ -177,9 +177,11 @@ class HasManyThrough extends Relation {
     return this.related.newCollection(models)
   }
 
-  async paginate (this: any, perPage: number | null = null, columns = ['*'], pageName = 'page', page = null) {
+  async paginate (perPage: number | null = null, columns = ['*'], pageName = 'page', page = null) {
     this.query.addSelect(this.shouldSelect(columns))
-    return await this.query.paginate(perPage, columns, pageName, page)
+    // TODO: Fix the error below
+    // @ts-expect-error inspect columns for the actuall required param types
+    return await this.query.paginate(perPage ?? 15, columns, pageName, page)
   }
 
   shouldSelect (columns = ['*']) {

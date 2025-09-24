@@ -30,6 +30,8 @@ export class QueryBuilder<M extends Model = Model, R = M[] | M> extends Inferenc
                     return target.connector.schema
                 }
 
+                const skipReturning = !!target.connector.client.config?.client?.includes('mysql') && prop === 'returning'
+
                 if ([
                     'select', 'from', 'where', 'orWhere', 'whereColumn', 'whereRaw',
                     'whereNot', 'orWhereNot', 'whereIn', 'orWhereIn', 'whereNotIn', 'orWhereNotIn', 'whereNull', 'orWhereNull', 'whereNotNull', 'orWhereNotNull', 'whereExists', 'orWhereExists',
@@ -42,12 +44,13 @@ export class QueryBuilder<M extends Model = Model, R = M[] | M> extends Inferenc
                     'limit', 'offset', 'orderBy', 'orderByRaw', // 'inRandomOrder',
                     'union', 'insert', 'forUpdate', 'forShare', 'distinct',
                     'clearOrder', 'clear', 'clearSelect', 'clearWhere', 'clearHaving', 'clearGroup',
-                ].includes(prop)) {
+                ].includes(prop) && !skipReturning) {
                     return (...args: any[]) => {
                         (target.connector as any)[prop](...args)
                         return target.asProxy()
                     }
                 }
+
                 return (target.connector as any)[prop]
             },
             set: function (target: QueryBuilder<M, R>, prop: keyof QueryBuilder<M, R>, value: string) {
@@ -114,7 +117,9 @@ export class QueryBuilder<M extends Model = Model, R = M[] | M> extends Inferenc
         } while (countResults === count)
         return true
     }
-    async paginate<F extends IPaginatorParams> (this: any, page = 1, perPage = 15): Promise<IPaginator<M, F>> {
+    // TODO: Fix the error below
+    // @ts-expect-error _pageName and _page are just bastered that will be taken care of later
+    async paginate<F extends IPaginatorParams> (this: any, page = 1, perPage = 15, _pageName: string, _page: number): Promise<IPaginator<M, F>> {
         const query = this.clone()
         const total = await query.clearOrder().count('*')
         let results

@@ -45,6 +45,7 @@ export interface IPaginatorParams {
     total: number,
     last_page: number,
     count: number,
+    paginated?: boolean
 }
 
 export interface IPaginator<T extends Model | BModel, K extends IPaginatorParams = IPaginatorParams> {

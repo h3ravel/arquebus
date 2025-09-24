@@ -3,6 +3,7 @@ import type { TFunction, TGeneric } from 'types/generics'
 import { diff as difference, flat as flatten, isArray, isString, assign as merge, omit, snake } from 'radashi'
 import { flattenDeep, getRelationMethod, getScopeMethod, tap } from './utils'
 
+import type BModel from 'src/browser/model'
 import { Collection as BaseCollection } from 'collect.js'
 import BelongsToMany from './relations/belongs-to-many'
 import Collection from './collection'
@@ -14,7 +15,7 @@ import Paginator from './paginator'
 import Relation from './relations/relation'
 import Scope from './scope'
 
-const Inference = class { } as { new <M extends Model = Model, R = IModel | ICollection<M>>(): IBuilder<M, R> }
+const Inference = class { } as { new <M extends Model | BModel = Model, R = IModel | ICollection<M>>(): IBuilder<M, R> }
 
 export class Builder<M extends Model = Model, R = IModel | ICollection<M>> extends Inference {
   query: IBuilder<M, R>
@@ -39,6 +40,8 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
           return target[prop]
         }
 
+        const skipReturning = !!target.query.connector?.client.config?.client?.includes('mysql') && prop === 'returning'
+
         if ([
           'select', 'from', 'where', 'orWhere', 'whereColumn', 'whereRaw',
           'whereNot', 'orWhereNot', 'whereIn', 'orWhereIn', 'whereNotIn', 'orWhereNotIn', 'whereNull', 'orWhereNull', 'whereNotNull', 'orWhereNotNull', 'whereExists', 'orWhereExists',
@@ -51,7 +54,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
           'limit', 'offset', 'orderBy', 'orderByRaw', // 'inRandomOrder',
           'union', 'insert', 'forUpdate', 'forShare', 'distinct',
           'clearOrder', 'clear', 'clearSelect', 'clearWhere', 'clearHaving', 'clearGroup',
-        ].includes(prop)) {
+        ].includes(prop) && !skipReturning) {
           return (...args: any[]) => {
             target.query[prop](...args)
             return target.asProxy()
@@ -725,7 +728,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     const data = await this.query.pluck(column)
     return new Collection(data) as any
   }
-  async destroy (this: any, ids?: (string | number)[] | TFunction | Collection<M>) {
+  async destroy (this: any, ids?: string | number | string[] | number[] | TFunction | Collection<M>) {
     if (ids instanceof Collection) {
       ids = ids.modelKeys()
     }
@@ -833,7 +836,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     return models
   }
 
-  hydrate (items: any[]) {
+  hydrate (items: any[] | ICollection<any>) {
     return new Collection(items.map(item => {
       if (!this.model) {
         return item

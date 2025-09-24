@@ -14,10 +14,13 @@ class Paginator<T extends Model, K extends IPaginatorParams = IPaginatorParams> 
     hasMore: boolean = false
     options: TGeneric = {}
 
-    static setFormatter (formatter: (paginator: IPaginator<any>) => any | null) {
+    static setFormatter (formatter?: ((paginator: IPaginator<any> | null) => any) | null) {
         if (typeof formatter !== 'function' && formatter !== null && formatter !== undefined) {
             throw new Error('Paginator formatter must be a function or null')
         }
+
+        if (!formatter) return
+
         this.formatter = formatter
     }
 

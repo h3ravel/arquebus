@@ -102,6 +102,9 @@ describe('Model', () => {
     relationPosts () {
       return this.belongsToMany(Post, 'post_tag')
     }
+    relationUsers () {
+      return this.hasManyThrough(User, Post)
+    }
   }
 
   class Thumbnail extends Model { }
@@ -324,7 +327,7 @@ describe('Model', () => {
 describe('Collection', () => {
   let collection: Collection<any>
   class User extends Model {
-    primaryKey = 'some_id'
+    protected primaryKey = 'some_id'
   }
   class Post extends Model { }
 
@@ -409,7 +412,8 @@ describe('Integration test', async () => {
       }
 
       class UuidUser extends compose(Base, HasUniqueIds) {
-        newUniqueId () {
+        name!: string
+        newUniqueId = () => {
           return crypto.randomUUID()
         }
       }
@@ -989,7 +993,7 @@ describe('Integration test', async () => {
 
             describe('with distinct', () => {
               it('counts distinct occurences of a column instead of total rows', () => {
-                let total
+                let total: number
 
                 return connection.table('posts').count()
                   .then(count => {
@@ -1009,14 +1013,14 @@ describe('Integration test', async () => {
                 .orderBy('id', 'asc')
                 .get()
                 .then(result => {
-                  return result.map(user => user.id)
+                  return result.map((user: User) => user.id)
                 })
 
               const desc = connection.table('users')
                 .orderBy('id', 'desc')
                 .get()
                 .then(result => {
-                  return result.map(user => user.id)
+                  return result.map((user: User) => user.id)
                 })
 
               return Promise.all([asc, desc]).then((results) => {
@@ -1081,7 +1085,7 @@ describe('Integration test', async () => {
             const users2 = makeCollection(User, data)
             expect(users2).toBeInstanceOf(Collection)
             expect(users2.count()).toBe(2)
-            expect(users2.get(1).name).toBe('Test 2')
+            expect(users2.get(1)!.name).toBe('Test 2')
           })
 
           it('should return a Paginator instance', () => {
@@ -1150,7 +1154,7 @@ describe('Integration test', async () => {
 
         describe('first', () => {
           it('should create a new model instance', async () => {
-            const user = await User.query().first()
+            const user = await User.query().first() as User
 
             expect(user.getTable()).toBe('users')
             expect(user).toBeInstanceOf(User)
@@ -1204,14 +1208,14 @@ describe('Integration test', async () => {
 
             return query.first().then((user) => {
               expect(user).toBeInstanceOf(User)
-              expect(user.id).toBe(1)
-              expect(user.name).toBe('Shuri')
+              expect(user!.id).toBe(1)
+              expect(user!.name).toBe('Shuri')
             })
           })
 
           it('allows specification of select columns in query', () => {
             return User.query().where('id', 1).select(['id', 'first_name']).first().then((user) => {
-              expect(user.toData()).toEqual({ id: 1, first_name: 'Tim' })
+              expect(user!.toData()).toEqual({ id: 1, first_name: 'Tim' })
             })
           })
 
@@ -1222,9 +1226,9 @@ describe('Integration test', async () => {
           })
 
           it('rejects with an error if no record exists', () => {
-            return User.query().where('id', 200).firstOrFail().then((_user) => {
+            return User.query().where('id', 200).firstOrFail().then(() => {
               // expect(user).toBeNull();
-            }).catch(e => {
+            }).catch((e: any) => {
               expect(e).toBeInstanceOf(ModelNotFoundError)
             })
           })
@@ -1247,7 +1251,7 @@ describe('Integration test', async () => {
                   .then(() => {
                     return User.query(trx).find(user.id)
                   })
-                  .then(user => {
+                  .then((user: User) => {
                     expect(user.first_name).toBe('foo')
                   })
               }),
@@ -1262,7 +1266,7 @@ describe('Integration test', async () => {
           })
 
           it('locks the table when called with the forShare option during a transaction', () => {
-            let userId
+            let userId: string
             const user = new User({ first_name: 'foo' })
 
             return user.save()
@@ -1274,7 +1278,7 @@ describe('Integration test', async () => {
                     return User.query(trx).forShare().find(user.id)
                       .then(() => delay(100))
                       .then(() => User.query(trx).find(user.id))
-                      .then(user => {
+                      .then((user: User) => {
                         expect(user.first_name).toBe('foo')
                       })
                   }),
@@ -1313,7 +1317,7 @@ describe('Integration test', async () => {
             let posts = await Post.query().idOf(3).get()
             expect(posts.modelKeys()).toEqual([3])
 
-            posts = await Post.query().idOf(3).orWhere(q => {
+            posts = await Post.query().idOf(3).orWhere((q: any) => {
               q.idOf(4)
             }).get()
             expect(posts.modelKeys()).toEqual([3, 4])
@@ -1322,10 +1326,10 @@ describe('Integration test', async () => {
 
         describe('#chunk()', () => {
           it('fetches a single page of results with defaults', async () => {
-            const names = []
+            const names: string[] = []
 
             await Tag.query().chunk(2, (tags) => {
-              tags.map(tag => {
+              tags.map((tag: Tag) => {
                 names.push(tag.name)
               })
             })
@@ -1372,8 +1376,8 @@ describe('Integration test', async () => {
           it('fetches a page by page number', () => {
             return User.query().orderBy('id', 'asc').paginate(1, 2)
               .then((results) => {
-                expect(results.get(0).id).toBe(1)
-                expect(results.get(1).id).toBe(2)
+                expect(results.get(0)!.id).toBe(1)
+                expect(results.get(1)!.id).toBe(2)
               })
           })
 
@@ -1435,7 +1439,7 @@ describe('Integration test', async () => {
 
           describe('with distinct', () => {
             it('counts distinct occurences of a column instead of total rows', () => {
-              let total
+              let total: number
 
               return Post.query().count()
                 .then(count => {
@@ -1518,8 +1522,8 @@ describe('Integration test', async () => {
             expect(pattern.test(user.id)).toBe(true)
 
             const uuser = await UuidUser.query().first()
-            expect(uuser.name).toBe('Joey')
-            expect(uuser.id).toBe(user.id)
+            expect(uuser!.name).toBe('Joey')
+            expect(uuser!.id).toBe(user.id)
           })
 
 
@@ -1610,7 +1614,7 @@ describe('Integration test', async () => {
 
         describe('timestamps', () => {
           describe('Date value', () => {
-            let admin
+            let admin!: Admin
 
             beforeEach(() => {
               admin = new Admin
@@ -1654,7 +1658,7 @@ describe('Integration test', async () => {
           describe('On update', () => {
             it('will set the updated_at timestamp to the user supplied value', () => {
               const admin = new Admin
-              let oldUpdatedAt
+              let oldUpdatedAt: string
               const newUpdatedAt = '2022-02-02 12:13:14'
 
               return admin.save()
@@ -1671,7 +1675,7 @@ describe('Integration test', async () => {
 
             it('will set the created_at timestamp to the user supplied value', () => {
               const admin = new Admin
-              let oldCreatedAt
+              let oldCreatedAt: string
               const newCreatedAt = '2022-02-02 12:13:14'
 
               return admin.save()
@@ -1689,7 +1693,7 @@ describe('Integration test', async () => {
           })
 
           describe('On insert', () => {
-            let model
+            let model!: User
 
             beforeEach(() => {
               model = new User
@@ -1740,24 +1744,24 @@ describe('Integration test', async () => {
         describe('#isDirty()', () => {
           it('returns true if passing an attribute name that has changed since the last sync', async () => {
             const user = await User.query().first()
-            user.name = 'changed name'
-            expect(user.isDirty('name')).toBe(true)
+            user!.name = 'changed name'
+            expect(user!.isDirty('name')).toBe(true)
           })
 
           it('returns false if passing an attribute name that has not changed since the last sync', async () => {
             const user = await User.query().first()
-            user.name = 'changed name'
-            expect(user.isDirty('id')).toBe(false)
+            user!.name = 'changed name'
+            expect(user!.isDirty('id')).toBe(false)
           })
 
           it('returns true if no arguments are provided and an attribute of the model has changed', async () => {
-            const user = await User.query().first()
+            const user = await User.query().first() as User
             user.name = 'changed name'
             expect(user.isDirty()).toBe(true)
           })
 
           it('returns false if no arguments are provided and the model hasn\'t changed', async () => {
-            const user = await User.query().first()
+            const user = await User.query().first() as User
             expect(user.isDirty()).toBe(false)
           })
 
@@ -1765,10 +1769,10 @@ describe('Integration test', async () => {
             let originalName = ''
 
             const post = await Post.query().first()
-            originalName = post.name
-            post.name = 'changed name'
-            await post.save()
-            expect(post.isDirty()).toBe(false)
+            originalName = post!.name
+            post!.name = 'changed name'
+            await post!.save()
+            expect(post!.isDirty()).toBe(false)
 
             if (originalName) {
               await Post.query().insert({
@@ -1805,9 +1809,9 @@ describe('Integration test', async () => {
             expect(count).toBe(1)
 
             const post = await SoftDeletePost.query().first()
-            expect(post.id).toBe(3)
-            await post.delete()
-            expect(post.trashed()).toBe(true)
+            expect(post!.id).toBe(3)
+            await post!.delete()
+            expect(post!.trashed()).toBe(true)
           })
 
           it('#restore', async () => {
@@ -1816,8 +1820,8 @@ describe('Integration test', async () => {
             expect(count).toBe(2)
 
             const post = await SoftDeletePost.query().withTrashed().where('id', 3).first()
-            await post.restore()
-            expect(post.trashed()).toBe(false)
+            await post!.restore()
+            expect(post!.trashed()).toBe(false)
 
             count = await SoftDeletePost.query().count()
             expect(count).toBe(3)
@@ -1828,7 +1832,7 @@ describe('Integration test', async () => {
             let count = await SoftDeletePost.query().count()
             expect(count).toBe(2)
 
-            const post = await SoftDeletePost.query().withTrashed().first()
+            const post = await SoftDeletePost.query().withTrashed().first() as User
             await post.forceDelete()
 
             count = await SoftDeletePost.query().withTrashed().count()
@@ -1872,11 +1876,11 @@ describe('Integration test', async () => {
 
         describe('#createModel', () => {
           it('scopes/attributes/relations', async () => {
-            const { Post } = arquebus.instance.models
+            const { Post } = arquebus.instance!.models
             let posts = await Post.query().idOf(3).get()
             expect(posts.modelKeys()).toEqual([3])
 
-            posts = await Post.query().idOf(3).orWhere(q => {
+            posts = await Post.query().idOf(3).orWhere((q: any) => {
               q.idOf(4)
             }).get()
             expect(posts.modelKeys()).toEqual([3, 4])
@@ -1909,12 +1913,12 @@ describe('Integration test', async () => {
           })
 
           it('handles hasMany (posts)', async () => {
-            const user = await User.query().find(1)
+            const user = await User.query().find(1) as User
             const posts = await user.related('posts').get()
 
             expect(posts).toBeInstanceOf(Collection)
 
-            posts.map(post => {
+            posts.map((post: Post) => {
               expect(user.id).toBe(post.user_id)
             })
           })
@@ -1967,7 +1971,7 @@ describe('Integration test', async () => {
             return User.query().with('posts').find(1)
               .then(user => {
                 const xuser = omit(user.toData(), ['updated_at', 'created_at'])
-                xuser.posts = xuser.posts.map(post => {
+                xuser.posts = xuser.posts.map((post: Post) => {
                   return omit(post, ['updated_at', 'created_at'])
                 })
                 expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1 }] })
@@ -2025,8 +2029,8 @@ describe('Integration test', async () => {
             return Post.query().with('tags').find(1)
               .then(post => {
                 const xpost = omit(post.toData(), ['updated_at', 'created_at'])
-                xpost.tags = xpost.tags.map(tag => {
-                  tag = omit(tag, ['updated_at', 'created_at'])
+                xpost.tags = xpost.tags.map((tag: Tag) => {
+                  tag = omit(tag, ['updated_at', 'created_at']) as Tag
                   return tag
                 })
 
@@ -2039,7 +2043,7 @@ describe('Integration test', async () => {
 
           it('maintains eager loaded column specifications', () => {
             return Post.query().with({
-              author: q => q.select('id', 'name'),
+              author: (q: any) => q.select('id', 'name'),
             }).find(1)
               .then(post => {
                 const xpost = omit(post.toData(), ['updated_at', 'created_at'])
@@ -2069,11 +2073,11 @@ describe('Integration test', async () => {
         describe('Nested Eager Loading', () => {
           it('eager loads "hasMany" -> "belongsToMany"', () => {
             return User.query().with('posts.tags').first()
-              .then(user => {
-                const xuser = omit(user.toData(), ['updated_at', 'created_at'])
-                xuser.posts = xuser.posts.map(post => {
-                  post = omit(post, ['updated_at', 'created_at'])
-                  post.tags = post.tags.map(tag => {
+              .then((user) => {
+                const xuser = omit(user!.toData(), ['updated_at', 'created_at'])
+                xuser.posts = xuser.posts.map((post: Post) => {
+                  post = omit(post, ['updated_at', 'created_at']) as Post
+                  post.tags = post.tags.map((tag: Tag) => {
                     return omit(tag, ['updated_at', 'created_at'])
                   })
                   return post
@@ -2085,13 +2089,13 @@ describe('Integration test', async () => {
 
           it('does multi deep eager loads', () => {
             return User.query().with({
-              'posts.tags': q => q.orderBy('tags.id', 'desc'),
+              'posts.tags': (q: any) => q.orderBy('tags.id', 'desc'),
             }, 'posts.thumbnail').first()
               .then(user => {
-                const xuser = omit(user.toData(), ['updated_at', 'created_at'])
-                xuser.posts = xuser.posts.map(post => {
-                  post = omit(post, ['updated_at', 'created_at'])
-                  post.tags = post.tags.map(tag => {
+                const xuser = omit(user!.toData(), ['updated_at', 'created_at'])
+                xuser.posts = xuser.posts.map((post: Post) => {
+                  post = omit(post, ['updated_at', 'created_at']) as Post
+                  post.tags = post.tags.map((tag: Tag) => {
                     return omit(tag, ['updated_at', 'created_at'])
                   })
                   return post
@@ -2154,6 +2158,7 @@ describe('Integration test', async () => {
 
         class HookPost extends compose(Base, SoftDeletes) {
           table = 'posts'
+          name!: string
           static boot () {
             super.boot()
             this.creating(() => {
@@ -2191,7 +2196,7 @@ describe('Integration test', async () => {
         })
 
         it('hit creating, created, saving, saved hooks if use save() create post', async () => {
-          const post = new HookPost
+          const post = new HookPost()
           post.user_id = 0
           post.name = 'Test create hook'
           await post.save()
@@ -2291,14 +2296,14 @@ describe('Integration test', async () => {
         it('should return data in a custom format', async () => {
           Paginator.setFormatter((paginator) => {
             return {
-              data: paginator.items().map(item => item.id).all(),
+              data: paginator!.items().map(item => item.id).all(),
               meta: {
-                total: paginator.total(),
-                perPage: paginator.perPage(),
-                currentPage: paginator.currentPage(),
-                lastPage: paginator.lastPage(),
-                from: paginator.firstItem(),
-                to: paginator.lastItem(),
+                total: paginator!.total(),
+                perPage: paginator!.perPage(),
+                currentPage: paginator!.currentPage(),
+                lastPage: paginator!.lastPage(),
+                from: paginator!.firstItem(),
+                to: paginator!.lastItem(),
               }
             }
           })

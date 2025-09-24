@@ -5,25 +5,29 @@ import type BModel from 'src/browser/model'
 import type Builder from 'src/builder'
 import type { IModel } from './modeling'
 import type { IQueryBuilder } from './query-builder'
+import type { Knex } from 'knex'
 import type Model from 'src/model'
+import type { TFunction } from './generics'
 
-// type BaseBuilder<M extends Model, R> = Omit<
-//     IQueryBuilder<M, R>,
-//     'destroy' | 'clone' | 'get' | 'skip' | 'limit' | 'take' | 'offset' | 'chunk' | 'forPage'
-// >
+type BaseBuilder<M extends Model | BModel, R = ICollection<M> | IModel> = Omit<
+    IQueryBuilder<M, R>,
+    'destroy' | 'clone' | 'get' | 'skip' | 'limit' | 'take' | 'offset' | 'chunk' | 'forPage' | 'orWhere' | 'pluck'
+>
 
 export interface IScope {
     apply (builder: Builder<any>, model: Model): void;
 }
 
-
-export interface IBuilder<M extends Model | BModel, R = ICollection<M> | IModel> extends IQueryBuilder<M, R> {
+// @ts-expect-error Errors will come from builder differences but that is fine
+export interface IBuilder<M extends Model | BModel, R = ICollection<M> | IModel> extends BaseBuilder<M, R> {
+    connector: IQueryBuilder<M, R> & Knex.QueryBuilder & { _statements: any[], _single: any } & Knex
     asProxy (): IQueryBuilder<M, R>;
-    // chunk (count: number, callback: (rows: ICollection<M>) => any): Promise<boolean>;
+    chunk (count: number, callback: (rows: ICollection<M>) => any): Promise<boolean>;
     enforceOrderBy (): void;
-    // clone (): IBuilder<M, R>;
-    // forPage (page: number, perPage?: number): this;
-    insert (attributes: any): Promise<any>;
+    idOf (id: string | number): this;
+    clone (): IBuilder<M, R>;
+    forPage (page: number, perPage?: number): this;
+    insert (...attributes: any[]): Promise<any>;
     update (attributes: any): Promise<any>;
     increment (column: string, amount?: number, extra?: any): Promise<any>;
     decrement (column: string, amount?: number, extra?: any): Promise<any>;
@@ -54,6 +58,7 @@ export interface IBuilder<M extends Model | BModel, R = ICollection<M> | IModel>
     doesntHave (relation: string, boolean?: any, callback?: (builder: IBuilder<any>) => void | null): this;
     orDoesntHave (relation: string): this;
     whereHas (relation: string, callback?: (builder: IBuilder<any>) => void | IBuilder<any> | null, operator?: any, count?: number): this;
+    orWhere (...args: any[]): this
     orWhereHas (relation: string, callback?: (builder: IBuilder<any>) => void | IBuilder<any> | null, operator?: any, count?: number): this;
     whereRelation (relation: string, column: string, operator?: any, value?: any): this;
     hasNested (relation: string, operator?: any, count?: number, boolean?: any, callback?: (builder: IBuilder<any>) => void | null): this;
@@ -68,10 +73,10 @@ export interface IBuilder<M extends Model | BModel, R = ICollection<M> | IModel>
     withSum (relation: WithRelationType, column: string): this;
     withExists (relation: WithRelationType): this;
     related (relation: string): this;
-    // take (count: number): this;
-    // skip (count: number): this;
-    // limit (count: number): this;
-    // offset (count: number): this;
+    take (count: number): this;
+    skip (count: number): this;
+    limit (count: number): this;
+    offset (count: number): this;
     first (column?: string | string[]): Promise<M | null | undefined>;
     firstOrFail (column?: string | string[]): Promise<M>;
     findOrFail (key: string | number, columns?: string[]): Promise<M>;
@@ -86,8 +91,8 @@ export interface IBuilder<M extends Model | BModel, R = ICollection<M> | IModel>
     find (key: string | number, columns?: string[]): Promise<M | null | undefined>;
     findMany (keys: string[] | number[] | ICollection<any>, columns?: string[]): Promise<ICollection<M>>;
     pluck<X extends Model = any | M> (column: string): Promise<ICollection<X>>;
-    // destroy (ids: string | number | string[] | number[] | ICollection<any>): Promise<number>;
-    // get (columns?: string[]): Promise<ICollection<M>>;
+    destroy (ids?: string | number | string[] | number[] | TFunction | ICollection<any>): Promise<number>;
+    get (columns?: string[]): Promise<ICollection<M>>;
     all (columns?: string[]): Promise<ICollection<M>>;
     paginate<F extends IPaginatorParams> (page?: number, perPage?: number): Promise<IPaginator<M, F>>;
     [value: string]: any;

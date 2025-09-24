@@ -1,10 +1,11 @@
-import type { AnyQueryBuilder, GroupByMethod, JoinMethod, JoinRawMethod, OrderByMethod, OrderByRawMethod, RawInterface, SelectMethod, SetOperationsMethod, UnionMethod, WhereBetweenMethod, WhereColumnMethod, WhereExistsMethod, WhereFieldExpressionMethod, WhereInMethod, WhereJsonExpressionMethod, WhereMethod, WhereNullMethod, WhereRawMethod, WhereWrappedMethod } from './query-methods'
-import type { ICollection, IPaginator, IPaginatorParams } from './utils'
+import type { AddSelectMethod, AnyQueryBuilder, FirstOrFailMethod, ForceDeleteMethod, GroupByMethod, JoinMethod, JoinRawMethod, OrderByMethod, OrderByRawMethod, RawInterface, RestoreMethod, ReturningMethod, SelectMethod, SetOperationsMethod, UnionMethod, WhereBetweenMethod, WhereColumnMethod, WhereExistsMethod, WhereFieldExpressionMethod, WhereInMethod, WhereJsonExpressionMethod, WhereMethod, WhereNullMethod, WhereRawMethod, WhereWrappedMethod } from './query-methods'
+import type { IPaginator, IPaginatorParams } from './utils'
 import type { TFunction, TGeneric } from './generics'
 
 import type BModel from 'src/browser/model'
 import type { Column } from 'src/inspector/types/column'
 import type { ForeignKey } from 'src/inspector/types/foreign-key'
+import type { IBuilder } from './builder'
 import type { Knex } from 'knex'
 import type Model from 'src/model'
 import type { Table } from 'src/inspector/types/table'
@@ -64,17 +65,22 @@ export type IConnector<M extends TGeneric = any, R = any> = Knex & Knex.QueryBui
 
 export interface IQueryBuilder<M extends Model | BModel = Model, R = M[] | M> {
     // connector: IQueryBuilder<M, R>
+    query: IBuilder<M, R>
     schema: SchemaBuilder
     _statements: IStatement[],
     table (name: string): IQueryBuilder<M, R>
     select: SelectMethod<this>
+    addSelect: AddSelectMethod<this>
     columns: SelectMethod<this>
     column: SelectMethod<this>
     distinct: SelectMethod<this>
+    returning: ReturningMethod<this>
     distinctOn: SelectMethod<this>
     as: AsMethod<this>
     asProxy (): IQueryBuilder<M, R>
     where: WhereMethod<this>
+    firstOrFail: FirstOrFailMethod<this>
+    forceDelete: ForceDeleteMethod
     andWhere: WhereMethod<this>
     // orWhere: WhereMethod<this>
     orWhere (...args: any[]): this
@@ -94,6 +100,7 @@ export interface IQueryBuilder<M extends Model | BModel = Model, R = M[] | M> {
     whereNotExists: WhereExistsMethod<this>
     orWhereNotExists: WhereExistsMethod<this>
 
+    restore: RestoreMethod
     whereIn: WhereInMethod<this>
     orWhereIn: WhereInMethod<this>
     whereNotIn: WhereInMethod<this>
