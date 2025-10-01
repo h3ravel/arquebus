@@ -7,33 +7,33 @@ import type { UniqueConstraint } from '../types/unique-constraint'
 import { stripQuotes } from '../utils/strip-quotes'
 
 type RawTable = {
-  TABLE_NAME: string;
-  TABLE_SCHEMA: string;
-  TABLE_COMMENT: string | null;
-  ENGINE: string;
-  TABLE_COLLATION: string;
-};
+  TABLE_NAME: string
+  TABLE_SCHEMA: string
+  TABLE_COMMENT: string | null
+  ENGINE: string
+  TABLE_COLLATION: string
+}
 
 type RawColumn = {
-  TABLE_NAME: string;
-  COLUMN_NAME: string;
-  COLUMN_DEFAULT: any | null;
-  COLUMN_TYPE: string;
-  CHARACTER_MAXIMUM_LENGTH: number | null;
-  NUMERIC_PRECISION: number | null;
-  NUMERIC_SCALE: number | null;
-  IS_NULLABLE: 'YES' | 'NO';
-  COLLATION_NAME: string | null;
-  COLUMN_COMMENT: string | null;
-  REFERENCED_TABLE_NAME: string | null;
-  REFERENCED_COLUMN_NAME: string | null;
-  UPDATE_RULE: string | null;
-  DELETE_RULE: string | null;
-  COLUMN_KEY: 'PRI' | 'UNI' | null;
-  EXTRA: 'auto_increment' | 'STORED GENERATED' | 'VIRTUAL GENERATED' | null;
-  CONSTRAINT_NAME: 'PRIMARY' | null;
-  GENERATION_EXPRESSION: string;
-};
+  TABLE_NAME: string
+  COLUMN_NAME: string
+  COLUMN_DEFAULT: any | null
+  COLUMN_TYPE: string
+  CHARACTER_MAXIMUM_LENGTH: number | null
+  NUMERIC_PRECISION: number | null
+  NUMERIC_SCALE: number | null
+  IS_NULLABLE: 'YES' | 'NO'
+  COLLATION_NAME: string | null
+  COLUMN_COMMENT: string | null
+  REFERENCED_TABLE_NAME: string | null
+  REFERENCED_COLUMN_NAME: string | null
+  UPDATE_RULE: string | null
+  DELETE_RULE: string | null
+  COLUMN_KEY: 'PRI' | 'UNI' | null
+  EXTRA: 'auto_increment' | 'STORED GENERATED' | 'VIRTUAL GENERATED' | null
+  CONSTRAINT_NAME: 'PRIMARY' | null
+  GENERATION_EXPRESSION: string
+}
 
 export function rawColumnToColumn (rawColumn: RawColumn): Column {
   let dataType = rawColumn.COLUMN_TYPE.replace(/\(.*?\)/, '')
@@ -106,7 +106,7 @@ export default class MySQL implements SchemaInspector {
         'ENGINE',
         'TABLE_SCHEMA',
         'TABLE_COLLATION',
-        'TABLE_COMMENT'
+        'TABLE_COMMENT',
       )
       .from('information_schema.tables')
       .where({
@@ -209,7 +209,7 @@ export default class MySQL implements SchemaInspector {
         'fk.CONSTRAINT_NAME',
         'rc.UPDATE_RULE',
         'rc.DELETE_RULE',
-        'rc.MATCH_OPTION'
+        'rc.MATCH_OPTION',
       )
       .from('INFORMATION_SCHEMA.COLUMNS as c')
       .leftJoin('INFORMATION_SCHEMA.KEY_COLUMN_USAGE as fk', function () {
@@ -223,7 +223,7 @@ export default class MySQL implements SchemaInspector {
           this.on('rc.TABLE_NAME', '=', 'fk.TABLE_NAME')
             .andOn('rc.CONSTRAINT_NAME', '=', 'fk.CONSTRAINT_NAME')
             .andOn('rc.CONSTRAINT_SCHEMA', '=', 'fk.CONSTRAINT_SCHEMA')
-        }
+        },
       )
       .where({
         'c.TABLE_SCHEMA': this.knex.client.database(),
@@ -275,8 +275,8 @@ export default class MySQL implements SchemaInspector {
    */
   async primary (table: string) {
     const results = await this.knex.raw(
-      'SHOW KEYS FROM ?? WHERE Key_name = \'PRIMARY\'',
-      table
+      "SHOW KEYS FROM ?? WHERE Key_name = 'PRIMARY'",
+      table,
     )
 
     if (results && results.length && results[0].length) {
@@ -285,7 +285,7 @@ export default class MySQL implements SchemaInspector {
       }
 
       return results[0].map(
-        (row: any): string => row['Column_name']
+        (row: any): string => row['Column_name'],
       ) as string[]
     }
 
@@ -304,14 +304,14 @@ export default class MySQL implements SchemaInspector {
         'kcu.REFERENCED_COLUMN_NAME AS foreign_key_column',
         'rc.CONSTRAINT_NAME AS constraint_name',
         'rc.UPDATE_RULE AS on_update',
-        'rc.DELETE_RULE AS on_delete'
+        'rc.DELETE_RULE AS on_delete',
       )
       .from('information_schema.referential_constraints AS rc')
       .leftJoin('information_schema.key_column_usage AS kcu ', function () {
         this.on('rc.CONSTRAINT_NAME', '=', 'kcu.CONSTRAINT_NAME').andOn(
           'kcu.CONSTRAINT_SCHEMA',
           '=',
-          'rc.CONSTRAINT_SCHEMA'
+          'rc.CONSTRAINT_SCHEMA',
         )
       })
       .where({
@@ -332,8 +332,8 @@ export default class MySQL implements SchemaInspector {
         'stat.table_name AS table_name',
         'stat.index_name AS constraint_name',
         knex.raw(
-          'group_concat(stat.column_name ORDER BY stat.seq_in_index separator \', \') AS columns'
-        )
+          "group_concat(stat.column_name ORDER BY stat.seq_in_index separator ', ') AS columns",
+        ),
       )
       .from('information_schema.statistics stat')
       .join('information_schema.table_constraints tco', function () {
@@ -349,9 +349,9 @@ export default class MySQL implements SchemaInspector {
     if (table) query.andWhere('stat.table_name', '=', table)
 
     const result: {
-      table_name: string;
-      constraint_name: string;
-      columns: [];
+      table_name: string
+      constraint_name: string
+      columns: []
     }[] = await query
 
     return result.map((v) => ({

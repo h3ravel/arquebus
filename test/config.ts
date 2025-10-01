@@ -25,7 +25,7 @@ export default <Record<string, TConfig>>{
   sqlite: {
     client: 'sqlite3',
     connection: {
-      filename: ':memory:'
+      filename: ':memory:',
     },
     useNullAsDefault: true,
   },
@@ -38,5 +38,5 @@ export default <Record<string, TConfig>>{
       password: process.env.POSTGRES_PASSWORD || 'arquebus',
       database: 'arquebus_test',
     },
-  }
+  },
 }

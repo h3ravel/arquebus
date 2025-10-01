@@ -4,23 +4,23 @@ import SoftDeletingScope from './soft-deleting-scope'
 import { isNullish } from 'radashi'
 import { tap } from './utils'
 
-const softDeletes = <TBase extends MixinConstructor> (Model: TBase) => {
+const softDeletes = <TBase extends MixinConstructor>(Model: TBase) => {
   return class extends Model {
     forceDeleting = false
-    static bootSoftDeletes (this: typeof Model.prototype) {
-      this.addGlobalScope(new SoftDeletingScope)
+    static bootSoftDeletes(this: typeof Model.prototype) {
+      this.addGlobalScope(new SoftDeletingScope())
     }
-    initialize (this: typeof Model.prototype) {
+    initialize(this: typeof Model.prototype) {
       super.initialize()
       this.constructor.bootSoftDeletes()
       this.addPluginInitializer('initializeSoftDeletes')
     }
-    initializeSoftDeletes () {
+    initializeSoftDeletes() {
       if (this.casts[this.getDeletedAtColumn()] === undefined) {
         this.casts[this.getDeletedAtColumn()] = 'datetime'
       }
     }
-    async forceDelete () {
+    async forceDelete() {
       if (this.execHooks('forceDeleting') === false) {
         return false
       }
@@ -32,22 +32,25 @@ const softDeletes = <TBase extends MixinConstructor> (Model: TBase) => {
         }
       })
     }
-    forceDeleteQuietly () {
+    forceDeleteQuietly() {
       return this.withoutEvents(() => this.forceDelete())
     }
-    async performDeleteOnModel (options = {}) {
+    async performDeleteOnModel(options = {}) {
       if (this.forceDeleting) {
-        return tap(await this.setKeysForSaveQuery(this.newModelQuery()).forceDelete(), () => {
-          this.exists = false
-        })
+        return tap(
+          await this.setKeysForSaveQuery(this.newModelQuery()).forceDelete(),
+          () => {
+            this.exists = false
+          },
+        )
       }
       return await this.runSoftDelete(options)
     }
-    async runSoftDelete (options = {}) {
+    async runSoftDelete(options = {}) {
       const query = this.setKeysForSaveQuery(this.newModelQuery())
       const time = this.freshTimestamp()
       const columns = {
-        [this.getDeletedAtColumn()]: this.fromDateTime(time)
+        [this.getDeletedAtColumn()]: this.fromDateTime(time),
       }
       this[this.getDeletedAtColumn()] = time
       if (this.usesTimestamps() && this.getUpdatedAtColumn()) {
@@ -58,7 +61,7 @@ const softDeletes = <TBase extends MixinConstructor> (Model: TBase) => {
       this.syncOriginalAttributes(Object.keys(columns))
       this.execHooks('trashed', options)
     }
-    async restore (options = {}) {
+    async restore(options = {}) {
       if (this.execHooks('restoring', options) === false) {
         return false
       }
@@ -68,34 +71,34 @@ const softDeletes = <TBase extends MixinConstructor> (Model: TBase) => {
       this.execHooks('restored', options)
       return result
     }
-    restoreQuietly () {
+    restoreQuietly() {
       return this.withoutEvents(() => this.restore())
     }
-    trashed () {
+    trashed() {
       return !isNullish(this[this.getDeletedAtColumn()])
     }
-    static softDeleted (this: typeof Model.prototype, callback: TFunction) {
+    static softDeleted(this: typeof Model.prototype, callback: TFunction) {
       this.addHook('trashed', callback)
     }
-    static restoring (this: typeof Model.prototype, callback: TFunction) {
+    static restoring(this: typeof Model.prototype, callback: TFunction) {
       this.addHook('restoring', callback)
     }
-    static restored (this: typeof Model.prototype, callback: TFunction) {
+    static restored(this: typeof Model.prototype, callback: TFunction) {
       this.addHook('restored', callback)
     }
-    static forceDeleting (this: typeof Model.prototype, callback: TFunction) {
+    static forceDeleting(this: typeof Model.prototype, callback: TFunction) {
       this.addHook('forceDeleting', callback)
     }
-    static forceDeleted (this: typeof Model.prototype, callback: TFunction) {
+    static forceDeleted(this: typeof Model.prototype, callback: TFunction) {
       this.addHook('forceDeleted', callback)
     }
-    isForceDeleting () {
+    isForceDeleting() {
       return this.forceDeleting
     }
-    getDeletedAtColumn (this: typeof Model.prototype) {
+    getDeletedAtColumn(this: typeof Model.prototype) {
       return this.constructor.DELETED_AT || 'deleted_at'
     }
-    getQualifiedDeletedAtColumn () {
+    getQualifiedDeletedAtColumn() {
       return this.qualifyColumn(this.getDeletedAtColumn())
     }
   }

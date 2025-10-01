@@ -6,28 +6,28 @@ import type { Table } from '../types/table'
 import { stripQuotes } from '../utils/strip-quotes'
 
 type RawTable = {
-  TABLE_NAME: string;
-  TABLE_SCHEMA: string;
-  TABLE_CATALOG: string;
-};
+  TABLE_NAME: string
+  TABLE_SCHEMA: string
+  TABLE_CATALOG: string
+}
 
 type RawColumn = {
-  table: string;
-  name: string;
-  data_type: string;
-  max_length: number | null;
-  numeric_precision: number | null;
-  numeric_scale: number | null;
-  is_generated: boolean | null;
-  is_nullable: 'YES' | 'NO';
-  default_value: string | null;
-  is_unique: true | null;
-  is_primary_key: true | null;
-  has_auto_increment: 'YES' | 'NO';
-  foreign_key_table: string | null;
-  foreign_key_column: string | null;
-  generation_expression: string | null;
-};
+  table: string
+  name: string
+  data_type: string
+  max_length: number | null
+  numeric_precision: number | null
+  numeric_scale: number | null
+  is_generated: boolean | null
+  is_nullable: 'YES' | 'NO'
+  default_value: string | null
+  is_unique: true | null
+  is_primary_key: true | null
+  has_auto_increment: 'YES' | 'NO'
+  foreign_key_table: string | null
+  foreign_key_column: string | null
+  generation_expression: string | null
+}
 
 export function rawColumnToColumn (rawColumn: RawColumn): Column {
   return {
@@ -245,19 +245,19 @@ export default class MSSQL implements SchemaInspector {
         COL_NAME ([fk].[referenced_object_id],
           [fk].[referenced_column_id]) AS [foreign_key_column],
         [cc].[is_computed] as [is_generated],
-        [cc].[definition] as [generation_expression]`)
+        [cc].[definition] as [generation_expression]`),
       )
       .from(this.knex.raw('??.[sys].[columns] [c]', [dbName]))
       .joinRaw(
-        'JOIN [sys].[types] [t] ON [c].[user_type_id] = [t].[user_type_id]'
+        'JOIN [sys].[types] [t] ON [c].[user_type_id] = [t].[user_type_id]',
       )
       .joinRaw('JOIN [sys].[tables] [o] ON [o].[object_id] = [c].[object_id]')
       .joinRaw('JOIN [sys].[schemas] [s] ON [s].[schema_id] = [o].[schema_id]')
       .joinRaw(
-        'LEFT JOIN [sys].[computed_columns] AS [cc] ON [cc].[object_id] = [c].[object_id] AND [cc].[column_id] = [c].[column_id]'
+        'LEFT JOIN [sys].[computed_columns] AS [cc] ON [cc].[object_id] = [c].[object_id] AND [cc].[column_id] = [c].[column_id]',
       )
       .joinRaw(
-        'LEFT JOIN [sys].[foreign_key_columns] AS [fk] ON [fk].[parent_object_id] = [c].[object_id] AND [fk].[parent_column_id] = [c].[column_id]'
+        'LEFT JOIN [sys].[foreign_key_columns] AS [fk] ON [fk].[parent_object_id] = [c].[object_id] AND [fk].[parent_column_id] = [c].[column_id]',
       )
       .joinRaw(
         `LEFT JOIN (
@@ -279,7 +279,7 @@ export default class MSSQL implements SchemaInspector {
         ON [i].[object_id] = [c].[object_id]
         AND [i].[column_id] = [c].[column_id]
         AND ISNULL([i].[index_column_count], 1) = 1
-        AND ISNULL([i].[index_priority], 1) = 1`
+        AND ISNULL([i].[index_priority], 1) = 1`,
       )
       .where({ 's.name': this.schema })
 
@@ -334,7 +334,7 @@ export default class MSSQL implements SchemaInspector {
          AND Constraint_Type = 'PRIMARY KEY'
          AND Col.Table_Name = ?
          AND Tab.CONSTRAINT_SCHEMA = ?`,
-      [table, this.schema]
+      [table, this.schema],
     )
 
     const columnName =
@@ -367,7 +367,7 @@ export default class MSSQL implements SchemaInspector {
       WHERE
         OBJECT_SCHEMA_NAME (f.parent_object_id) = ?;
     `,
-      [this.schema]
+      [this.schema],
     )
 
     if (table) {

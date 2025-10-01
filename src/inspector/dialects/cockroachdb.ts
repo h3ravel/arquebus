@@ -6,35 +6,35 @@ import type { Table } from '../types/table'
 import { stripQuotes } from '../utils/strip-quotes'
 
 type RawTable = {
-  table_name: string;
-  table_schema: 'public' | string;
-  table_comment: string | null;
-};
+  table_name: string
+  table_schema: 'public' | string
+  table_comment: string | null
+}
 
 type RawColumn = {
-  name: string;
-  table: string;
-  schema: string;
-  data_type: string;
-  is_nullable: boolean;
-  generation_expression: null | string;
-  default_value: null | string;
-  is_generated: boolean;
-  max_length: null | number;
-  comment: null | string;
-  numeric_precision: null | number;
-  numeric_scale: null | number;
-};
+  name: string
+  table: string
+  schema: string
+  data_type: string
+  is_nullable: boolean
+  generation_expression: null | string
+  default_value: null | string
+  is_generated: boolean
+  max_length: null | number
+  comment: null | string
+  numeric_precision: null | number
+  numeric_scale: null | number
+}
 
 type Constraint = {
-  type: 'f' | 'p' | 'u';
-  table: string;
-  column: string;
-  foreign_key_schema: null | string;
-  foreign_key_table: null | string;
-  foreign_key_column: null | string;
-  has_auto_increment: null | boolean;
-};
+  type: 'f' | 'p' | 'u'
+  table: string
+  column: string
+  foreign_key_schema: null | string
+  foreign_key_table: null | string
+  foreign_key_column: null | string
+  has_auto_increment: null | boolean
+}
 
 /**
  * Converts CockroachDB default value to JS
@@ -111,7 +111,7 @@ export default class CockroachDB implements SchemaInspector {
           .from('pg_class')
           .where({ relkind: 'r' })
           .andWhere({ relname: 'table_name' })
-          .as('table_comment')
+          .as('table_comment'),
       )
       .from('information_schema.tables')
       .whereIn('table_schema', this.explodedSchema)
@@ -198,7 +198,7 @@ export default class CockroachDB implements SchemaInspector {
     if (column) bindings.push(column)
 
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const [columns, constraints] = await Promise.all([
@@ -264,7 +264,7 @@ export default class CockroachDB implements SchemaInspector {
            AND NOT att.attisdropped
          ORDER BY rel.relname, att.attnum) res;
        `,
-        bindings
+        bindings,
       ),
       knex.raw<{ rows: Constraint[] }>(
         `
@@ -287,27 +287,27 @@ export default class CockroachDB implements SchemaInspector {
            ${table ? 'AND rel.relname = ?' : ''}
            ${column ? 'AND att.attname = ?' : ''}
          `,
-        bindings
+        bindings,
       ),
     ])
 
     const parsedColumms: Column[] = columns.rows.map((col): Column => {
       const constraintsForColumn = constraints.rows.filter(
         (constraint) =>
-          constraint.table === col.table && constraint.column === col.name
+          constraint.table === col.table && constraint.column === col.name,
       )
 
       const foreignKeyConstraint = constraintsForColumn.find(
-        (constraint) => constraint.type === 'f'
+        (constraint) => constraint.type === 'f',
       )
 
       return {
         ...col,
         is_unique: constraintsForColumn.some((constraint) =>
-          ['u', 'p'].includes(constraint.type)
+          ['u', 'p'].includes(constraint.type),
         ),
         is_primary_key: constraintsForColumn.some(
-          (constraint) => constraint.type === 'p'
+          (constraint) => constraint.type === 'p',
         ),
         has_auto_increment:
           ['integer', 'bigint'].includes(col.data_type) &&
@@ -352,16 +352,16 @@ export default class CockroachDB implements SchemaInspector {
         this.on(
           'information_schema.table_constraints.constraint_name',
           '=',
-          'information_schema.key_column_usage.constraint_name'
+          'information_schema.key_column_usage.constraint_name',
         ).andOn(
           'information_schema.table_constraints.table_name',
           '=',
-          'information_schema.key_column_usage.table_name'
+          'information_schema.key_column_usage.table_name',
         )
       })
       .whereIn(
         'information_schema.table_constraints.table_schema',
-        this.explodedSchema
+        this.explodedSchema,
       )
       .andWhere({
         'information_schema.table_constraints.constraint_type': 'PRIMARY KEY',
@@ -474,7 +474,7 @@ export default class CockroachDB implements SchemaInspector {
       return Object.fromEntries(
         Object.entries(row).map(([key, value]) => {
           return [key, stripQuotes(value)]
-        })
+        }),
       ) as ForeignKey
     }
   }

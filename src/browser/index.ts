@@ -9,7 +9,11 @@ import Pivot from './pivot'
 import type { TGeneric } from 'types/generics'
 import { isArray } from 'radashi'
 
-const make = (model: Model, data: TGeneric, options = {} as { paginated: IPaginatorParams }) => {
+const make = (
+  model: Model,
+  data: TGeneric,
+  options = {} as { paginated: IPaginatorParams },
+) => {
   const { paginated } = options
 
   if (paginated) {
@@ -17,12 +21,12 @@ const make = (model: Model, data: TGeneric, options = {} as { paginated: IPagina
       data.data.map((item: Model) => model.make(item)),
       data.total,
       data.per_page,
-      data.current_page
+      data.current_page,
     )
   }
 
   if (isArray(data)) {
-    return new Collection(data.map(item => model.make(item)))
+    return new Collection(data.map((item) => model.make(item)))
   }
   return model.make(data)
 }
@@ -35,7 +39,7 @@ const makePaginator = (model: Model, data: TGeneric) =>
     data.data.map((item: Model) => model.make(item)),
     data.total,
     data.per_page,
-    data.current_page
+    data.current_page,
   )
 
 const isBrowser = true

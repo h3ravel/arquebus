@@ -1,6 +1,14 @@
 import { ModelNotFoundError, RelationNotFoundError } from './errors'
 import type { TFunction, TGeneric } from 'types/generics'
-import { diff as difference, flat as flatten, isArray, isString, assign as merge, omit, snake } from 'radashi'
+import {
+  diff as difference,
+  flat as flatten,
+  isArray,
+  isString,
+  assign as merge,
+  omit,
+  snake,
+} from 'radashi'
 import { flattenDeep, getRelationMethod, getScopeMethod, tap } from './utils'
 
 import type BModel from 'src/browser/model'
@@ -15,16 +23,28 @@ import Paginator from './paginator'
 import Relation from './relations/relation'
 import Scope from './scope'
 
-const Inference = class { } as { new <M extends Model | BModel = Model, R = IModel | ICollection<M>>(): IBuilder<M, R> }
+const Inference = class {} as {
+  new <
+    M extends Model | BModel = Model,
+    R = IModel | ICollection<M>,
+  >(): IBuilder<M, R>
+}
 
-export class Builder<M extends Model = Model, R = IModel | ICollection<M>> extends Inference {
+export class Builder<
+  M extends Model = Model,
+  R = IModel | ICollection<M>,
+> extends Inference {
   query: IBuilder<M, R>
   connection: any
   model!: M
   actions!: any[]
-  localMacros: TGeneric<(...args: any[]) => any, keyof Omit<IBuilder<M, R>, number>> = {}
+  localMacros: TGeneric<
+    (...args: any[]) => any,
+    keyof Omit<IBuilder<M, R>, number>
+  > = {}
   eagerLoad: TGeneric<(...args: any[]) => any> = {}
-  globalScopes: TGeneric<Scope<M> | ((arg: Builder<M, R>) => Builder<M, R>)> = {}
+  globalScopes: TGeneric<Scope<M> | ((arg: Builder<M, R>) => Builder<M, R>)> =
+    {}
   onDeleteCallback?: (builder: Builder<M, R>) => Promise<boolean | number>
 
   constructor(query: IBuilder<M, R>) {
@@ -33,37 +53,90 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     this.query = query
     return this.asProxy() as unknown as Builder<M, R>
   }
-  asProxy (): Builder<M, R> {
+  asProxy(): Builder<M, R> {
     const handler = {
-      get (target: Builder<M, R>, prop: string) {
+      get(target: Builder<M, R>, prop: string) {
         if (typeof target[prop] !== 'undefined') {
           return target[prop]
         }
 
-        const skipReturning = !!target.query.connector?.client.config?.client?.includes('mysql') && prop === 'returning'
+        const skipReturning =
+          !!target.query.connector?.client.config?.client?.includes('mysql') &&
+          prop === 'returning'
 
-        if ([
-          'select', 'from', 'where', 'orWhere', 'whereColumn', 'whereRaw',
-          'whereNot', 'orWhereNot', 'whereIn', 'orWhereIn', 'whereNotIn', 'orWhereNotIn', 'whereNull', 'orWhereNull', 'whereNotNull', 'orWhereNotNull', 'whereExists', 'orWhereExists',
-          'whereNotExists', 'orWhereNotExists', 'whereBetween', 'orWhereBetween', 'whereNotBetween', 'orWhereNotBetween',
-          'whereLike', 'orWhereLike', 'whereILike', 'orWhereILike',
-          'whereJsonObject', 'whereJsonPath', 'whereJsonSupersetOf', 'whereJsonSubsetOf',
-          'join', 'joinRaw', 'leftJoin', 'leftOuterJoin', 'rightJoin', 'rightOuterJoin', 'crossJoin',
-          'transacting', 'groupBy', 'groupByRaw', 'returning',
-          'having', 'havingRaw', 'havingBetween',
-          'limit', 'offset', 'orderBy', 'orderByRaw', // 'inRandomOrder',
-          'union', 'insert', 'forUpdate', 'forShare', 'distinct',
-          'clearOrder', 'clear', 'clearSelect', 'clearWhere', 'clearHaving', 'clearGroup',
-        ].includes(prop) && !skipReturning) {
+        if (
+          [
+            'select',
+            'from',
+            'where',
+            'orWhere',
+            'whereColumn',
+            'whereRaw',
+            'whereNot',
+            'orWhereNot',
+            'whereIn',
+            'orWhereIn',
+            'whereNotIn',
+            'orWhereNotIn',
+            'whereNull',
+            'orWhereNull',
+            'whereNotNull',
+            'orWhereNotNull',
+            'whereExists',
+            'orWhereExists',
+            'whereNotExists',
+            'orWhereNotExists',
+            'whereBetween',
+            'orWhereBetween',
+            'whereNotBetween',
+            'orWhereNotBetween',
+            'whereLike',
+            'orWhereLike',
+            'whereILike',
+            'orWhereILike',
+            'whereJsonObject',
+            'whereJsonPath',
+            'whereJsonSupersetOf',
+            'whereJsonSubsetOf',
+            'join',
+            'joinRaw',
+            'leftJoin',
+            'leftOuterJoin',
+            'rightJoin',
+            'rightOuterJoin',
+            'crossJoin',
+            'transacting',
+            'groupBy',
+            'groupByRaw',
+            'returning',
+            'having',
+            'havingRaw',
+            'havingBetween',
+            'limit',
+            'offset',
+            'orderBy',
+            'orderByRaw', // 'inRandomOrder',
+            'union',
+            'insert',
+            'forUpdate',
+            'forShare',
+            'distinct',
+            'clearOrder',
+            'clear',
+            'clearSelect',
+            'clearWhere',
+            'clearHaving',
+            'clearGroup',
+          ].includes(prop) &&
+          !skipReturning
+        ) {
           return (...args: any[]) => {
             target.query[prop](...args)
             return target.asProxy()
           }
         }
 
-        if ([
-          'avg', 'max', 'min', 'sum', 'count',
-        ].includes(prop)) {
+        if (['avg', 'max', 'min', 'sum', 'count'].includes(prop)) {
           return (column: string) => {
             const instance = target.asProxy()
             instance.applyScopes()
@@ -88,7 +161,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
           if (prop.startsWith('where')) {
             const column = snake(prop.substring(5))
             return (...args: any[]) => {
-              (target as any).query.where(column, ...args)
+              ;(target as any).query.where(column, ...args)
               return target.asProxy()
             }
           }
@@ -98,7 +171,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
 
     return new Proxy(this, handler) as any
   }
-  orWhere (...args: any[]) {
+  orWhere(...args: any[]) {
     if (typeof args[0] === 'function') {
       const callback = args[0]
       this.query.orWhere((query: any) => {
@@ -110,7 +183,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     this.query.orWhere(...(args as Parameters<typeof this.query.orWhere>))
     return this
   }
-  async chunk<C extends TFunction> (count: number, callback: C) {
+  async chunk<C extends TFunction>(count: number, callback: C) {
     let page = 1
     let countResults
     do {
@@ -129,12 +202,15 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     } while (countResults === count)
     return true
   }
-  enforceOrderBy (this: any) {
-    if (this.query._statements.filter((item: any) => item.grouping === 'order').length === 0) {
+  enforceOrderBy(this: any) {
+    if (
+      this.query._statements.filter((item: any) => item.grouping === 'order')
+        .length === 0
+    ) {
       this.orderBy(this.model.getQualifiedKeyName(), 'asc')
     }
   }
-  clone (this: any) {
+  clone(this: any) {
     const query = this.query.clone()
     const builder = new this.constructor(query)
     builder.connection = this.connection
@@ -144,88 +220,95 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     builder.eagerLoad = { ...this.eagerLoad }
     return builder
   }
-  forPage (this: any, page: number, perPage = 15) {
+  forPage(this: any, page: number, perPage = 15) {
     return this.offset((page - 1) * perPage).limit(perPage)
   }
-  insert (...args: Parameters<typeof this.query.insert>) {
+  insert(...args: Parameters<typeof this.query.insert>) {
     return this.query.insert(...args)
   }
-  update<T extends TGeneric> (values: T) {
+  update<T extends TGeneric>(values: T) {
     this.applyScopes()
     return this.query.update(this.addUpdatedAtColumn(values))
   }
-  increment (column: string, amount = 1, extra = {}) {
+  increment(column: string, amount = 1, extra = {}) {
     this.applyScopes()
     const db = this.model.getConnection()
-    return this.query.update(this.addUpdatedAtColumn({
-      ...extra,
-      [column]: db.raw(`${column} + ${amount}`),
-    }))
+    return this.query.update(
+      this.addUpdatedAtColumn({
+        ...extra,
+        [column]: db.raw(`${column} + ${amount}`),
+      }),
+    )
   }
-  decrement (column: string, amount = 1, extra = {}) {
+  decrement(column: string, amount = 1, extra = {}) {
     this.applyScopes()
     const db = this.model.getConnection()
-    return this.query.update(this.addUpdatedAtColumn({
-      ...extra,
-      [column]: db.raw(`${column} - ${amount}`),
-    }))
+    return this.query.update(
+      this.addUpdatedAtColumn({
+        ...extra,
+        [column]: db.raw(`${column} - ${amount}`),
+      }),
+    )
   }
-  addUpdatedAtColumn (values: TGeneric<string>) {
-    if (!this.model.usesTimestamps()
-      || this.model.getUpdatedAtColumn() === null) {
+  addUpdatedAtColumn(values: TGeneric<string>) {
+    if (
+      !this.model.usesTimestamps() ||
+      this.model.getUpdatedAtColumn() === null
+    ) {
       return values
     }
     const column = this.model.getUpdatedAtColumn()
     values = merge({ [column]: this.model.freshTimestampString() }, values)
     return values
   }
-  delete () {
+  delete() {
     if (this.onDeleteCallback) {
       return this.onDeleteCallback(this)
     }
     return this.query.delete()
   }
-  onDelete<C extends TFunction<any, Promise<number | boolean>>> (callback: C) {
+  onDelete<C extends TFunction<any, Promise<number | boolean>>>(callback: C) {
     this.onDeleteCallback = callback
   }
-  forceDelete () {
+  forceDelete() {
     return this.query.delete()
   }
-  async create (attributes = {}) {
+  async create(attributes = {}) {
     return await tap(this.newModelInstance(attributes), async (instance) => {
       await instance.save({
-        client: this.query
+        client: this.query,
       })
     })
   }
-  newModelInstance (attributes = {}) {
-    return this.model.newInstance(attributes).setConnection(this.model.getConnectionName())
+  newModelInstance(attributes = {}) {
+    return this.model
+      .newInstance(attributes)
+      .setConnection(this.model.getConnectionName())
   }
-  getQuery () {
+  getQuery() {
     return this.query
   }
-  getModel () {
+  getModel() {
     return this.model
   }
-  setModel<MO extends Model> (model: MO) {
+  setModel<MO extends Model>(model: MO) {
     this.model = model as any
 
     if (typeof this.query?.client?.table == 'function') {
       this.query = this.query.client.table(this.model.getTable())
-    }
-    else {
+    } else {
       this.query = this.query.table(this.model.getTable()) as any
     }
     return this
   }
-  qualifyColumn (column: string) {
+  qualifyColumn(column: string) {
     return this.model.qualifyColumn(column)
   }
-  setTable (table: string) {
+  setTable(table: string) {
     this.query = this.query.table(table) as any
     return this
   }
-  applyScopes () {
+  applyScopes() {
     if (!this.globalScopes) {
       return this
     }
@@ -234,25 +317,24 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
       const scope = this.globalScopes[identifier]
       if (scope instanceof Scope) {
         scope.apply(this, this.getModel())
-      }
-      else {
+      } else {
         scope(this)
       }
     }
     return this
   }
-  hasNamedScope (name: string) {
+  hasNamedScope(name: string) {
     return this.model && this.model.hasNamedScope(name)
   }
-  callNamedScope (scope: string, parameters: any[]) {
+  callNamedScope(scope: string, parameters: any[]) {
     return this.model.callNamedScope(scope, [this, ...parameters])
   }
-  callScope (scope: (builder: this, ...args: any[]) => this, parameters = []) {
+  callScope(scope: (builder: this, ...args: any[]) => this, parameters = []) {
     const result = scope(this, ...parameters) || this
     return result
   }
-  scopes (scopes: string[]) {
-    scopes.map(scopeName => {
+  scopes(scopes: string[]) {
+    scopes.map((scopeName) => {
       const scopeMethod = getScopeMethod(scopeName)
       if (typeof this.model[scopeMethod] === 'function') {
         this.globalScopes[scopeName] = this.model[scopeMethod]
@@ -260,14 +342,14 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     })
     return this
   }
-  withGlobalScope (identifier: string, scope: any) {
+  withGlobalScope(identifier: string, scope: any) {
     this.globalScopes[identifier] = scope
     if (typeof scope.extend === 'function') {
       scope.extend(this)
     }
     return this
   }
-  withoutGlobalScope (scope: Scope | string) {
+  withoutGlobalScope(scope: Scope | string) {
     if (typeof scope !== 'string') {
       scope = scope.constructor.name as string
     }
@@ -275,24 +357,24 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     this.globalScopes = omit(this.globalScopes, [scope])
     return this
   }
-  macro<N extends string> (
+  macro<N extends string>(
     name: N,
-    callback: (builder: TGeneric & IBuilder<M>, attrs: any, vals: any) => any
+    callback: (builder: TGeneric & IBuilder<M>, attrs: any, vals: any) => any,
   ): this {
     this.localMacros[name] = callback
     return this
   }
-  hasMacro (name: string) {
+  hasMacro(name: string) {
     return name in this.localMacros
   }
-  getMacro (name: string) {
+  getMacro(name: string) {
     return this.localMacros[name]
   }
-  with (...args: any[]) {
+  with(...args: any[]) {
     let eagerLoads = {}
     if (typeof args[1] === 'function') {
       const eagerLoad = this.parseWithRelations({
-        [args[0]]: args[1]
+        [args[0]]: args[1],
       })
       this.eagerLoad = merge(this.eagerLoad, eagerLoad)
       return this
@@ -307,8 +389,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
         eagerLoad = {
           [relation]: (q: any) => q,
         }
-      }
-      else if (typeof relation === 'object') {
+      } else if (typeof relation === 'object') {
         eagerLoad = relation
       }
       eagerLoads = merge(eagerLoads, eagerLoad)
@@ -316,7 +397,13 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     this.eagerLoad = merge(this.eagerLoad, this.parseWithRelations(eagerLoads))
     return this
   }
-  has (relation: any, operator = '>=', count = 1, boolean = 'and', callback: TFunction | null = null): any {
+  has(
+    relation: any,
+    operator = '>=',
+    count = 1,
+    boolean = 'and',
+    callback: TFunction | null = null,
+  ): any {
     if (isString(relation)) {
       if (relation.includes('.')) {
         return this.hasNested(relation, operator, count, boolean, callback)
@@ -326,50 +413,71 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     const method = this.canUseExistsForExistenceCheck(operator, count)
       ? 'getRelationExistenceQuery'
       : 'getRelationExistenceCountQuery'
-    const hasQuery = relation[method](relation.getRelated().newModelQuery(), this)
+    const hasQuery = relation[method](
+      relation.getRelated().newModelQuery(),
+      this,
+    )
     if (callback) {
       callback(hasQuery)
     }
     return this.addHasWhere(hasQuery, relation, operator, count, boolean)
   }
-  orHas (relation: any, operator = '>=', count = 1) {
+  orHas(relation: any, operator = '>=', count = 1) {
     return this.has(relation, operator, count, 'or')
   }
-  doesntHave (relation: any, boolean = 'and', callback: TFunction | null = null) {
+  doesntHave(
+    relation: any,
+    boolean = 'and',
+    callback: TFunction | null = null,
+  ) {
     return this.has(relation, '<', 1, boolean, callback)
   }
-  orDoesntHave (relation: any) {
+  orDoesntHave(relation: any) {
     return this.doesntHave(relation, 'or')
   }
-  whereHas (relation: any, callback: TFunction | null = null, operator = '>=', count = 1) {
+  whereHas(
+    relation: any,
+    callback: TFunction | null = null,
+    operator = '>=',
+    count = 1,
+  ) {
     return this.has(relation, operator, count, 'and', callback)
   }
-  orWhereHas (relation: any, callback: TFunction | null = null, operator = '>=', count = 1) {
+  orWhereHas(
+    relation: any,
+    callback: TFunction | null = null,
+    operator = '>=',
+    count = 1,
+  ) {
     return this.has(relation, operator, count, 'or', callback)
   }
-  whereRelation (relation: any, ...args: any[]) {
+  whereRelation(relation: any, ...args: any[]) {
     const column = args.shift()
     return this.whereHas(relation, (query) => {
       if (typeof column === 'function') {
         column(query)
-      }
-      else {
+      } else {
         query.where(column, ...args)
       }
     })
   }
-  orWhereRelation (relation: any, ...args: any[]) {
+  orWhereRelation(relation: any, ...args: any[]) {
     const column = args.shift()
     return this.orWhereHas(relation, function (query) {
       if (typeof column === 'function') {
         column(query)
-      }
-      else {
+      } else {
         query.where(column, ...args)
       }
     })
   }
-  hasNested (relations: any, operator = '>=', count = 1, boolean = 'and', callback: TFunction | null = null) {
+  hasNested(
+    relations: any,
+    operator = '>=',
+    count = 1,
+    boolean = 'and',
+    callback: TFunction | null = null,
+  ) {
     relations = relations.split('.')
     const doesntHave = operator === '<' && count === 1
     if (doesntHave) {
@@ -379,35 +487,61 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     const closure = (q: any) => {
       if (relations.length > 1) {
         q.whereHas(relations.shift(), closure)
-      }
-      else {
+      } else {
         q.has(relations.shift(), operator, count, 'and', callback)
       }
       return null
     }
-    return this.has(relations.shift(), doesntHave ? '<' : '>=', 1, boolean, closure)
+    return this.has(
+      relations.shift(),
+      doesntHave ? '<' : '>=',
+      1,
+      boolean,
+      closure,
+    )
   }
-  canUseExistsForExistenceCheck (operator: string, count: number) {
+  canUseExistsForExistenceCheck(operator: string, count: number) {
     return (operator === '>=' || operator === '<') && count === 1
   }
-  addHasWhere (hasQuery: any, relation: any, operator: string, count: number, boolean: string) {
+  addHasWhere(
+    hasQuery: any,
+    relation: any,
+    operator: string,
+    count: number,
+    boolean: string,
+  ) {
     hasQuery.mergeConstraintsFrom(relation.getQuery())
     return this.canUseExistsForExistenceCheck(operator, count)
-      ? this.addWhereExistsQuery(hasQuery.getQuery(), boolean, operator === '<' && count === 1)
+      ? this.addWhereExistsQuery(
+          hasQuery.getQuery(),
+          boolean,
+          operator === '<' && count === 1,
+        )
       : this.addWhereCountQuery(hasQuery.getQuery(), operator, count, boolean)
   }
-  addWhereExistsQuery (this: any, query: any, boolean = 'and', not = false) {
+  addWhereExistsQuery(this: any, query: any, boolean = 'and', not = false) {
     const type = not ? 'NotExists' : 'Exists'
     const method = boolean === 'and' ? 'where' + type : 'orWhere' + type
     this[method](query.connector)
     return this
   }
-  addWhereCountQuery (this: any, query: any, operator = '>=', count = 1, boolean = 'and') {
+  addWhereCountQuery(
+    this: any,
+    query: any,
+    operator = '>=',
+    count = 1,
+    boolean = 'and',
+  ) {
     // this.query.addBinding(query.getBindings(), 'where');
     const db = this.model.getConnection()
-    return this.where(db.raw('(' + query.toSQL().sql + ')'), operator, typeof count === 'number' ? db.raw(count) : count, boolean)
+    return this.where(
+      db.raw('(' + query.toSQL().sql + ')'),
+      operator,
+      typeof count === 'number' ? db.raw(count) : count,
+      boolean,
+    )
   }
-  withAggregate (relations: any, column: string, action: string | null = null) {
+  withAggregate(relations: any, column: string, action: string | null = null) {
     if (relations.length === 0) {
       return this
     }
@@ -419,15 +553,17 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
         eagerLoad = {
           [relation]: (q: any) => q,
         }
-      }
-      else if (typeof relation === 'object') {
+      } else if (typeof relation === 'object') {
         eagerLoad = relation
       }
       eagerLoads = merge(eagerLoads, eagerLoad)
     }
     relations = eagerLoads
     const db = this.model.getConnection()
-    const columns = this.query._statements.filter(item => item.grouping == 'columns').map(item => item.value).flat()
+    const columns = this.query._statements
+      .filter((item) => item.grouping == 'columns')
+      .map((item) => item.value)
+      .flat()
     if (columns.length === 0) {
       this.query.select([this.query._single.table + '.*'])
     }
@@ -437,119 +573,141 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
       const segments = name.split(' ')
       let alias, expression
       if (segments.length === 3 && segments[1].toLocaleLowerCase() === 'as') {
-        [name, alias] = [segments[0], segments[2]]
+        ;[name, alias] = [segments[0], segments[2]]
       }
-      const relation = this.getRelationWithoutConstraints(getRelationMethod(name))
+      const relation = this.getRelationWithoutConstraints(
+        getRelationMethod(name),
+      )
       if (action) {
-        const hashedColumn = this.query._single.table === relation.query.query._single.table
-          ? `${relation.getRelationCountHash(false)}.${column}`
-          : column
-        const wrappedColumn = column === '*' ? column : relation.getRelated().qualifyColumn(hashedColumn)
-        expression = action === 'exists' ? wrappedColumn : `${action}(${wrappedColumn})`
-      }
-      else {
+        const hashedColumn =
+          this.query._single.table === relation.query.query._single.table
+            ? `${relation.getRelationCountHash(false)}.${column}`
+            : column
+        const wrappedColumn =
+          column === '*'
+            ? column
+            : relation.getRelated().qualifyColumn(hashedColumn)
+        expression =
+          action === 'exists' ? wrappedColumn : `${action}(${wrappedColumn})`
+      } else {
         expression = column
       }
-      const query = relation.getRelationExistenceQuery(relation.getRelated().newModelQuery(), this, db.raw(expression))
+      const query = relation.getRelationExistenceQuery(
+        relation.getRelated().newModelQuery(),
+        this,
+        db.raw(expression),
+      )
       constraints(query)
-      alias = alias || snake(`${name} ${action} ${column}`.replace('/[^[:alnum:][:space:]_]/u', ''))
+      alias =
+        alias ||
+        snake(
+          `${name} ${action} ${column}`.replace(
+            '/[^[:alnum:][:space:]_]/u',
+            '',
+          ),
+        )
       if (action === 'exists') {
-        (this as any).select(db.raw(`exists(${query.toSql().sql}) as ${alias}`))
-      }
-      else {
+        ;(this as any).select(
+          db.raw(`exists(${query.toSql().sql}) as ${alias}`),
+        )
+      } else {
         this.selectSub(action ? query : query.limit(1), alias)
       }
     }
     return this
   }
-  toSql () {
+  toSql() {
     const query = this.clone()
     query.applyScopes()
     return query.query.toSQL()
   }
-  mergeConstraintsFrom (_from: any) {
+  mergeConstraintsFrom(_from: any) {
     return this
     // const whereBindings = from.getQuery().getRawBindings()['where'] || []
     // const wheres = from.getQuery()._single.table !== this.getQuery()._single.table
     //   ? this.requalifyWhereTables(from.getQuery().wheres, from.getQuery().from, this.getModel().getTable()) : from.getQuery().wheres
     // return this.where([], [])
   }
-  selectSub (query: Builder<M>, as: string) {
+  selectSub(query: Builder<M>, as: string) {
     const [querySub, bindings] = this.createSub(query)
     const db = this.model.getConnection()
     return (this as any).select(db.raw('(' + querySub + ') as ' + as, bindings))
   }
-  createSub (query: any) {
+  createSub(query: any) {
     return this.parseSub(query)
   }
-  parseSub (query: any) {
+  parseSub(query: any) {
     if (query instanceof Builder || query instanceof Relation) {
       return [query.toSql().sql, query.toSql().bindings]
-    }
-    else if (isString(query)) {
+    } else if (isString(query)) {
       return [query, []]
-    }
-    else {
-      throw new Error('A subquery must be a query builder instance, a Closure, or a string.')
+    } else {
+      throw new Error(
+        'A subquery must be a query builder instance, a Closure, or a string.',
+      )
     }
   }
-  prependDatabaseNameIfCrossDatabaseQuery (query: any) {
+  prependDatabaseNameIfCrossDatabaseQuery(query: any) {
     if (query.query._single.table !== this.query._single.table) {
       const databaseName = query.query._single.table
-      if (!query.query._single.table.startsWith(databaseName) && !query.query._single.table.contains('.')) {
+      if (
+        !query.query._single.table.startsWith(databaseName) &&
+        !query.query._single.table.contains('.')
+      ) {
         query.from(databaseName + '.' + query.from)
       }
     }
     return query
   }
-  getRelationWithoutConstraints (relation: string) {
+  getRelationWithoutConstraints(relation: string) {
     return Relation.noConstraints(() => {
       return this.getModel()[relation]()
     })
   }
-  withCount (...args: any[]) {
+  withCount(...args: any[]) {
     return this.withAggregate(flattenDeep(args), '*', 'count')
   }
-  withMax (relation: any, column: string) {
+  withMax(relation: any, column: string) {
     return this.withAggregate(relation, column, 'max')
   }
-  withMin (relation: any, column: string) {
+  withMin(relation: any, column: string) {
     return this.withAggregate(relation, column, 'min')
   }
-  withAvg (relation: any, column: string) {
+  withAvg(relation: any, column: string) {
     return this.withAggregate(relation, column, 'avg')
   }
-  withSum (relation: any, column: string) {
+  withSum(relation: any, column: string) {
     return this.withAggregate(relation, column, 'sum')
   }
-  withExists (relation: any) {
+  withExists(relation: any) {
     return this.withAggregate(relation, '*', 'exists')
   }
-  parseWithRelations (relations: TGeneric) {
+  parseWithRelations(relations: TGeneric) {
     if (relations.length === 0) {
       return []
     }
     let results: TGeneric = {}
-    const constraintsMap: TGeneric = this.prepareNestedWithRelationships(relations)
+    const constraintsMap: TGeneric =
+      this.prepareNestedWithRelationships(relations)
     for (const name in constraintsMap) {
       results = this.addNestedWiths(name, results)
       results[name] = constraintsMap[name]
     }
     return results
   }
-  addNestedWiths (name: string, results: TGeneric) {
+  addNestedWiths(name: string, results: TGeneric) {
     const progress: string[] = []
-    name.split('.').map(segment => {
+    name.split('.').map((segment) => {
       progress.push(segment)
       const last = progress.join('.')
       if (results[last] === undefined) {
-        results[last] = () => { }
+        results[last] = () => {}
       }
     })
     return results
   }
 
-  prepareNestedWithRelationships (relations: TGeneric, prefix = '') {
+  prepareNestedWithRelationships(relations: TGeneric, prefix = '') {
     let preparedRelationships: TGeneric = {}
     if (prefix !== '') {
       prefix += '.'
@@ -560,57 +718,74 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
       if (isString(value) || Number.isFinite(parseInt(value))) {
         continue
       }
-      const [attribute, attributeSelectConstraint] = this.parseNameAndAttributeSelectionConstraint(key, value)
-      preparedRelationships = Object.assign({}, preparedRelationships, {
-        [`${prefix}${attribute}`]: attributeSelectConstraint
-      }, this.prepareNestedWithRelationships(value, `${prefix}${attribute}`))
+      const [attribute, attributeSelectConstraint] =
+        this.parseNameAndAttributeSelectionConstraint(key, value)
+      preparedRelationships = Object.assign(
+        {},
+        preparedRelationships,
+        {
+          [`${prefix}${attribute}`]: attributeSelectConstraint,
+        },
+        this.prepareNestedWithRelationships(value, `${prefix}${attribute}`),
+      )
 
       relations = omit(relations, [key])
     }
 
     for (const key in relations) {
       const value = relations[key]
-      let attribute = key, attributeSelectConstraint = value
+      let attribute = key,
+        attributeSelectConstraint = value
       if (isString(value)) {
-        [attribute, attributeSelectConstraint] = (this as any).parseNameAndAttributeSelectionConstraint(value)
+        ;[attribute, attributeSelectConstraint] = (
+          this as any
+        ).parseNameAndAttributeSelectionConstraint(value)
       }
       preparedRelationships[`${prefix}${attribute}`] = this.combineConstraints([
         attributeSelectConstraint,
-        preparedRelationships[`${prefix}${attribute}`] || (() => { }),
+        preparedRelationships[`${prefix}${attribute}`] || (() => {}),
       ])
     }
     return preparedRelationships
   }
 
-  combineConstraints (constraints: TFunction[]) {
+  combineConstraints(constraints: TFunction[]) {
     return (builder: Builder<M>) => {
-      constraints.map(constraint => {
+      constraints.map((constraint) => {
         builder = constraint(builder) || builder
       })
       return builder
     }
   }
 
-  parseNameAndAttributeSelectionConstraint (name: string, value: string) {
+  parseNameAndAttributeSelectionConstraint(name: string, value: string) {
     return name.includes(':')
       ? this.createSelectWithConstraint(name)
       : [name, value]
   }
 
-  createSelectWithConstraint (name: string) {
-    return [name.split(':')[0], (query: any) => {
-      query.select(name.split(':')[1].split(',').map((column) => {
-        if (column.includes('.')) {
-          return column
-        }
-        return query instanceof BelongsToMany
-          ? query.related.getTable() + '.' + column
-          : column
-      }))
-    }]
+  createSelectWithConstraint(name: string) {
+    return [
+      name.split(':')[0],
+      (query: any) => {
+        query.select(
+          name
+            .split(':')[1]
+            .split(',')
+            .map((column) => {
+              if (column.includes('.')) {
+                return column
+              }
+              return query instanceof BelongsToMany
+                ? query.related.getTable() + '.' + column
+                : column
+            }),
+        )
+      },
+    ]
   }
 
-  related (relation: string) {
+  related(relation: string) {
     if (typeof this.model[getRelationMethod(relation)] !== 'function') {
       const message = `Model [${this.model.constructor.name}]'s relation [${relation}] doesn't exist.`
       throw new RelationNotFoundError(message)
@@ -618,15 +793,15 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     return this.model[getRelationMethod(relation)]()
   }
 
-  take (this: any, ...args: any[]) {
+  take(this: any, ...args: any[]) {
     return this.limit(...args)
   }
 
-  skip (this: any, ...args: any[]) {
+  skip(this: any, ...args: any[]) {
     return this.offset(...args)
   }
 
-  async first (this: any, ...columns: any[]): Promise<M | null> {
+  async first(this: any, ...columns: any[]): Promise<M | null> {
     this.applyScopes()
     this.limit(1)
     let models = await this.getModels(columns)
@@ -636,29 +811,37 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     return models[0] || null
   }
 
-  async firstOrFail (...columns: any[]): Promise<M> {
+  async firstOrFail(...columns: any[]): Promise<M> {
     const data = await this.first(...columns)
     if (data === null) {
-      throw (new ModelNotFoundError).setModel(this.model.constructor.name as any)
+      throw new ModelNotFoundError().setModel(
+        this.model.constructor.name as any,
+      )
     }
     return data as M
   }
 
-  async findOrFail (this: any, ...args: any[]): Promise<M> {
+  async findOrFail(this: any, ...args: any[]): Promise<M> {
     const data = await this.find(...args)
     if (isArray(args[0])) {
       if (data.count() !== args[0].length) {
-        throw (new ModelNotFoundError).setModel(this.model.constructor.name as any, difference(args[0] as any, data.modelKeys()))
+        throw new ModelNotFoundError().setModel(
+          this.model.constructor.name as any,
+          difference(args[0] as any, data.modelKeys()),
+        )
       }
       return data
     }
     if (data === null) {
-      throw (new ModelNotFoundError).setModel(this.model.constructor.name as any, args[0])
+      throw new ModelNotFoundError().setModel(
+        this.model.constructor.name as any,
+        args[0],
+      )
     }
     return data
   }
 
-  async findOrNew (id: string, columns: string[] = ['*']) {
+  async findOrNew(id: string, columns: string[] = ['*']) {
     const model = await this.find(id, columns)
     if (model !== null) {
       return model
@@ -666,7 +849,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     return this.newModelInstance()
   }
 
-  async firstOrNew (this: any, attributes = {}, values = {}) {
+  async firstOrNew(this: any, attributes = {}, values = {}) {
     const instance = await this.where(attributes).first()
     if (instance !== null) {
       return instance
@@ -674,61 +857,75 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     return this.newModelInstance(merge(attributes, values))
   }
 
-  async firstOrCreate (this: any, attributes: TGeneric = {}, values = {}) {
+  async firstOrCreate(this: any, attributes: TGeneric = {}, values = {}) {
     const instance = await this.where(attributes).first()
     if (instance !== null) {
       return instance
     }
-    return tap(this.newModelInstance(merge(attributes, values)), async (instance) => {
-      await instance.save({
-        client: this.query
-      })
-    })
+    return tap(
+      this.newModelInstance(merge(attributes, values)),
+      async (instance) => {
+        await instance.save({
+          client: this.query,
+        })
+      },
+    )
   }
 
-  async updateOrCreate (attributes: TGeneric, values = {}) {
+  async updateOrCreate(attributes: TGeneric, values = {}) {
     return await tap(await this.firstOrNew(attributes), async (instance) => {
       await instance.fill(values).save({
-        client: this.query
+        client: this.query,
       })
     })
   }
 
-  latest (column: string = 'id') {
+  latest(column: string = 'id') {
     if (column === null) {
       column = this.model.getCreatedAtColumn() || 'created_at'
     }
     this.query.orderBy(column, 'desc')
     return this
   }
-  oldest (column: string = 'id') {
+  oldest(column: string = 'id') {
     if (column === null) {
       column = this.model.getCreatedAtColumn() || 'created_at'
     }
     this.query.orderBy(column, 'asc')
     return this
   }
-  async find (this: any, id: string | number | Collection<M>, columns?: string[]) {
+  async find(
+    this: any,
+    id: string | number | Collection<M>,
+    columns?: string[],
+  ) {
     if (isArray(id) || id instanceof Collection) {
       return await this.findMany(id, columns)
     }
     return await this.where(this.model.getKeyName(), id).first(columns)
   }
-  async findMany (this: any, ids: string[] | number[] | ICollection<any>, columns: string[] = ['*']) {
+  async findMany(
+    this: any,
+    ids: string[] | number[] | ICollection<any>,
+    columns: string[] = ['*'],
+  ) {
     if (ids instanceof Collection) {
       ids = ids.modelKeys()
     }
-    ids = isArray(ids) ? ids : [ids] as any
+    ids = isArray(ids) ? ids : ([ids] as any)
     if (ids.length === 0) {
       return new Collection([])
     }
     return await this.whereIn(this.model.getKeyName(), ids).get(columns)
   }
-  async pluck (column: string) {
+  async pluck(column: string) {
     const data = await this.query.pluck(column)
     return new Collection(data) as any
   }
-  async destroy (this: any, ids?: string | number | string[] | number[] | TFunction | Collection<M>) {
+  async destroy(
+    this: any,
+    ids?: string | number | string[] | number[] | TFunction | Collection<M>,
+  ) {
     if (ids instanceof Collection) {
       ids = ids.modelKeys()
     }
@@ -750,7 +947,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     }
     return count
   }
-  async get<M extends Model> (columns: string | string[] = ['*']) {
+  async get<M extends Model>(columns: string | string[] = ['*']) {
     this.applyScopes()
     let models = await this.getModels(columns)
     if (models.length > 0) {
@@ -758,10 +955,10 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     }
     return new Collection<M>(models)
   }
-  async all (columns: string[] = ['*']) {
-    return await this.model.newModelQuery().get(columns) as any
+  async all(columns: string[] = ['*']) {
+    return (await this.model.newModelQuery().get(columns)) as any
   }
-  async paginate (this: any, page: number = 1, perPage: number = 10) {
+  async paginate(this: any, page: number = 1, perPage: number = 10) {
     page = page || 1
     perPage = perPage || this?.model?.perPage || 15
     this.applyScopes()
@@ -775,28 +972,33 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
       if (results.length > 0) {
         results = await this.eagerLoadRelations(results)
       }
-    }
-    else {
+    } else {
       results = []
     }
     return new Paginator(results, parseInt(total), perPage, page)
   }
-  async getModels (...columns: any[]) {
+  async getModels(...columns: any[]) {
     columns = flatten(columns)
     if (columns.length > 0) {
-      if (this.query._statements.filter(item => item.grouping == 'columns').length == 0 && columns[0] !== '*') {
+      if (
+        this.query._statements.filter((item) => item.grouping == 'columns')
+          .length == 0 &&
+        columns[0] !== '*'
+      ) {
         this.query.select(...columns)
       }
     }
     return this.hydrate(await this.query.get()).all()
   }
 
-  getRelation (name: string) {
+  getRelation(name: string) {
     if (typeof this.model[getRelationMethod(name)] !== 'function') {
       const message = `Model [${this.model.constructor.name}]'s relation [${name}] doesn't exist.`
       throw new RelationNotFoundError(message)
     }
-    const relation = Relation.noConstraints(() => (this.model.newInstance(this.model.attributes))[getRelationMethod(name)]())
+    const relation = Relation.noConstraints(() =>
+      this.model.newInstance(this.model.attributes)[getRelationMethod(name)](),
+    )
     const nested = this.relationsNestedUnder(name)
     if (Object.keys(nested).length > 0) {
       relation.query.with(nested)
@@ -804,7 +1006,7 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     return relation.asProxy()
   }
 
-  relationsNestedUnder (relation: string) {
+  relationsNestedUnder(relation: string) {
     const nested: TGeneric = {}
     for (const name in this.eagerLoad) {
       const constraints = this.eagerLoad[name]
@@ -815,18 +1017,26 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     return nested
   }
 
-  isNestedUnder (relation: string, name: string) {
+  isNestedUnder(relation: string, name: string) {
     return name.includes('.') && name.startsWith(relation + '.')
   }
 
-  async eagerLoadRelation<M extends Model> (models: M[], name: string, constraints: any) {
+  async eagerLoadRelation<M extends Model>(
+    models: M[],
+    name: string,
+    constraints: any,
+  ) {
     const relation = this.getRelation(name)
     relation.addEagerConstraints(models)
     constraints(relation)
-    return relation.match(relation.initRelation(models, name), await relation.get(), name)
+    return relation.match(
+      relation.initRelation(models, name),
+      await relation.get(),
+      name,
+    )
   }
 
-  async eagerLoadRelations<M extends Model> (models: M[]) {
+  async eagerLoadRelations<M extends Model>(models: M[]) {
     for (const name in this.eagerLoad) {
       const constraints = this.eagerLoad[name]
       if (!name.includes('.')) {
@@ -836,14 +1046,16 @@ export class Builder<M extends Model = Model, R = IModel | ICollection<M>> exten
     return models
   }
 
-  hydrate (items: any[] | ICollection<any>) {
-    return new Collection(items.map(item => {
-      if (!this.model) {
-        return item
-      }
-      const model = this.model.newFromBuilder(item)
-      return model
-    }))
+  hydrate(items: any[] | ICollection<any>) {
+    return new Collection(
+      items.map((item) => {
+        if (!this.model) {
+          return item
+        }
+        const model = this.model.newFromBuilder(item)
+        return model
+      }),
+    )
   }
 }
 export default Builder

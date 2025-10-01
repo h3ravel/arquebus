@@ -10,28 +10,28 @@ import { flatten } from 'src'
 import { stripQuotes } from '../utils/strip-quotes'
 
 type RawColumn = {
-  cid: number;
-  name: string;
-  type: string;
-  notnull: 0 | 1;
-  unique: 0 | 1;
-  dflt_value: any;
-  pk: 0 | 1;
-  hidden: number;
-};
+  cid: number
+  name: string
+  type: string
+  notnull: 0 | 1
+  unique: 0 | 1
+  dflt_value: any
+  pk: 0 | 1
+  hidden: number
+}
 
 type RawForeignKey = {
-  id: number;
-  seq: number;
-  table: string;
-  from: string;
-  to: string;
-  on_update: ForeignKey['on_update'];
-  on_delete: ForeignKey['on_delete'];
-  match: string;
-};
+  id: number
+  seq: number
+  table: string
+  from: string
+  to: string
+  on_update: ForeignKey['on_update']
+  on_delete: ForeignKey['on_delete']
+  match: string
+}
 
-export function parseDefaultValue (value: string | null): string | null {
+export function parseDefaultValue(value: string | null): string | null {
   if (value === null || value.trim().toLowerCase() === 'null') return null
 
   return stripQuotes(value)
@@ -50,11 +50,11 @@ export default class SQLite implements SchemaInspector {
   /**
    * List all existing tables in the current schema/database
    */
-  async tables (): Promise<string[]> {
+  async tables(): Promise<string[]> {
     const records = await this.knex
       .select('name')
       .from('sqlite_master')
-      .whereRaw('type = \'table\' AND name NOT LIKE \'sqlite_%\'')
+      .whereRaw("type = 'table' AND name NOT LIKE 'sqlite_%'")
     return records.map(({ name }) => name) as string[]
   }
 
@@ -62,14 +62,14 @@ export default class SQLite implements SchemaInspector {
    * Get the table info for a given table. If table parameter is undefined, it will return all tables
    * in the current schema/database
    */
-  tableInfo (): Promise<Table[]>;
-  tableInfo (table: string): Promise<Table>;
-  async tableInfo (table?: string) {
+  tableInfo(): Promise<Table[]>
+  tableInfo(table: string): Promise<Table>
+  async tableInfo(table?: string) {
     const query = this.knex
       .select('name', 'sql')
       .from('sqlite_master')
       .where({ type: 'table' })
-      .andWhereRaw('name NOT LIKE \'sqlite_%\'')
+      .andWhereRaw("name NOT LIKE 'sqlite_%'")
 
     if (table) {
       query.andWhere({ name: table })
@@ -92,7 +92,7 @@ export default class SQLite implements SchemaInspector {
   /**
    * Check if a table exists in the current schema/database
    */
-  async hasTable (table: string): Promise<boolean> {
+  async hasTable(table: string): Promise<boolean> {
     const results = await this.knex
       .select(1)
       .from('sqlite_master')
@@ -106,11 +106,11 @@ export default class SQLite implements SchemaInspector {
   /**
    * Get all the available columns in the current schema/database. Can be filtered to a specific table
    */
-  async columns (table?: string): Promise<{ table: string; column: string }[]> {
+  async columns(table?: string): Promise<{ table: string; column: string }[]> {
     if (table) {
       const columns = await this.knex.raw<RawColumn[]>(
         'PRAGMA table_xinfo(??)',
-        table
+        table,
       )
       return columns.map((column) => ({
         table,
@@ -120,7 +120,7 @@ export default class SQLite implements SchemaInspector {
 
     const tables = await this.tables()
     const columnsPerTable = await Promise.all(
-      tables.map(async (table) => await this.columns(table))
+      tables.map(async (table) => await this.columns(table)),
     )
     return flatten(columnsPerTable)
   }
@@ -128,21 +128,21 @@ export default class SQLite implements SchemaInspector {
   /**
    * Get the column info for all columns, columns in a given table, or a specific column.
    */
-  columnInfo (): Promise<Column[]>;
-  columnInfo (table: string): Promise<Column[]>;
-  columnInfo (table: string, column: string): Promise<Column>;
-  async columnInfo (table?: string, column?: string) {
+  columnInfo(): Promise<Column[]>
+  columnInfo(table: string): Promise<Column[]>
+  columnInfo(table: string, column: string): Promise<Column>
+  async columnInfo(table?: string, column?: string) {
     const getColumnsForTable = async (table: string): Promise<Column[]> => {
       const tablesWithAutoIncrementPrimaryKeys = (
         await this.knex
           .select('name')
           .from('sqlite_master')
-          .whereRaw('sql LIKE \'%AUTOINCREMENT%\'')
+          .whereRaw("sql LIKE '%AUTOINCREMENT%'")
       ).map(({ name }) => name)
 
       const columns: RawColumn[] = await this.knex.raw(
         'PRAGMA table_xinfo(??)',
-        table
+        table,
       )
 
       const foreignKeys = await this.knex.raw<
@@ -157,16 +157,16 @@ export default class SQLite implements SchemaInspector {
         indexList.map((index) =>
           this.knex.raw<{ seqno: number; cid: number; name: string }[]>(
             'PRAGMA index_info(??)',
-            index.name
-          )
-        )
+            index.name,
+          ),
+        ),
       )
 
       return columns.map((raw): Column => {
         const foreignKey = foreignKeys.find((fk) => fk.from === raw.name)
 
         const indexIndex = indexInfoList.findIndex((list) =>
-          list.find((fk) => fk.name === raw.name)
+          list.find((fk) => fk.name === raw.name),
         )
         const index = indexList[indexIndex]
         const indexInfo = indexInfoList[indexIndex]
@@ -196,7 +196,7 @@ export default class SQLite implements SchemaInspector {
     if (!table) {
       const tables = await this.tables()
       const columnsPerTable = await Promise.all(
-        tables.map(async (table) => await getColumnsForTable(table))
+        tables.map(async (table) => await getColumnsForTable(table)),
       )
       return flatten(columnsPerTable)
     }
@@ -212,10 +212,10 @@ export default class SQLite implements SchemaInspector {
   /**
    * Check if a table exists in the current schema/database
    */
-  async hasColumn (table: string, column: string): Promise<boolean> {
+  async hasColumn(table: string, column: string): Promise<boolean> {
     let isColumn = false
     const results = await this.knex.raw(
-      `SELECT COUNT(*) AS ct FROM pragma_table_xinfo('${table}') WHERE name='${column}'`
+      `SELECT COUNT(*) AS ct FROM pragma_table_xinfo('${table}') WHERE name='${column}'`,
     )
     const resultsVal = results[0]['ct']
     if (resultsVal !== 0) {
@@ -227,10 +227,10 @@ export default class SQLite implements SchemaInspector {
   /**
    * Get the primary key column for the given table
    */
-  async primary (table: string) {
+  async primary(table: string) {
     const columns = await this.knex.raw<RawColumn[]>(
       'PRAGMA table_xinfo(??)',
-      table
+      table,
     )
     const pkColumns = columns.filter((col) => col.pk !== 0)
     return pkColumns.length > 0
@@ -243,7 +243,7 @@ export default class SQLite implements SchemaInspector {
   // Foreign Keys
   // ===============================================================================================
 
-  async foreignKeys (table?: string): Promise<ForeignKey[]> {
+  async foreignKeys(table?: string): Promise<ForeignKey[]> {
     if (table) {
       const keys = await this.knex.raw('PRAGMA foreign_key_list(??)', table)
 
@@ -256,20 +256,20 @@ export default class SQLite implements SchemaInspector {
           on_update: key.on_update,
           on_delete: key.on_delete,
           constraint_name: null,
-        })
+        }),
       )
     }
 
     const tables = await this.tables()
 
     const keysPerTable = await Promise.all(
-      tables.map(async (table) => await this.foreignKeys(table))
+      tables.map(async (table) => await this.foreignKeys(table)),
     )
 
     return flatten(keysPerTable)
   }
 
-  async uniqueConstraints (table?: string): Promise<UniqueConstraint[]> {
+  async uniqueConstraints(table?: string): Promise<UniqueConstraint[]> {
     if (table) {
       const indexList = await this.knex.raw<
         { name: string; unique: boolean }[]
@@ -279,9 +279,9 @@ export default class SQLite implements SchemaInspector {
         indexList.map((index) =>
           this.knex.raw<{ seqno: number; cid: number; name: string }[]>(
             'PRAGMA index_info(??)',
-            index.name
-          )
-        )
+            index.name,
+          ),
+        ),
       )
 
       return indexList
@@ -300,7 +300,7 @@ export default class SQLite implements SchemaInspector {
     const tables = await this.tables()
 
     const constraintsPerTable = await Promise.all(
-      tables.map(async (table) => await this.uniqueConstraints(table))
+      tables.map(async (table) => await this.uniqueConstraints(table)),
     )
 
     return flatten(constraintsPerTable)

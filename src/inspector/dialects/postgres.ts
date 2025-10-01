@@ -7,29 +7,29 @@ import type { UniqueConstraint } from '../types/unique-constraint'
 import { stripQuotes } from '../utils/strip-quotes'
 
 type RawColumn = {
-  name: string;
-  table: string;
-  schema: string;
-  data_type: string;
-  is_nullable: boolean;
-  generation_expression: null | string;
-  default_value: null | string;
-  is_generated: boolean;
-  max_length: null | number;
-  comment: null | string;
-  numeric_precision: null | number;
-  numeric_scale: null | number;
-};
+  name: string
+  table: string
+  schema: string
+  data_type: string
+  is_nullable: boolean
+  generation_expression: null | string
+  default_value: null | string
+  is_generated: boolean
+  max_length: null | number
+  comment: null | string
+  numeric_precision: null | number
+  numeric_scale: null | number
+}
 
 type Constraint = {
-  type: 'f' | 'p' | 'u';
-  table: string;
-  column: string;
-  foreign_key_schema: null | string;
-  foreign_key_table: null | string;
-  foreign_key_column: null | string;
-  has_auto_increment: null | boolean;
-};
+  type: 'f' | 'p' | 'u'
+  table: string
+  column: string
+  foreign_key_schema: null | string
+  foreign_key_table: null | string
+  foreign_key_column: null | string
+  has_auto_increment: null | boolean
+}
 
 /**
  * Converts Postgres default value to JS
@@ -86,7 +86,7 @@ export default class Postgres implements SchemaInspector {
    */
   async tables () {
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const result = await this.knex.raw(
@@ -99,7 +99,7 @@ export default class Postgres implements SchemaInspector {
         rel.relnamespace IN (${schemaIn})
         AND rel.relkind = 'r'
       ORDER BY rel.relname
-    `
+    `,
     )
 
     return result.rows.map((row: { name: string }) => row.name)
@@ -109,11 +109,11 @@ export default class Postgres implements SchemaInspector {
    * Get the table info for a given table. If table parameter is undefined, it will return all tables
    * in the current schema/database
    */
-  tableInfo (): Promise<Table[]>;
-  tableInfo (table: string): Promise<Table>;
+  tableInfo (): Promise<Table[]>
+  tableInfo (table: string): Promise<Table>
   async tableInfo (table?: string) {
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const bindings: any[] = []
@@ -134,7 +134,7 @@ export default class Postgres implements SchemaInspector {
         AND rel.relkind = 'r'
       ORDER BY rel.relname
     `,
-      bindings
+      bindings,
     )
 
     if (table) return result.rows[0]
@@ -146,7 +146,7 @@ export default class Postgres implements SchemaInspector {
    */
   async hasTable (table: string) {
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const result = await this.knex.raw(
@@ -161,7 +161,7 @@ export default class Postgres implements SchemaInspector {
         AND rel.relname = ?
       ORDER BY rel.relname
     `,
-      [table]
+      [table],
     )
 
     return result.rows.length > 0
@@ -178,7 +178,7 @@ export default class Postgres implements SchemaInspector {
     if (table) bindings.push(table)
 
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const result = await this.knex.raw(
@@ -196,7 +196,7 @@ export default class Postgres implements SchemaInspector {
         AND att.attnum > 0
         AND NOT att.attisdropped;
     `,
-      bindings
+      bindings,
     )
 
     return result.rows
@@ -216,7 +216,7 @@ export default class Postgres implements SchemaInspector {
     if (column) bindings.push(column)
 
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const versionResponse = await this.knex.raw('SHOW server_version')
@@ -289,7 +289,7 @@ export default class Postgres implements SchemaInspector {
           AND NOT att.attisdropped
         ORDER BY rel.relname, att.attnum;
       `,
-        bindings
+        bindings,
       ),
       knex.raw<{ rows: Constraint[] }>(
         `
@@ -316,30 +316,30 @@ export default class Postgres implements SchemaInspector {
           ${table ? 'AND rel.relname = ?' : ''}
           ${column ? 'AND att.attname = ?' : ''}
         `,
-        bindings
+        bindings,
       ),
     ])
 
     const parsedColumms: Column[] = columns.rows.map((col): Column => {
       const constraintsForColumn = constraints.rows.filter(
         (constraint) =>
-          constraint.table === col.table && constraint.column === col.name
+          constraint.table === col.table && constraint.column === col.name,
       )
 
       const foreignKeyConstraint = constraintsForColumn.find(
-        (constraint) => constraint.type === 'f'
+        (constraint) => constraint.type === 'f',
       )
 
       return {
         ...col,
         is_unique: constraintsForColumn.some((constraint) =>
-          ['u', 'p'].includes(constraint.type)
+          ['u', 'p'].includes(constraint.type),
         ),
         is_primary_key: constraintsForColumn.some(
-          (constraint) => constraint.type === 'p'
+          (constraint) => constraint.type === 'p',
         ),
         has_auto_increment: constraintsForColumn.some(
-          (constraint) => constraint.has_auto_increment
+          (constraint) => constraint.has_auto_increment,
         ),
         default_value: parseDefaultValue(col.default_value),
         foreign_key_schema: foreignKeyConstraint?.foreign_key_schema ?? null,
@@ -357,7 +357,7 @@ export default class Postgres implements SchemaInspector {
    */
   async hasColumn (table: string, column: string) {
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const result = await this.knex.raw(
@@ -376,7 +376,7 @@ export default class Postgres implements SchemaInspector {
         AND att.attnum > 0
         AND NOT att.attisdropped;
     `,
-      [table, column]
+      [table, column],
     )
 
     return result.rows
@@ -387,7 +387,7 @@ export default class Postgres implements SchemaInspector {
    */
   async primary (table: string) {
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const result = await this.knex.raw(
@@ -402,7 +402,7 @@ export default class Postgres implements SchemaInspector {
           AND con.contype = 'p'
           AND rel.relname = ?
     `,
-      [table]
+      [table],
     )
 
     return result.rows.length !== 0
@@ -417,7 +417,7 @@ export default class Postgres implements SchemaInspector {
 
   async foreignKeys (table?: string): Promise<ForeignKey[]> {
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const bindings: any[] = []
@@ -472,7 +472,7 @@ export default class Postgres implements SchemaInspector {
           AND con.contype = 'f'
           ${table ? 'AND rel.relname = ?' : ''}
     `,
-      bindings
+      bindings,
     )
 
     return result.rows
@@ -482,7 +482,7 @@ export default class Postgres implements SchemaInspector {
     const { knex } = this
 
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const bindings: any[] = []
@@ -490,10 +490,10 @@ export default class Postgres implements SchemaInspector {
 
     const result = await knex.raw<{
       rows: {
-        table_name: string;
-        constraint_name: string;
-        columns: string[] | string;
-      }[];
+        table_name: string
+        constraint_name: string
+        columns: string[] | string
+      }[]
     }>(
       `
       SELECT
@@ -510,7 +510,7 @@ export default class Postgres implements SchemaInspector {
         ${table ? 'AND rel.relname = ?' : ''}
       GROUP BY con.oid, con.conrelid, con.conname;
       `,
-      bindings
+      bindings,
     )
 
     return result.rows.map((v) => {

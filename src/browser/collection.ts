@@ -7,17 +7,17 @@ import type { IModel } from 'types/modeling'
 import Model from './model'
 
 class Collection<I extends Model> extends BaseCollection<I> {
-  mapThen (callback: TFunction) {
+  mapThen(callback: TFunction) {
     return Promise.all(this.map(callback))
   }
 
-  modelKeys () {
-    return this.all().map(item => item.getKey())
+  modelKeys() {
+    return this.all().map((item) => item.getKey())
   }
-  contains<K, V> (key: keyof I | K | TFunction, value?: V): boolean;
-  contains<K, V> (key: K, operator?: string, value?: V) {
+  contains<K, V>(key: keyof I | K | TFunction, value?: V): boolean
+  contains<K, V>(key: K, operator?: string, value?: V) {
     if (arguments.length > 1) {
-      return super.contains(key, value ?? operator)//, value)
+      return super.contains(key, value ?? operator) //, value)
     }
     if (key instanceof Model) {
       return super.contains((model: Model) => {
@@ -28,21 +28,21 @@ class Collection<I extends Model> extends BaseCollection<I> {
       return model.getKey() == key
     })
   }
-  diff (items: ICollection<any> | any[]) {
+  diff(items: ICollection<any> | any[]) {
     const diff = new (this.constructor as any)()
-    const dictionary = this.getDictionary(items);
-    (this.items as unknown as any[]).map((item) => {
+    const dictionary = this.getDictionary(items)
+    ;(this.items as unknown as any[]).map((item) => {
       if (dictionary[item.getKey()] === undefined) {
         diff.add(item)
       }
     })
     return diff
   }
-  except (keys: any[]) {
+  except(keys: any[]) {
     const dictionary = omit(this.getDictionary(), keys)
     return new (this.constructor as any)(Object.values(dictionary))
   }
-  intersect (items: I[]) {
+  intersect(items: I[]) {
     const intersect = new (this.constructor as any)()
     if (isEmpty(items)) {
       return intersect
@@ -55,13 +55,13 @@ class Collection<I extends Model> extends BaseCollection<I> {
     }
     return intersect
   }
-  unique (key?: TFunction | keyof I, _strict = false) {
+  unique(key?: TFunction | keyof I, _strict = false) {
     if (key) {
-      return super.unique(key)//, strict)
+      return super.unique(key) //, strict)
     }
     return new (this.constructor as any)(Object.values(this.getDictionary()))
   }
-  find (key: any, defaultValue = null) {
+  find(key: any, defaultValue = null) {
     // const Model = Model
     if (key instanceof Model) {
       key = key.getKey()
@@ -75,47 +75,51 @@ class Collection<I extends Model> extends BaseCollection<I> {
     collect(this.items as unknown as Model[]).first((model) => {
       return model.getKey() == key
     })
-    return (this.items as unknown as any[]).filter(model => {
-      return model.getKey() == key
-    })[0] || defaultValue
+    return (
+      (this.items as unknown as any[]).filter((model) => {
+        return model.getKey() == key
+      })[0] || defaultValue
+    )
   }
-  makeVisible (attributes: any) {
-    return this.each(item => {
+  makeVisible(attributes: any) {
+    return this.each((item) => {
       item.makeVisible(attributes)
     })
   }
-  makeHidden (attributes: any) {
-    return this.each(item => {
+  makeHidden(attributes: any) {
+    return this.each((item) => {
       item.makeHidden(attributes)
     })
   }
-  append (attributes: any) {
-    return this.each(item => {
+  append(attributes: any) {
+    return this.each((item) => {
       item.append(attributes)
     })
   }
-  only (keys: any[]) {
+  only(keys: any[]) {
     if (keys === null) {
       return new Collection(this.items)
     }
     const dictionary = pick(this.getDictionary(), keys)
     return new (this.constructor as any)(Object.values(dictionary))
   }
-  getDictionary (items?: ICollection<any> | any[]) {
+  getDictionary(items?: ICollection<any> | any[]) {
     items = !items ? (this.items as unknown as any[]) : items
     const dictionary: TGeneric = {}
-    items.map(value => {
+    items.map((value) => {
       dictionary[value.getKey()] = value
     })
     return dictionary
   }
-  toData () {
-    return this.all().map(item => typeof item.toData == 'function' ? item.toData() : item)
+  toData() {
+    return this.all().map((item) =>
+      typeof item.toData == 'function' ? item.toData() : item,
+    )
   }
-  toJSON () {
+  toJSON() {
     return this.toData()
   }
-  toJson (...args: any[]) {
+  toJson(...args: any[]) {
     return JSON.stringify(this.toData(), ...args)
   }
   [Symbol.iterator]: () => Iterator<I> = () => {
@@ -123,14 +127,16 @@ class Collection<I extends Model> extends BaseCollection<I> {
     const length = this.items.length
     let n = 0
     return {
-      next () {
-        return n < length ? {
-          value: (items as any)[n++],
-          done: false
-        } : {
-          done: true
-        }
-      }
+      next() {
+        return n < length
+          ? {
+              value: (items as any)[n++],
+              done: false,
+            }
+          : {
+              done: true,
+            }
+      },
     } as Iterator<I>
   }
 }

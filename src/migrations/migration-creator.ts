@@ -8,110 +8,133 @@ import { fileURLToPath } from 'node:url'
 import path from 'path'
 
 export class MigrationCreator {
-    private postCreate: TFunction[] = []
+  private postCreate: TFunction[] = []
 
-    constructor(private customStubPath?: string, private type: 'ts' | 'js' = 'js') {
+  constructor(
+    private customStubPath?: string,
+    private type: 'ts' | 'js' = 'js',
+  ) {}
+
+  /**
+   * Create a new migration file
+   *
+   * @param name
+   * @param dir
+   * @param table
+   * @param create
+   * @returns
+   */
+  async create(
+    name: string,
+    dir: string,
+    table: string,
+    create: boolean = false,
+  ) {
+    const stub = await this.getStub(table, create)
+    const filePath = this.getPath(name, dir)
+
+    await this.ensureDirectoryExists(path.dirname(filePath))
+    await writeFile(filePath, this.populateStub(stub, table))
+    await this.firePostCreateHooks(table, filePath)
+    return filePath
+  }
+
+  /**
+   * Publish migrations from third party vendors
+   *
+   * @param dir
+   * @param callback
+   */
+  async publish(
+    dir: string,
+    callback?: (name: string, source: string, dest: string) => void,
+  ) {
+    const migrationFiles = await readdir(this.customStubPath ?? '')
+    await this.ensureDirectoryExists(dir)
+
+    for (const migrationFile of migrationFiles) {
+      const sourceFilePath = path.join(this.customStubPath ?? '', migrationFile)
+      const destinationFilePath = path.join(dir, migrationFile)
+      await copyFile(sourceFilePath, destinationFilePath)
+
+      if (callback) callback(migrationFile, sourceFilePath, destinationFilePath)
     }
+  }
 
-    /**
-     * Create a new migration file
-     * 
-     * @param name 
-     * @param dir 
-     * @param table 
-     * @param create 
-     * @returns 
-     */
-    async create (name: string, dir: string, table: string, create: boolean = false) {
-        const stub = await this.getStub(table, create)
-        const filePath = this.getPath(name, dir)
-
-        await this.ensureDirectoryExists(path.dirname(filePath))
-        await writeFile(filePath, this.populateStub(stub, table))
-        await this.firePostCreateHooks(table, filePath)
-        return filePath
+  async getStub(table?: string, create: boolean = false) {
+    let stub: string
+    if (!table) {
+      const customPath = path.join(
+        this.customStubPath ?? '',
+        `migration-${this.type}.stub`,
+      )
+      console.log('\n', customPath, '---')
+      stub = (await FileSystem.fileExists(customPath))
+        ? customPath
+        : this.stubPath(`/migration-${this.type}.stub`)
+    } else if (create) {
+      const customPath = path.join(
+        this.customStubPath ?? '',
+        `migration.create-${this.type}.stub`,
+      )
+      stub = (await FileSystem.fileExists(customPath))
+        ? customPath
+        : this.stubPath(`/migration.create-${this.type}.stub`)
+    } else {
+      const customPath = path.join(
+        this.customStubPath ?? '',
+        `migration.update-${this.type}.stub`,
+      )
+      stub = (await FileSystem.fileExists(customPath))
+        ? customPath
+        : this.stubPath(`/migration.update-${this.type}.stub`)
     }
+    return await readFile(stub, 'utf-8')
+  }
 
-    /**
-     * Publish migrations from third party vendors
-     * 
-     * @param dir 
-     * @param callback 
-     */
-    async publish (dir: string, callback?: (name: string, source: string, dest: string) => void) {
-        const migrationFiles = await readdir(this.customStubPath ?? '')
-        await this.ensureDirectoryExists(dir)
-
-        for (const migrationFile of migrationFiles) {
-            const sourceFilePath = path.join(this.customStubPath ?? '', migrationFile)
-            const destinationFilePath = path.join(dir, migrationFile)
-            await copyFile(sourceFilePath, destinationFilePath)
-
-            if (callback) callback(migrationFile, sourceFilePath, destinationFilePath)
-        }
+  populateStub(stub: string, table: string) {
+    if (table !== null) {
+      stub = stub.replace(/DummyTable|{{\s*table\s*}}/g, table)
     }
+    return stub
+  }
 
-    async getStub (table?: string, create: boolean = false) {
-        let stub: string
-        if (!table) {
-            const customPath = path.join(this.customStubPath ?? '', `migration-${this.type}.stub`)
-            console.log('\n', customPath, '---')
-            stub = await FileSystem.fileExists(customPath) ? customPath : this.stubPath(`/migration-${this.type}.stub`)
-        }
-        else if (create) {
-            const customPath = path.join(this.customStubPath ?? '', `migration.create-${this.type}.stub`)
-            stub = await FileSystem.fileExists(customPath) ? customPath : this.stubPath(`/migration.create-${this.type}.stub`)
-        }
-        else {
-            const customPath = path.join(this.customStubPath ?? '', `migration.update-${this.type}.stub`)
-            stub = await FileSystem.fileExists(customPath) ? customPath : this.stubPath(`/migration.update-${this.type}.stub`)
-        }
-        return await readFile(stub, 'utf-8')
-    }
+  getClassName(name: string) {
+    return name.replace(/_+([a-z])/g, (match, char) => char.toUpperCase())
+  }
 
-    populateStub (stub: string, table: string) {
-        if (table !== null) {
-            stub = stub.replace(/DummyTable|{{\s*table\s*}}/g, table)
-        }
-        return stub
-    }
+  getPath(name: string, dir: string) {
+    const datePrefix = dayjs().format('YYYY_MM_DD_HHmmss')
+    return path.join(dir, `${datePrefix}_${name}.${this.type}`)
+  }
 
-    getClassName (name: string) {
-        return name.replace(/_+([a-z])/g, (match, char) => char.toUpperCase())
+  async firePostCreateHooks(table: string, filePath: string) {
+    for (const callback of this.postCreate) {
+      await callback(table, filePath)
     }
+  }
+  afterCreate(callback: TFunction) {
+    this.postCreate.push(callback)
+  }
 
-    getPath (name: string, dir: string) {
-        const datePrefix = dayjs().format('YYYY_MM_DD_HHmmss')
-        return path.join(dir, `${datePrefix}_${name}.${this.type}`)
-    }
+  async ensureDirectoryExists(dir: string) {
+    await mkdir(dir, { recursive: true })
+  }
 
-    async firePostCreateHooks (table: string, filePath: string) {
-        for (const callback of this.postCreate) {
-            await callback(table, filePath)
-        }
-    }
-    afterCreate (callback: TFunction) {
-        this.postCreate.push(callback)
-    }
+  stubPath(stub: string = '') {
+    const __dirname = this.getDirname(import.meta as any)
+    return path.join(__dirname, 'stubs', stub)
+  }
 
-    async ensureDirectoryExists (dir: string) {
-        await mkdir(dir, { recursive: true })
+  getDirname(meta: ImportMeta | null) {
+    if (typeof __dirname !== 'undefined') {
+      // CJS build
+      return __dirname
     }
-
-    stubPath (stub: string = '') {
-        const __dirname = this.getDirname(import.meta as any)
-        return path.join(__dirname, 'stubs', stub)
+    if (meta && meta.url) {
+      // ESM build
+      return dirname(fileURLToPath(meta.url))
     }
-
-    getDirname (meta: ImportMeta | null) {
-        if (typeof __dirname !== 'undefined') {
-            // CJS build
-            return __dirname
-        }
-        if (meta && meta.url) {
-            // ESM build
-            return dirname(fileURLToPath(meta.url))
-        }
-        throw new Error('Unable to determine dirname')
-    }
+    throw new Error('Unable to determine dirname')
+  }
 }
