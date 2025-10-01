@@ -250,12 +250,12 @@ describe("Model", () => {
     });
 
     describe("#visible & #hidden", () => {
-      it('only shows the fields specified in the model\'s "visible" property', () => {
+      it("only shows the fields specified in the model's 'visible' property", () => {
         testModel.visible = ["firstName"];
         expect(testModel.toData()).toEqual({ firstName: "Joe" });
       });
 
-      it('hides the fields specified in the model\'s "hidden" property', () => {
+      it("hides the fields specified in the model's 'hidden' property", () => {
         expect(testModel.setHidden(["firstName"]).toData()).toEqual({
           id: 1,
           lastName: "Shmoe",
@@ -270,7 +270,7 @@ describe("Model", () => {
         });
       });
 
-      it('hides the fields specified in the "options.hidden" property', () => {
+      it("hides the fields specified in the 'options.hidden' property", () => {
         testModel.setHidden(["firstName", "id"]);
         expect(testModel.toData()).toEqual({
           lastName: "Shmoe",
@@ -278,13 +278,13 @@ describe("Model", () => {
         });
       });
 
-      it('prioritizes "hidden" if there are conflicts when using both "hidden" and "visible"', () => {
+      it("prioritizes 'hidden' if there are conflicts when using both 'hidden' and 'visible'", () => {
         testModel.setVisible(["firstName", "lastName"]);
         testModel.setHidden(["lastName"]);
         expect(testModel.toData()).toEqual({ firstName: "Joe" });
       });
 
-      it('allows overriding the model\'s "hidden" property with a "setHidden" argument', () => {
+      it("allows overriding the model's 'hidden' property with a 'setHidden' argument", () => {
         testModel.hidden = ["lastName"];
         testModel.setHidden(["firstName", "id"]);
         const data = testModel.toData();
@@ -294,7 +294,7 @@ describe("Model", () => {
         });
       });
 
-      it('allows overriding the model\'s "hidden" property with a "makeHidden" argument', () => {
+      it("allows overriding the model's 'hidden' property with a 'makeHidden' argument", () => {
         testModel.hidden = ["lastName"];
         testModel.makeHidden(["firstName", "id"]);
         const data = testModel.toData();
@@ -303,7 +303,7 @@ describe("Model", () => {
         });
       });
 
-      it('prioritizes "setHidden" when overriding both the model\'s "hidden" and "visible" properties with "setHidden" and "setVisible" arguments', async () => {
+      it("prioritizes 'setHidden' when overriding both the model's 'hidden' and 'visible' properties with 'setHidden' and 'setVisible' arguments", async () => {
         testModel.visible = ["lastName", "address"];
         testModel.hidden = ["address"];
         const data = testModel
