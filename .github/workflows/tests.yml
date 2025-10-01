@@ -68,7 +68,7 @@ jobs:
       - name: Run mysql tests
         run: pnpm test:mysql
         env:
-          MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+          MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
           MYSQL_PASSWORD: password
 
       - name: Run sqlite tests
@@ -84,3 +84,20 @@ jobs:
 
       - name: Run browser tests
         run: pnpm test:browser
+
+      - name: Generate Coverage Report
+        run: |
+          pnpm vitest --no-file-parallelism --coverage.enabled --coverage.reporter=text  --coverage.reporter=json --coverage.reporter=html --coverage.reporter=lcov
+        env:
+          DB: mysql
+          MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+          MYSQL_PASSWORD: password
+
+      - name: Upload coverage reports to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: h3ravel/arquebus
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true
