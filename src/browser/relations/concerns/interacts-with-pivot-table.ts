@@ -5,14 +5,14 @@ import Collection from '../../collection'
 import Model from '../../model'
 import { collect } from 'collect.js'
 
-const InteractsWithPivotTable = <TBase extends MixinConstructor>(
+const InteractsWithPivotTable = <TBase extends MixinConstructor> (
   Relation: TBase,
 ): MixinConstructor => {
   return class extends Relation {
-    newExistingPivot(attributes = []) {
+    newExistingPivot (attributes = []) {
       return this.newPivot(attributes, true)
     }
-    newPivot(attributes = [], exists = false) {
+    newPivot (attributes = [], exists = false) {
       const pivot = this.related.newPivot(
         this.parent,
         attributes,
@@ -22,10 +22,10 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
       )
       return pivot.setPivotKeys(this.foreignPivotKey, this.relatedPivotKey)
     }
-    syncWithoutDetaching(ids: (string | number)[]) {
+    syncWithoutDetaching (ids: (string | number)[]) {
       return this.sync(ids, false)
     }
-    syncWithPivotValues(
+    syncWithPivotValues (
       ids: (string | number)[],
       values: any,
       detaching = true,
@@ -37,13 +37,11 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
         detaching,
       )
     }
-    withPivot(columns: any) {
-      this.pivotColumns = this.pivotColumns.concat(
-        isArray(columns) ? columns : Array.prototype.slice.call(arguments),
-      )
+    withPivot (...columns: any[]) {
+      this.pivotColumns = this.pivotColumns.concat(columns)
       return this
     }
-    addTimestampsToAttachment(record: TGeneric, exists = false) {
+    addTimestampsToAttachment (record: TGeneric, exists = false) {
       let fresh = this.parent.freshTimestamp()
       if (this.using) {
         const pivotModel = new this.using()
@@ -57,7 +55,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
       }
       return record
     }
-    formatRecordsList(records: any) {
+    formatRecordsList (records: any) {
       return collect(records)
         .mapWithKeys((attributes: TGeneric, id: any) => {
           if (!isArray(attributes)) {
@@ -67,15 +65,15 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
         })
         .all()
     }
-    castKeys(keys: string[]) {
+    castKeys (keys: string[]) {
       return keys.map((v) => {
         return this.castKey(v)
       })
     }
-    castKey(key: string) {
+    castKey (key: string) {
       return this.getTypeSwapValue(this.related.getKeyType(), key)
     }
-    getTypeSwapValue(type: string, value: any) {
+    getTypeSwapValue (type: string, value: any) {
       switch (type.toLowerCase()) {
         case 'int':
         case 'integer':
@@ -90,7 +88,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
           return value
       }
     }
-    formatAttachRecords(ids: (string | number)[], attributes: TGeneric) {
+    formatAttachRecords (ids: (string | number)[], attributes: TGeneric) {
       const records = []
       const hasTimestamps =
         this.hasPivotColumn(this.createdAt()) ||
@@ -103,7 +101,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
       }
       return records
     }
-    formatAttachRecord(
+    formatAttachRecord (
       key: string,
       value: any,
       attributes: TGeneric,
@@ -116,7 +114,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
       )
       return assign(this.baseAttachRecord(id, hasTimestamps), newAttributes)
     }
-    baseAttachRecord(id: string | number, timed: boolean) {
+    baseAttachRecord (id: string | number, timed: boolean) {
       let record: TGeneric = {}
 
       record[this.relatedPivotKey] = id
@@ -129,7 +127,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
       })
       return record
     }
-    extractAttachIdAndAttributes(
+    extractAttachIdAndAttributes (
       key: string,
       value: any,
       newAttributes: TGeneric,
@@ -138,10 +136,10 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
         ? [key, { ...value, ...newAttributes }]
         : [value, newAttributes]
     }
-    hasPivotColumn(column: string) {
+    hasPivotColumn (column: string) {
       return this.pivotColumns.includes(column)
     }
-    parseIds(value: any) {
+    parseIds (value: any) {
       if (value instanceof Model) {
         return [value[this.relatedKey]]
       }

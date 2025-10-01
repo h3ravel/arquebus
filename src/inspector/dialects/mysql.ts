@@ -275,7 +275,7 @@ export default class MySQL implements SchemaInspector {
    */
   async primary (table: string) {
     const results = await this.knex.raw(
-      "SHOW KEYS FROM ?? WHERE Key_name = 'PRIMARY'",
+      'SHOW KEYS FROM ?? WHERE Key_name = \'PRIMARY\'',
       table,
     )
 
@@ -332,7 +332,7 @@ export default class MySQL implements SchemaInspector {
         'stat.table_name AS table_name',
         'stat.index_name AS constraint_name',
         knex.raw(
-          "group_concat(stat.column_name ORDER BY stat.seq_in_index separator ', ') AS columns",
+          'group_concat(stat.column_name ORDER BY stat.seq_in_index separator \', \') AS columns',
         ),
       )
       .from('information_schema.statistics stat')

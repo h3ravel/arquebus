@@ -54,7 +54,7 @@ export default class SQLite implements SchemaInspector {
     const records = await this.knex
       .select('name')
       .from('sqlite_master')
-      .whereRaw("type = 'table' AND name NOT LIKE 'sqlite_%'")
+      .whereRaw('type = \'table\' AND name NOT LIKE \'sqlite_%\'')
     return records.map(({ name }) => name) as string[]
   }
 
@@ -69,7 +69,7 @@ export default class SQLite implements SchemaInspector {
       .select('name', 'sql')
       .from('sqlite_master')
       .where({ type: 'table' })
-      .andWhereRaw("name NOT LIKE 'sqlite_%'")
+      .andWhereRaw('name NOT LIKE \'sqlite_%\'')
 
     if (table) {
       query.andWhere({ name: table })
@@ -137,7 +137,7 @@ export default class SQLite implements SchemaInspector {
         await this.knex
           .select('name')
           .from('sqlite_master')
-          .whereRaw("sql LIKE '%AUTOINCREMENT%'")
+          .whereRaw('sql LIKE \'%AUTOINCREMENT%\'')
       ).map(({ name }) => name)
 
       const columns: RawColumn[] = await this.knex.raw(

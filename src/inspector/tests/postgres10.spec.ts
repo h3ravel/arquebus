@@ -1,14 +1,15 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+
 import type { Knex } from 'knex'
 import type { SchemaInspector } from 'src/inspector/types/schema-inspector'
-import { expect } from 'chai'
 import knex from 'knex'
-import schemaInspector from 'src/inspector'
+import { SchemaInspector as schemaInspector } from 'src/inspector'
 
 describe('postgres10-no-search-path', () => {
   let database: Knex
   let inspector: SchemaInspector
 
-  before(() => {
+  beforeAll(() => {
     database = knex({
       client: 'pg',
       connection: {
@@ -20,10 +21,10 @@ describe('postgres10-no-search-path', () => {
         charset: 'utf8',
       },
     })
-    inspector = schemaInspector(database)
+    inspector = schemaInspector.inspect(database)
   })
 
-  after(async () => {
+  afterAll(async () => {
     await database.destroy()
   })
 
@@ -69,7 +70,7 @@ describe('postgres10-no-search-path', () => {
   describe('.columns', () => {
     it('returns information for all tables', async () => {
       database.transaction(async (trx) => {
-        expect(await schemaInspector(trx).columns()).to.have.deep.members([
+        expect(await schemaInspector.inspect(trx).columns()).to.have.deep.members([
           { column: 'id', table: 'teams' },
           { column: 'uuid', table: 'teams' },
           { column: 'name', table: 'teams' },
@@ -281,7 +282,7 @@ describe('postgres10-no-search-path', () => {
           data_type: 'integer',
           is_nullable: false,
           generation_expression: null,
-          default_value: "nextval('teams_id_seq'::regclass)",
+          default_value: 'nextval(\'teams_id_seq\'::regclass)',
           is_generated: false,
           max_length: null,
           comment: null,
@@ -441,7 +442,7 @@ describe('postgres10-no-search-path', () => {
           data_type: 'integer',
           is_nullable: false,
           generation_expression: null,
-          default_value: "nextval('users_id_seq'::regclass)",
+          default_value: 'nextval(\'users_id_seq\'::regclass)',
           is_generated: false,
           max_length: null,
           comment: null,
@@ -543,7 +544,7 @@ describe('postgres10-no-search-path', () => {
           name: 'id',
           table: 'teams',
           data_type: 'integer',
-          default_value: "nextval('teams_id_seq'::regclass)",
+          default_value: 'nextval(\'teams_id_seq\'::regclass)',
           max_length: null,
           numeric_precision: 32,
           numeric_scale: 0,
@@ -740,7 +741,7 @@ describe('postgres10-no-search-path', () => {
   describe('.transaction', () => {
     it('works with transactions transaction', async () => {
       database.transaction(async (trx) => {
-        expect(await schemaInspector(trx).primary('teams')).to.equal('id')
+        expect(await schemaInspector.inspect(trx).primary('teams')).to.equal('id')
       })
     })
   })
@@ -750,7 +751,7 @@ describe('postgres10-with-search-path', () => {
   let database: Knex
   let inspector: SchemaInspector
 
-  before(() => {
+  beforeAll(() => {
     database = knex({
       searchPath: ['public', 'test'],
       client: 'pg',
@@ -763,10 +764,10 @@ describe('postgres10-with-search-path', () => {
         charset: 'utf8',
       },
     })
-    inspector = schemaInspector(database)
+    inspector = schemaInspector.inspect(database)
   })
 
-  after(async () => {
+  afterAll(async () => {
     await database.destroy()
   })
 
@@ -783,7 +784,7 @@ describe('postgres10-with-search-path', () => {
   describe('.transaction', () => {
     it('works with transactions transaction', async () => {
       database.transaction(async (trx) => {
-        expect(await schemaInspector(trx).primary('test')).to.equal('id')
+        expect(await schemaInspector.inspect(trx).primary('test')).to.equal('id')
       })
     })
   })

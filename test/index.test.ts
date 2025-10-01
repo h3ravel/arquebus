@@ -154,7 +154,7 @@ describe('Model', () => {
       expect(anotherUser).toBeInstanceOf(Model)
     })
 
-    it("has mixin's attributes and methods", () => {
+    it('has mixin\'s attributes and methods', () => {
       const user = new User()
       expect(user.pluginAttribtue).toBe('plugin')
       expect(user.pluginMethod()).toBe('plugin')
@@ -338,7 +338,7 @@ describe('Model', () => {
       expect(model.isDirty('test')).toBeTruthy()
     })
 
-    it("returns false if the attribute isn't set on a new model instance", () => {
+    it('returns false if the attribute isn\'t set on a new model instance', () => {
       const model = new Model({ test_test: 'something' })
       // expect(model.getDirty()).toEqual({ a: 1})
       expect(model.isDirty('id')).toBeFalsy()
@@ -1933,7 +1933,7 @@ describe('Integration test', async () => {
               })
             })
 
-            it("sets created_at to the user specified value if present in the model's attributes", () => {
+            it('sets created_at to the user specified value if present in the model\'s attributes', () => {
               const date = '1999-01-01 01:01:01'
               model.created_at = date
               return model.save().then(() => {
@@ -1943,7 +1943,7 @@ describe('Integration test', async () => {
               })
             })
 
-            it("sets updated_at to the user specified value if present in the model's attributes", () => {
+            it('sets updated_at to the user specified value if present in the model\'s attributes', () => {
               const date = '1999-01-01 01:01:01'
               model.updated_at = date
               return model.save().then(() => {
@@ -1988,7 +1988,7 @@ describe('Integration test', async () => {
             expect(user.isDirty()).toBe(true)
           })
 
-          it("returns false if no arguments are provided and the model hasn't changed", async () => {
+          it('returns false if no arguments are provided and the model hasn\'t changed', async () => {
             const user = (await User.query().first()) as User
             expect(user.isDirty()).toBe(false)
           })
