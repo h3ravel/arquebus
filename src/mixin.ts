@@ -1,32 +1,29 @@
 import type { MixinConstructor, TGeneric } from 'types/generics'
 
 // Extract the returned class (constructor) from a mixin
-export type ExtractClass<T> =
-    T extends (base: Constructor<any>) => infer R
-    ? R extends Constructor<any>
+export type ExtractClass<T> = T extends (base: Constructor<any>) => infer R
+  ? R extends Constructor<any>
     ? R
     : never
-    : never;
+  : never
 
 // Extract the instance type from a mixin
-export type ExtractInstance<T> =
-    T extends (base: Constructor<any>) => infer R
-    ? R extends Constructor<any>
+export type ExtractInstance<T> = T extends (base: Constructor<any>) => infer R
+  ? R extends Constructor<any>
     ? InstanceType<R>
     : never
-    : never;
+  : never
 
 export type Mixins<T extends readonly ((base: Constructor) => Constructor)[]> =
-    UnionToIntersection<
-        {
-            [K in keyof T]:
-            T[K] extends (base: Constructor) => infer R
-            ? R extends Constructor
-            ? InstanceType<R>
-            : never
-            : never
-        }[number]
-    >;
+  UnionToIntersection<
+    {
+      [K in keyof T]: T[K] extends (base: Constructor) => infer R
+        ? R extends Constructor
+          ? InstanceType<R>
+          : never
+        : never
+    }[number]
+  >
 
 /**
  * Helper type to extract instance type from constructor or mixin function
@@ -37,21 +34,22 @@ type Mixin<TBase extends Constructor> = (Base: TBase) => Constructor
 /**
  * Helper type to convert union to intersection
  */
-type UnionToIntersection<U> =
-    (U extends any ? (k: U) => void : never) extends (k: infer I) => void
-    ? I
-    : never
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
+  ? I
+  : never
 
 /**
  * Helper type to get static side of a constructor
  */
 type Static<T> = {
-    [K in keyof T]: T[K]
+  [K in keyof T]: T[K]
 }
 
 /**
  * Compose function that merges multiple classes and mixins
- * 
+ *
  * @example
  * const SomePlugin = <TBase extends new (...args: any[]) => TGeneric> (Base: TBase) => {
  *     return class extends Base {
@@ -88,71 +86,71 @@ type Static<T> = {
  * console.log(user.pluginMethod('w')) // "plugin"
  * console.log(user.pluginMethod()) // "plugin"
  * console.log(user.relationPosts()) // "hasMany Posts"
- * 
- * @param Base 
- * @param mixins 
- * @returns 
+ *
+ * @param Base
+ * @param mixins
+ * @returns
  */
 export function compose<
-    TBase extends Constructor,
-    TMixins extends Array<Mixin<any> | Constructor> = any
-> (
-    Base: TBase,
-    ...mixins: TMixins
+  TBase extends Constructor,
+  TMixins extends Array<Mixin<any> | Constructor> = any,
+>(
+  Base: TBase,
+  ...mixins: TMixins
 ): Constructor<
-    InstanceType<TBase> &
+  InstanceType<TBase> &
     TBase &
     UnionToIntersection<
-        {
-            [K in keyof TMixins]: TMixins[K] extends Mixin<any>
-            ? InstanceType<ReturnType<TMixins[K]>>
-            : TMixins[K] extends Constructor
+      {
+        [K in keyof TMixins]: TMixins[K] extends Mixin<any>
+          ? InstanceType<ReturnType<TMixins[K]>>
+          : TMixins[K] extends Constructor
             ? InstanceType<TMixins[K]>
             : never
-        }[number]
+      }[number]
     >
 > &
-    UnionToIntersection<
-        {
-            [K in keyof TMixins]: TMixins[K] extends Mixin<any>
-            ? Static<ReturnType<TMixins[K]>>
-            : TMixins[K] extends Constructor
-            ? Static<TMixins[K]>
-            : never
-        }[number]
-    > &
-    Static<TBase> {
-    /**
-     * Apply each mixin or class in sequence
-     */
-    return mixins.reduce((acc, mixin) => {
-        if (typeof mixin === 'function' && mixin.prototype) {
-            /**
-             * If it's a class constructor, extend it
-             */
-            return class extends (acc as Constructor) {
-                constructor(...args: any[]) {
-                    super(...args)
-                    /**
-                     * Copy instance properties from mixin prototype
-                     */
-                    Object.getOwnPropertyNames(mixin.prototype).forEach(name => {
-                        if (name !== 'constructor') {
-                            Object.defineProperty(
-                                this,
-                                name,
-                                Object.getOwnPropertyDescriptor(mixin.prototype, name)!
-                            )
-                        }
-                    })
-                }
+  UnionToIntersection<
+    {
+      [K in keyof TMixins]: TMixins[K] extends Mixin<any>
+        ? Static<ReturnType<TMixins[K]>>
+        : TMixins[K] extends Constructor
+          ? Static<TMixins[K]>
+          : never
+    }[number]
+  > &
+  Static<TBase> {
+  /**
+   * Apply each mixin or class in sequence
+   */
+  return mixins.reduce((acc, mixin) => {
+    if (typeof mixin === 'function' && mixin.prototype) {
+      /**
+       * If it's a class constructor, extend it
+       */
+      return class extends (acc as Constructor) {
+        constructor(...args: any[]) {
+          super(...args)
+          /**
+           * Copy instance properties from mixin prototype
+           */
+          Object.getOwnPropertyNames(mixin.prototype).forEach((name) => {
+            if (name !== 'constructor') {
+              Object.defineProperty(
+                this,
+                name,
+                Object.getOwnPropertyDescriptor(mixin.prototype, name)!,
+              )
             }
-        } else if (typeof mixin === 'function') {
-            /**
-             * If it's a mixin function, call it with current class
-             */
-            return (mixin as any)(acc as Constructor)
+          })
         }
-        return acc
-    }, Base) as any
-} 
+      }
+    } else if (typeof mixin === 'function') {
+      /**
+       * If it's a mixin function, call it with current class
+       */
+      return (mixin as any)(acc as Constructor)
+    }
+    return acc
+  }, Base) as any
+}

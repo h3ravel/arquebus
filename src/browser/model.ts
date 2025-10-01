@@ -16,11 +16,11 @@ import { assign as merge } from 'radashi'
 import pluralize from 'pluralize'
 
 const BaseModel = compose<any, any>(
-  class { },
+  class {},
   HasAttributes,
   HidesAttributes,
   HasRelations,
-  HasTimestamps
+  HasTimestamps,
 )
 
 class Model extends BaseModel {
@@ -42,36 +42,43 @@ class Model extends BaseModel {
     return this.asProxy()
   }
 
-  static init (attributes = {}) {
+  static init(attributes = {}) {
     return new this(attributes)
   }
 
-  static extend (plugin: TFunction, options: TGeneric) {
+  static extend(plugin: TFunction, options: TGeneric) {
     plugin(this, options)
   }
 
-  static make (attributes: TGeneric = {}) {
+  static make(attributes: TGeneric = {}) {
     const instance = new this()
     for (const attribute in attributes) {
       if (typeof instance[getRelationMethod(attribute)] !== 'function') {
         instance.setAttribute(attribute, attributes[attribute])
-      }
-      else {
+      } else {
         const relation = instance[getRelationMethod(attribute)]()
-        if (relation instanceof HasOne
-          || relation instanceof BelongsTo) {
-          instance.setRelation(attribute, relation.related.make(attributes[attribute]))
-        }
-        else if ((relation instanceof HasMany || relation instanceof BelongsToMany)
-          && Array.isArray(attributes[attribute])) {
-          instance.setRelation(attribute, new Collection(attributes[attribute].map(item => relation.related.make(item))))
+        if (relation instanceof HasOne || relation instanceof BelongsTo) {
+          instance.setRelation(
+            attribute,
+            relation.related.make(attributes[attribute]),
+          )
+        } else if (
+          (relation instanceof HasMany || relation instanceof BelongsToMany) &&
+          Array.isArray(attributes[attribute])
+        ) {
+          instance.setRelation(
+            attribute,
+            new Collection(
+              attributes[attribute].map((item) => relation.related.make(item)),
+            ),
+          )
         }
       }
     }
     return instance
   }
 
-  bootIfNotBooted (this: any) {
+  bootIfNotBooted(this: any) {
     if (this.constructor._booted[this.constructor.name] === undefined) {
       this.constructor._booted[this.constructor.name] = true
       this.constructor.booting()
@@ -80,42 +87,43 @@ class Model extends BaseModel {
       this.constructor.booted()
     }
   }
-  static booting () {
-  }
-  static boot () {
-  }
-  static booted () {
-  }
-  static setConnectionResolver (resolver: arquebus) {
+  static booting() {}
+  static boot() {}
+  static booted() {}
+  static setConnectionResolver(resolver: arquebus) {
     this.resolver = resolver
   }
-  initialize () {
-  }
-  initializePlugins (this: any) {
-    if (typeof this.constructor.pluginInitializers[this.constructor.name] === 'undefined') {
+  initialize() {}
+  initializePlugins(this: any) {
+    if (
+      typeof this.constructor.pluginInitializers[this.constructor.name] ===
+      'undefined'
+    ) {
       return
     }
-    for (const method of this.constructor.pluginInitializers[this.constructor.name]) {
+    for (const method of this.constructor.pluginInitializers[
+      this.constructor.name
+    ]) {
       this[method]()
     }
   }
 
-  addPluginInitializer (this: any, method: any) {
+  addPluginInitializer(this: any, method: any) {
     if (!this.constructor.pluginInitializers[this.constructor.name]) {
       this.constructor.pluginInitializers[this.constructor.name] = []
     }
     this.constructor.pluginInitializers[this.constructor.name].push(method)
   }
 
-  newInstance (this: any, attributes: TGeneric = {}, exists = false) {
-    const model = new this.constructor
+  newInstance(this: any, attributes: TGeneric = {}, exists = false) {
+    const model = new this.constructor()
     model.exists = exists
     model.setTable(this.getTable())
     model.fill(attributes)
     return model
   }
 
-  asProxy () {
+  asProxy() {
     const handler = {
       get: function (target: Model, prop: keyof Model) {
         if (target[prop] !== undefined) {
@@ -136,109 +144,118 @@ class Model extends BaseModel {
           return target.setAttribute(prop, value)
         }
         return target
-      }
+      },
     } as any
 
     return new Proxy(this, handler)
   }
 
-  getKey () {
+  getKey() {
     return this.getAttribute(this.getKeyName())
   }
-  getKeyName () {
+  getKeyName() {
     return this.primaryKey
   }
-  getForeignKey () {
+  getForeignKey() {
     return snakeCase(this.constructor.name) + '_' + this.getKeyName()
   }
-  getConnectionName () {
+  getConnectionName() {
     return this.connection
   }
-  getTable () {
+  getTable() {
     return this.table || pluralize(snakeCase(this.constructor.name))
   }
-  setConnection (connection: TBaseConfig['client']) {
+  setConnection(connection: TBaseConfig['client']) {
     this.connection = connection
     return this
   }
-  getKeyType () {
+  getKeyType() {
     return this.keyType
   }
-  hasNamedScope (name: string) {
+  hasNamedScope(name: string) {
     const scope = getScopeMethod(name)
     return typeof this[scope] === 'function'
   }
-  callNamedScope (scope: string, parameters: any) {
+  callNamedScope(scope: string, parameters: any) {
     const scopeMethod = getScopeMethod(scope)
     return this[scopeMethod](...parameters)
   }
-  setTable (table: string) {
+  setTable(table: string) {
     this.table = table
     return this
   }
-  newCollection (models = []) {
+  newCollection(models = []) {
     return new Collection(models)
   }
-  getIncrementing () {
+  getIncrementing() {
     return this.incrementing
   }
-  setIncrementing (value: boolean) {
+  setIncrementing(value: boolean) {
     this.incrementing = value
     return this
   }
-  toData () {
+  toData() {
     return merge(this.attributesToData(), this.relationsToData())
   }
-  toJSON () {
+  toJSON() {
     return this.toData()
   }
-  toJson (...args: any[]) {
+  toJson(...args: any[]) {
     return JSON.stringify(this.toData(), ...args)
   }
-  toString () {
+  toString() {
     return this.toJson()
   }
-  fill (attributes: TGeneric) {
+  fill(attributes: TGeneric) {
     for (const key in attributes) {
       this.setAttribute(key, attributes[key])
     }
     return this
   }
-  transacting (trx: any) {
+  transacting(trx: any) {
     this.trx = trx
     return this
   }
-  trashed () {
+  trashed() {
     return this[this.getDeletedAtColumn()] !== null
   }
 
-  newPivot<E extends Model> (parent: E, attributes: TGeneric, table: string, exists: boolean, using: typeof Pivot | null = null) {
-    return using ? using.fromRawAttributes(parent, attributes, table, exists)
+  newPivot<E extends Model>(
+    parent: E,
+    attributes: TGeneric,
+    table: string,
+    exists: boolean,
+    using: typeof Pivot | null = null,
+  ) {
+    return using
+      ? using.fromRawAttributes(parent, attributes, table, exists)
       : Pivot.fromAttributes(parent, attributes, table, exists)
   }
 
-  qualifyColumn (column: string) {
+  qualifyColumn(column: string) {
     if (column.includes('.')) {
       return column
     }
     return `${this.getTable()}.${column}`
   }
 
-  getQualifiedKeyName () {
+  getQualifiedKeyName() {
     return this.qualifyColumn(this.getKeyName())
   }
 
-  is (model: any) {
-    return model && model instanceof Model &&
+  is(model: any) {
+    return (
+      model &&
+      model instanceof Model &&
       this.getKey() === model.getKey() &&
       this.getTable() === model.getTable()
+    )
   }
 
-  isNot (model: any) {
+  isNot(model: any) {
     return !this.is(model)
   }
 }
-
 
 export class Pivot extends Model {
   incrementing = false
@@ -247,13 +264,18 @@ export class Pivot extends Model {
   foreignKey: string | null = null
   relatedKey: string | null = null
 
-  setPivotKeys (foreignKey: string, relatedKey: string) {
+  setPivotKeys(foreignKey: string, relatedKey: string) {
     this.foreignKey = foreignKey
     this.relatedKey = relatedKey
     return this
   }
 
-  static fromRawAttributes<E extends Model> (parent: E, attributes: TGeneric, table: string, exists = false) {
+  static fromRawAttributes<E extends Model>(
+    parent: E,
+    attributes: TGeneric,
+    table: string,
+    exists = false,
+  ) {
     const instance = this.fromAttributes(parent, {}, table, exists)
     instance.timestamps = instance.hasTimestampAttributes(attributes)
     instance.attributes = attributes
@@ -261,10 +283,16 @@ export class Pivot extends Model {
     return instance
   }
 
-  static fromAttributes<E extends Model> (parent: E, attributes: TGeneric, table: string, exists = false) {
-    const instance = new this
+  static fromAttributes<E extends Model>(
+    parent: E,
+    attributes: TGeneric,
+    table: string,
+    exists = false,
+  ) {
+    const instance = new this()
     instance.timestamps = instance.hasTimestampAttributes(attributes)
-    instance.setConnection(parent.connection!)
+    instance
+      .setConnection(parent.connection!)
       .setTable(table)
       .fill(attributes)
       .syncOriginal()
@@ -273,8 +301,10 @@ export class Pivot extends Model {
     return instance
   }
 
-  hasTimestampAttributes (this: any, attributes: TGeneric | null = null) {
-    return (attributes || this.attributes)[this.constructor.CREATED_AT] !== undefined
+  hasTimestampAttributes(this: any, attributes: TGeneric | null = null) {
+    return (
+      (attributes || this.attributes)[this.constructor.CREATED_AT] !== undefined
+    )
   }
 }
 

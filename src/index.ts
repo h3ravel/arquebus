@@ -15,31 +15,41 @@ import SoftDeletes from './soft-deletes'
 import type { TGeneric } from 'types/generics'
 import arquebus from './arquebus'
 
-const make = <M extends Model | typeof Model> (model: M, data: TGeneric, options = {} as { paginated: IPaginatorParams | boolean }) => {
+const make = <M extends Model | typeof Model>(
+  model: M,
+  data: TGeneric,
+  options = {} as { paginated: IPaginatorParams | boolean },
+) => {
   const { paginated } = options
   if (paginated) {
     return new Paginator(
       data.data.map((item: Model) => model.make(item)),
       data.total,
       data.per_page,
-      data.current_page
+      data.current_page,
     )
   }
   if (Array.isArray(data)) {
-    return new Collection(data.map(item => model.make(item)))
+    return new Collection(data.map((item) => model.make(item)))
   }
   return model.make(data)
 }
 
-const makeCollection = <M extends Model | typeof Model> (model: M, data: TGeneric) =>
-  new Collection(data.map((item: Model) => model.make(item)))
+const makeCollection = <M extends Model | typeof Model>(
+  model: M,
+  data: TGeneric,
+) => new Collection(data.map((item: Model) => model.make(item)))
 
-const makePaginator = <M extends Model | typeof Model> (model: M, data: TGeneric, _: any) =>
+const makePaginator = <M extends Model | typeof Model>(
+  model: M,
+  data: TGeneric,
+  _: any,
+) =>
   new Paginator(
     data.data.map((item: Model) => model.make(item)),
     data.total,
     data.per_page,
-    data.current_page
+    data.current_page,
   )
 
 export * from './errors'
@@ -64,4 +74,4 @@ export {
   make,
   makeCollection,
   makePaginator,
-} 
+}

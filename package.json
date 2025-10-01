@@ -150,7 +150,6 @@
     "mysql2": "^3.15.0",
     "pg": "^8.16.3",
     "pluralize": "^8.0.0",
-    "prettier": "^3.6.2",
     "radashi": "^12.6.2",
     "resolve-from": "^5.0.0",
     "tedious": "^19.0.0"
@@ -162,8 +161,9 @@
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
     "@vitest/coverage-v8": "^3.2.4",
-    "eslint": "^9.36.0",
+    "eslint": "^9.36.0", 
     "jsdom": "^26.1.0",
+    "prettier": "^3.6.2",
     "sqlite3": "5.1.7",
     "terser": "^5.44.0",
     "ts-node": "^10.9.2",

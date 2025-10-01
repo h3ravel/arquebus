@@ -8,7 +8,7 @@ import type { SchemaInspectorConstructor } from 'src/inspector/types/schema-insp
 import Sqlite from 'src/inspector/dialects/sqlite'
 
 export class SchemaInspector {
-  public static inspect (knex: Knex) {
+  public static inspect(knex: Knex) {
     let constructor: SchemaInspectorConstructor
 
     switch (knex.client.constructor.name) {

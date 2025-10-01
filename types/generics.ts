@@ -2,71 +2,109 @@ import type Model from 'src/model'
 
 export type TGeneric<V = any, K extends string = string> = Record<K, V>
 export type XGeneric<V = TGeneric, T = any> = {
-    [key: string]: T
+  [key: string]: T
 } & V
 
 export interface Plugin {
-    (model: Model, config: TGeneric): void
+  (model: Model, config: TGeneric): void
 }
 
 export type Hook =
-    | 'creating' | 'created' | 'updating' | 'updated' | 'saving' | 'saved' | 'deleting' | 'deleted'
-    | 'restoring' | 'restored' | 'trashed' | 'forceDeleted';
+  | 'creating'
+  | 'created'
+  | 'updating'
+  | 'updated'
+  | 'saving'
+  | 'saved'
+  | 'deleting'
+  | 'deleted'
+  | 'restoring'
+  | 'restored'
+  | 'trashed'
+  | 'forceDeleted'
 
-export type TFunction<TArgs extends any[] = any[], TReturn = any> = (...args: TArgs) => TReturn;
+export type TFunction<TArgs extends any[] = any[], TReturn = any> = (
+  ...args: TArgs
+) => TReturn
 
 export type PrimitiveValue =
-    | string
-    | number
-    | boolean
-    | Date
-    | string[]
-    | number[]
-    | boolean[]
-    | Date[]
-    | null
-    | Buffer;
+  | string
+  | number
+  | boolean
+  | Date
+  | string[]
+  | number[]
+  | boolean[]
+  | Date[]
+  | null
+  | Buffer
 
-export type ReturnTypeOfMethod<T, K extends keyof T> = T[K] extends (...args: any[]) => infer R ? R : never;
+export type ReturnTypeOfMethod<T, K extends keyof T> = T[K] extends (
+  ...args: any[]
+) => infer R
+  ? R
+  : never
 
 export type SnakeToCamelCase<S extends string> =
-    S extends `${infer T}_${infer U}` ? `${T}${Capitalize<SnakeToCamelCase<U>>}` : S;
+  S extends `${infer T}_${infer U}`
+    ? `${T}${Capitalize<SnakeToCamelCase<U>>}`
+    : S
 
 // declare const model: ModelDecorator;
 export type CamelToSnakeCase<S extends string> =
-    S extends `${infer T}${infer U}` ?
-    U extends Uncapitalize<U> ? `${Uncapitalize<T>}${CamelToSnakeCase<U>}` : `${Uncapitalize<T>}_${CamelToSnakeCase<U>}` :
-    S;
+  S extends `${infer T}${infer U}`
+    ? U extends Uncapitalize<U>
+      ? `${Uncapitalize<T>}${CamelToSnakeCase<U>}`
+      : `${Uncapitalize<T>}_${CamelToSnakeCase<U>}`
+    : S
 
 export type FunctionPropertyNames<T> = {
-    [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
-}[keyof T];
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never
+}[keyof T]
 
-export type RelationNames<T> = FunctionPropertyNames<T> extends infer R
-    ? R extends `relation${infer P}` ? P extends ('sToData' | 'loaded') ? never : CamelToSnakeCase<P> : never
-    : never;
+export type RelationNames<T> =
+  FunctionPropertyNames<T> extends infer R
+    ? R extends `relation${infer P}`
+      ? P extends 'sToData' | 'loaded'
+        ? never
+        : CamelToSnakeCase<P>
+      : never
+    : never
 
 export type MixinConstructor<T = TGeneric> = new (...args: any[]) => T
-export type AbstractConstructor<T = TGeneric> = abstract new (...args: any[]) => T;
+export type AbstractConstructor<T = TGeneric> = abstract new (
+  ...args: any[]
+) => T
 
 // Helper type: combine all mixin instance types into a single intersection
-export type MixinReturn<Base extends MixinConstructor, Mixins extends ((base: any) => any)[]> =
-    Base extends MixinConstructor<infer B>
+export type MixinReturn<
+  Base extends MixinConstructor,
+  Mixins extends ((base: any) => any)[],
+> =
+  Base extends MixinConstructor<infer B>
     ? IntersectionOfInstances<InstanceTypeOfMixins<Mixins>> & B
     : never
 
-export type InstanceTypeOfMixins<T extends ((base: any) => any)[]> =
-    T extends [infer Head, ...infer Tail]
-    ? Head extends (base: any) => infer R
+export type InstanceTypeOfMixins<T extends ((base: any) => any)[]> = T extends [
+  infer Head,
+  ...infer Tail,
+]
+  ? Head extends (base: any) => infer R
     ? Tail extends ((base: any) => any)[]
-    ? R | InstanceTypeOfMixins<Tail>
-    : R
+      ? R | InstanceTypeOfMixins<Tail>
+      : R
     : never
-    : never
+  : never
 
-export type IntersectionOfInstances<U> =
-    (U extends any ? (x: U) => any : never) extends (x: infer I) => any ? I : never
+export type IntersectionOfInstances<U> = (
+  U extends any ? (x: U) => any : never
+) extends (x: infer I) => any
+  ? I
+  : never
 
 export interface DeepMixinFunction {
-    <MC extends MixinConstructor, P extends ((base: any) => any)[]> (Base: MC, ...mixins: P): MixinReturn<MC, P>
+  <MC extends MixinConstructor, P extends ((base: any) => any)[]>(
+    Base: MC,
+    ...mixins: P
+  ): MixinReturn<MC, P>
 }

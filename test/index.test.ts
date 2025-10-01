@@ -17,7 +17,16 @@ import {
   makePaginator,
 } from 'src'
 import type { MixinConstructor, TGeneric } from 'types/generics'
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
+} from 'vitest'
 import { omit, remove } from 'radashi'
 
 import collect from 'collect.js'
@@ -44,12 +53,12 @@ describe('Arquebus', () => {
       connection: {
         host: '127.0.0.1',
         port: 1234,
-      }
+      },
     })
     expect(() => {
       arquebus.fire('abc' as any)
-    }).toThrow();
-    (arquebus as any).connections = {}
+    }).toThrow()
+    ;(arquebus as any).connections = {}
   })
 
   it('Should be able to autoload config.', async () => {
@@ -66,51 +75,48 @@ describe('Arquebus', () => {
 })
 
 describe('Model', () => {
-  const SomePlugin = <TBase extends MixinConstructor> (Model: TBase) => {
+  const SomePlugin = <TBase extends MixinConstructor>(Model: TBase) => {
     return class extends Model {
       pluginAttribtue = 'plugin'
-      pluginMethod () {
+      pluginMethod() {
         return this.pluginAttribtue
       }
     }
   }
 
-  class User extends compose(
-    Model,
-    SomePlugin,
-  ) {
-    relationPost () {
+  class User extends compose(Model, SomePlugin) {
+    relationPost() {
       return this.hasMany(Post)
     }
   }
 
   class Post extends Model {
-    relationAuthor () {
+    relationAuthor() {
       return this.belongsTo(User)
     }
 
-    relationTags () {
+    relationTags() {
       return this.belongsToMany(Tag, 'post_tag')
     }
 
-    relationThumbnail () {
+    relationThumbnail() {
       return this.belongsTo(Thumbnail, 'thumbnail_id')
     }
   }
 
   class Tag extends Model {
-    relationPosts () {
+    relationPosts() {
       return this.belongsToMany(Post, 'post_tag')
     }
-    relationUsers () {
+    relationUsers() {
       return this.hasManyThrough(User, Post)
     }
   }
 
-  class Thumbnail extends Model { }
-  class Media extends Model { }
+  class Thumbnail extends Model {}
+  class Media extends Model {}
 
-  const manager = new arquebus
+  const manager = new arquebus()
 
   manager.createModel('User', {
     plugins: [SomePlugin],
@@ -118,7 +124,7 @@ describe('Model', () => {
       post: (model: Model) => {
         return model.hasMany(manager.models.Post)
       },
-    }
+    },
   })
 
   manager.createModel('Post', {
@@ -126,34 +132,34 @@ describe('Model', () => {
       author: (model) => model.belongsTo(manager.models.User),
       tags: (model) => model.belongsToMany(Tag, 'post_tag'),
       thumbnail: (model) => model.belongsTo(Thumbnail, 'thumbnail_id'),
-    }
+    },
   })
 
   it('return the table name of the plural model name', () => {
-    const user = new User
-    const media = new Media
+    const user = new User()
+    const media = new Media()
     expect(user.getTable()).toBe('users')
     expect(media.getTable()).toBe('media')
 
-    const anotherUser = new manager.models.User
+    const anotherUser = new manager.models.User()
     expect(anotherUser.getTable()).toBe('users')
   })
 
   describe('#compose', () => {
     it('should return a Model instance', () => {
-      const user = new User
+      const user = new User()
       expect(user).toBeInstanceOf(Model)
 
-      const anotherUser = new manager.models.User
+      const anotherUser = new manager.models.User()
       expect(anotherUser).toBeInstanceOf(Model)
     })
 
-    it('has mixin\'s attributes and methods', () => {
-      const user = new User
+    it("has mixin's attributes and methods", () => {
+      const user = new User()
       expect(user.pluginAttribtue).toBe('plugin')
       expect(user.pluginMethod()).toBe('plugin')
 
-      const anotherUser = new manager.models.User
+      const anotherUser = new manager.models.User()
       expect(anotherUser.pluginAttribtue).toBe('plugin')
       expect(anotherUser.pluginMethod()).toBe('plugin')
     })
@@ -161,27 +167,28 @@ describe('Model', () => {
 
   describe('#toData & #toJson', () => {
     class User extends Model {
-      attributeFullName () {
+      attributeFullName() {
         return Attribute.make({
-          get: (value, attributes) => `${attributes.firstName} ${attributes.lastName}`,
+          get: (value, attributes) =>
+            `${attributes.firstName} ${attributes.lastName}`,
           set: (value) => ({
             firstName: value.split(' ')[0],
-            lastName: value.split(' ')[1]
-          })
+            lastName: value.split(' ')[1],
+          }),
         })
       }
 
-      get another_full_name () {
+      get another_full_name() {
         return `${this.attributes.firstName} ${this.attributes.lastName}`
       }
 
-      set another_full_name (value) {
+      set another_full_name(value) {
         const names = value.split(' ')
         this.attributes.firstName = names[0]
         this.attributes.lastName = names[1]
       }
     }
-    class Post extends Model { }
+    class Post extends Model {}
 
     let testModel: Model
     beforeEach(() => {
@@ -189,18 +196,25 @@ describe('Model', () => {
         id: 1,
         firstName: 'Joe',
         lastName: 'Shmoe',
-        address: '123 Main St.'
+        address: '123 Main St.',
       })
     })
 
     it('includes the relations loaded on the model', () => {
-      testModel.setRelation('posts', new Collection([
-        new Post({ id: 1 }), new Post({ id: 2 })
-      ]))
+      testModel.setRelation(
+        'posts',
+        new Collection([new Post({ id: 1 }), new Post({ id: 2 })]),
+      )
 
       const data = testModel.toData()
 
-      expect(Object.keys(data)).toEqual(['id', 'firstName', 'lastName', 'address', 'posts'])
+      expect(Object.keys(data)).toEqual([
+        'id',
+        'firstName',
+        'lastName',
+        'address',
+        'posts',
+      ])
       expect(data.posts.length).toBe(2)
     })
 
@@ -217,15 +231,26 @@ describe('Model', () => {
       })
 
       it('hides the fields specified in the model\'s "hidden" property', () => {
-        expect(testModel.setHidden(['firstName']).toData()).toEqual({ id: 1, lastName: 'Shmoe', address: '123 Main St.' })
+        expect(testModel.setHidden(['firstName']).toData()).toEqual({
+          id: 1,
+          lastName: 'Shmoe',
+          address: '123 Main St.',
+        })
         testModel.setHidden(['firstName', 'lastName']).makeVisible('firstName')
         expect(testModel.getHidden()).toEqual(['lastName'])
-        expect(testModel.toData()).toEqual({ id: 1, firstName: 'Joe', address: '123 Main St.' })
+        expect(testModel.toData()).toEqual({
+          id: 1,
+          firstName: 'Joe',
+          address: '123 Main St.',
+        })
       })
 
       it('hides the fields specified in the "options.hidden" property', () => {
         testModel.setHidden(['firstName', 'id'])
-        expect(testModel.toData()).toEqual({ lastName: 'Shmoe', address: '123 Main St.' })
+        expect(testModel.toData()).toEqual({
+          lastName: 'Shmoe',
+          address: '123 Main St.',
+        })
       })
 
       it('prioritizes "hidden" if there are conflicts when using both "hidden" and "visible"', () => {
@@ -240,7 +265,7 @@ describe('Model', () => {
         const data = testModel.toData()
         expect(data).toEqual({
           lastName: 'Shmoe',
-          address: '123 Main St.'
+          address: '123 Main St.',
         })
       })
 
@@ -249,14 +274,17 @@ describe('Model', () => {
         testModel.makeHidden(['firstName', 'id'])
         const data = testModel.toData()
         expect(data).toEqual({
-          address: '123 Main St.'
+          address: '123 Main St.',
         })
       })
 
       it('prioritizes "setHidden" when overriding both the model\'s "hidden" and "visible" properties with "setHidden" and "setVisible" arguments', async () => {
         testModel.visible = ['lastName', 'address']
         testModel.hidden = ['address']
-        const data = testModel.setVisible(['firstName', 'lastName']).setHidden(['lastName']).toData()
+        const data = testModel
+          .setVisible(['firstName', 'lastName'])
+          .setHidden(['lastName'])
+          .toData()
 
         expect(data).toEqual({ firstName: 'Joe' })
 
@@ -265,14 +293,16 @@ describe('Model', () => {
       })
 
       it('append virtual attribute', () => {
-        const data = testModel.append(['another_full_name', 'full_name']).toData()
+        const data = testModel
+          .append(['another_full_name', 'full_name'])
+          .toData()
         expect(data).toEqual({
           address: '123 Main St.',
           firstName: 'Joe',
           another_full_name: 'Joe Shmoe',
           full_name: 'Joe Shmoe',
           id: 1,
-          lastName: 'Shmoe'
+          lastName: 'Shmoe',
         })
 
         testModel.another_full_name = 'Bill Gates'
@@ -282,7 +312,7 @@ describe('Model', () => {
           another_full_name: 'Bill Gates',
           full_name: 'Bill Gates',
           id: 1,
-          lastName: 'Gates'
+          lastName: 'Gates',
         })
 
         expect(testModel.isDirty('firstName')).toBeTruthy()
@@ -308,7 +338,7 @@ describe('Model', () => {
       expect(model.isDirty('test')).toBeTruthy()
     })
 
-    it('returns false if the attribute isn\'t set on a new model instance', () => {
+    it("returns false if the attribute isn't set on a new model instance", () => {
       const model = new Model({ test_test: 'something' })
       // expect(model.getDirty()).toEqual({ a: 1})
       expect(model.isDirty('id')).toBeFalsy()
@@ -316,7 +346,7 @@ describe('Model', () => {
     })
 
     it('returns true if an existing attribute is updated', () => {
-      const model = new Model
+      const model = new Model()
       model.test = 'something else'
 
       expect(model.isDirty('test')).toBeTruthy()
@@ -329,13 +359,13 @@ describe('Collection', () => {
   class User extends Model {
     protected primaryKey = 'some_id'
   }
-  class Post extends Model { }
+  class Post extends Model {}
 
   beforeEach(() => {
     collection = new Collection([
       new User({ some_id: 1, name: 'Test' }),
       new User({ name: 'Test2' }),
-      new Post({ id: 2, name: 'Test3' })
+      new Post({ id: 2, name: 'Test3' }),
     ])
   })
 
@@ -384,7 +414,7 @@ describe('Integration test', async () => {
     databases.push(config.postgres)
   }
 
-  databases.map(config => {
+  databases.map((config) => {
     describe('Client: ' + config.client, () => {
       arquebus.addConnection(config, config.client)
       const connection = arquebus.fire(config.client)
@@ -400,61 +430,62 @@ describe('Integration test', async () => {
       class User extends Base {
         hidden = ['password', 'remember_token']
 
-        attributeFullName () {
+        attributeFullName() {
           return Attribute.make({
-            get: (value, attributes) => `${attributes.firstName} ${attributes.name}`
+            get: (value, attributes) =>
+              `${attributes.firstName} ${attributes.name}`,
           })
         }
 
-        relationPosts () {
+        relationPosts() {
           return this.hasMany(Post)
         }
       }
 
       class UuidUser extends compose(Base, HasUniqueIds) {
-        newUniqueId (): string {
+        newUniqueId(): string {
           return crypto.randomUUID()
         }
       }
 
       class Post extends Base {
-        scopeIdOf (query: IBuilder<Model>, id: string) {
+        scopeIdOf(query: IBuilder<Model>, id: string) {
           return query.where('id', id)
         }
 
-        scopePublish (query: IBuilder<Model>) {
+        scopePublish(query: IBuilder<Model>) {
           return query.where('status', 1)
         }
 
-        relationAuthor () {
+        relationAuthor() {
           return this.belongsTo(User)
         }
 
-        relationDefaultAuthor () {
+        relationDefaultAuthor() {
           return this.belongsTo(User).withDefault({
-            name: 'Default Author'
+            name: 'Default Author',
           })
         }
 
-        relationDefaultPostAuthor () {
+        relationDefaultPostAuthor() {
           return this.belongsTo(User).withDefault((user: User, post: Post) => {
             user.name = post.name + ' - Default Author'
           })
         }
 
-        relationThumbnail () {
+        relationThumbnail() {
           return this.belongsTo(Media, 'thumbnail_id')
         }
 
-        relationMedia () {
+        relationMedia() {
           return this.belongsToMany(Media)
         }
 
-        relationTags () {
+        relationTags() {
           return this.belongsToMany(Tag)
         }
 
-        relationComments () {
+        relationComments() {
           return this.hasMany(Comment)
         }
       }
@@ -463,41 +494,48 @@ describe('Integration test', async () => {
         connection: config.client,
         attributes: {
           slug: Attribute.make({
-            get: (value, attributes) => kebabCase(attributes.name)
-          })
+            get: (value, attributes) => kebabCase(attributes.name),
+          }),
         },
         scopes: {
           idOf: (query: IBuilder<Model>, id: string) => query.where('id', id),
-          publish: (query: IBuilder<Model>) => query.where('status', 1)
+          publish: (query: IBuilder<Model>) => query.where('status', 1),
         },
         relations: {
           author: (model: Model) => model.belongsTo(User),
-          default_author: (model: Model) => model.belongsTo(User).withDefault({
-            name: 'Default Author'
-          }),
-          default_post_author: (model: Model) => model.belongsTo(User).withDefault((user: User, post: Post) => {
-            user.name = post.name + ' - Default Author'
-          }),
+          default_author: (model: Model) =>
+            model.belongsTo(User).withDefault({
+              name: 'Default Author',
+            }),
+          default_post_author: (model: Model) =>
+            model.belongsTo(User).withDefault((user: User, post: Post) => {
+              user.name = post.name + ' - Default Author'
+            }),
           thumbnail: (model: Model) => model.belongsTo(Media, 'thumbnail_id'),
           media: (model: Model) => model.belongsToMany(Media),
           tags: (model: Model) => model.belongsToMany(Tag),
-        }
+        },
       })
 
       class Tag extends Base {
-        relationPosts () {
+        relationPosts() {
           return this.belongsToMany(Post)
         }
       }
 
-      class Comment extends Base { }
+      class Comment extends Base {}
 
-      class Media extends Base { }
+      class Media extends Base {}
 
-      class SoftDeletePost extends compose(Base, SoftDeletes) { }
+      class SoftDeletePost extends compose(Base, SoftDeletes) {}
 
       class Json extends CastsAttributes {
-        static get (model: Model, key: string, value: string, _attributes: TGeneric): string | null {
+        static get(
+          model: Model,
+          key: string,
+          value: string,
+          _attributes: TGeneric,
+        ): string | null {
           try {
             return JSON.parse(value)
           } catch {
@@ -505,7 +543,12 @@ describe('Integration test', async () => {
           }
         }
 
-        static set (model: Model, key: string, value: string, _attributes: TGeneric) {
+        static set(
+          model: Model,
+          key: string,
+          value: string,
+          _attributes: TGeneric,
+        ) {
           return JSON.stringify(value)
         }
       }
@@ -524,271 +567,275 @@ describe('Integration test', async () => {
       }
 
       beforeAll(async () => {
-        return Promise.all([
-          'users',
-          'tags',
-          'posts',
-          'post_tag',
-          'administrators',
-          'comments',
-          'media',
-          'cast_posts',
-          'soft_delete_posts',
-          'uuid_users',
-        ].map(table => {
-          return connection.schema.dropTableIfExists(table)
-        })).then(() => {
-          return connection.schema
-            .createTable('users', (table) => {
-              table.increments('id')
-              table.string('name')
-              table.string('first_name')
-              table.timestamps()
-            })
-            .createTable('uuid_users', (table) => {
-              table.string('id').primary()
-              table.string('name')
-              table.timestamps()
-            })
-            .createTable('media', (table) => {
-              table.increments('id')
-              table.integer('mediaable_id').defaultTo(0)
-              table.string('mediaable_type').defaultTo('')
-              table.string('uuid').defaultTo('')
-              table.timestamps()
-            })
-            .createTable('tags', (table) => {
-              table.increments('id')
-              table.string('name')
-              table.timestamps()
-            })
-            .createTable('administrators', (table) => {
-              table.increments('id')
-              table.string('username')
-              table.string('password')
-              table.timestamps()
-            })
-            .createTable('posts', (table) => {
-              table.increments('id')
-              table.integer('user_id').defaultTo(0)
-              table.string('name')
-              table.text('content')
-              table.timestamps()
-            })
-            .createTable('post_tag', (table) => {
-              table.increments('id')
-              table.integer('post_id').defaultTo(0)
-              table.integer('tag_id').defaultTo(0)
-              table.timestamps()
-
-            })
-            .createTable('comments', function (table) {
-              table.increments('id')
-              table.integer('post_id').defaultTo(0)
-              table.string('name')
-              table.string('email')
-              table.text('comment')
-              table.timestamps()
-            })
-            .createTable('soft_delete_posts', function (table) {
-              table.increments('id')
-              table.string('name')
-              table.text('content')
-              table.datetime('deleted_at').defaultTo(null)
-              table.timestamps()
-            })
-            .createTable('cast_posts', function (table) {
-              table.increments('id')
-              table.text('text_to_json')
-              table.text('text_to_collection')
-              table.text('custom_cast')
-              table.integer('some_string')
-              table.string('some_int')
-              table.datetime('some_date').defaultTo(null)
-              table.datetime('some_datetime').defaultTo(null)
-              table.tinyint('is_published').defaultTo(0)
-              table.timestamps()
-            })
-        }).then(() => {
-          const date = dayjs().format('YYYY-MM-DD HH:mm:ss')
-          return Promise.all([
-            connection.table('users').insert([
-              {
-                first_name: 'Tim',
-                name: 'Shuri',
-                created_at: date,
-                updated_at: date,
-              },
-              {
-                first_name: 'X',
-                name: 'Alice',
-                created_at: date,
-                updated_at: date,
-              }
-            ]),
-            // connection.table('uuid_users').insert([]),
-            connection.table('administrators').insert([
-              {
-                username: 'test1',
-                password: 'testpwd1',
-                created_at: date,
-                updated_at: date
-              },
-              {
-                username: 'test2',
-                password: 'testpwd2',
-                created_at: date,
-                updated_at: date
-              }
-            ]),
-            connection.table('post_tag').insert([
-              {
-                post_id: 1,
-                tag_id: 1,
-                created_at: date,
-                updated_at: date
-              },
-              {
-                post_id: 1,
-                tag_id: 2,
-                created_at: date,
-                updated_at: date
-              },
-              {
-                post_id: 1,
-                tag_id: 3,
-                created_at: date,
-                updated_at: date
-              },
-              {
-                post_id: 4,
-                tag_id: 1,
-                created_at: date,
-                updated_at: date
-              }
-            ]),
-            connection.table('comments').insert([
-              {
-                post_id: 3,
-                name: '(blank)',
-                email: 'test@example.com',
-                comment: 'this is neat.',
-                created_at: date,
-                updated_at: date
-              }
-            ]),
-            connection.table('tags').insert([
-              {
-                name: 'cool',
-                created_at: date,
-                updated_at: date
-              },
-              {
-                name: 'boring',
-                created_at: date,
-                updated_at: date
-              },
-              {
-                name: 'exciting',
-                created_at: date,
-                updated_at: date
-              },
-              {
-                name: 'amazing',
-                created_at: date,
-                updated_at: date
-              }
-            ]),
-            connection.table('posts').insert([
-              {
-                user_id: 1,
-                name: 'This is a new Title!',
-                content:
-                  'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
-                created_at: date,
-                updated_at: date
-              },
-              {
-                user_id: 2,
-                name: 'This is a new Title 2!',
-                content:
-                  'Lorem ipsum Veniam ex amet occaecat dolore in pariatur minim est exercitation deserunt Excepteur enim officia occaecat in exercitation aute et ad esse ex in in dolore amet consequat quis sed mollit et id incididunt sint dolore velit officia dolor dolore laboris dolor Duis ea ex quis deserunt anim nisi qui culpa laboris nostrud Duis anim deserunt esse laboris nulla qui in dolor voluptate aute reprehenderit amet ut et non voluptate elit irure mollit dolor consectetur nisi adipisicing commodo et mollit dolore incididunt cupidatat nulla ut irure deserunt non officia laboris fugiat ut pariatur ut non aliqua eiusmod dolor et nostrud minim elit occaecat commodo consectetur cillum elit laboris mollit dolore amet id qui eiusmod nulla elit eiusmod est ad aliqua aute enim ut aliquip ex in Ut nisi sint exercitation est mollit veniam cupidatat adipisicing occaecat dolor irure in aute aliqua ullamco.',
-                created_at: date,
-                updated_at: date
-              },
-              {
-                user_id: 2,
-                name: 'This is a new Title 3!',
-                content: 'Lorem ipsum Reprehenderit esse esse consectetur aliquip magna.',
-                created_at: date,
-                updated_at: date
-              },
-              {
-                user_id: 30,
-                name: 'This is a new Title 4!',
-                content: 'Lorem ipsum Anim sed eu sint aute.',
-                created_at: date,
-                updated_at: date
-              },
-              {
-                user_id: 4,
-                name: 'This is a new Title 5!',
-                content:
-                  'Lorem ipsum Commodo consectetur eu ea amet laborum nulla eiusmod minim veniam ullamco nostrud sed mollit consectetur veniam mollit Excepteur quis cupidatat.',
-                created_at: date,
-                updated_at: date
-              }
-            ]),
-            connection.table('soft_delete_posts').insert([
-              {
-                name: 'This is a new Title!',
-                content:
-                  'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
-                created_at: date,
-                updated_at: date,
-                deleted_at: null,
-              },
-              {
-                name: 'This is a new Title 2!',
-                content:
-                  'Lorem ipsum Veniam ex amet occaecat dolore in pariatur minim est exercitation deserunt Excepteur enim officia occaecat in exercitation aute et ad esse ex in in dolore amet consequat quis sed mollit et id incididunt sint dolore velit officia dolor dolore laboris dolor Duis ea ex quis deserunt anim nisi qui culpa laboris nostrud Duis anim deserunt esse laboris nulla qui in dolor voluptate aute reprehenderit amet ut et non voluptate elit irure mollit dolor consectetur nisi adipisicing commodo et mollit dolore incididunt cupidatat nulla ut irure deserunt non officia laboris fugiat ut pariatur ut non aliqua eiusmod dolor et nostrud minim elit occaecat commodo consectetur cillum elit laboris mollit dolore amet id qui eiusmod nulla elit eiusmod est ad aliqua aute enim ut aliquip ex in Ut nisi sint exercitation est mollit veniam cupidatat adipisicing occaecat dolor irure in aute aliqua ullamco.',
-                created_at: date,
-                updated_at: date,
-                deleted_at: date
-              },
-              {
-                name: 'This is a new Title 3!',
-                content:
-                  'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
-                created_at: date,
-                updated_at: date,
-                deleted_at: null,
-              },
-              {
-                name: 'This is a new Title 4!',
-                content:
-                  'Lorem ipsum Veniam ex amet occaecat dolore in pariatur minim est exercitation deserunt Excepteur enim officia occaecat in exercitation aute et ad esse ex in in dolore amet consequat quis sed mollit et id incididunt sint dolore velit officia dolor dolore laboris dolor Duis ea ex quis deserunt anim nisi qui culpa laboris nostrud Duis anim deserunt esse laboris nulla qui in dolor voluptate aute reprehenderit amet ut et non voluptate elit irure mollit dolor consectetur nisi adipisicing commodo et mollit dolore incididunt cupidatat nulla ut irure deserunt non officia laboris fugiat ut pariatur ut non aliqua eiusmod dolor et nostrud minim elit occaecat commodo consectetur cillum elit laboris mollit dolore amet id qui eiusmod nulla elit eiusmod est ad aliqua aute enim ut aliquip ex in Ut nisi sint exercitation est mollit veniam cupidatat adipisicing occaecat dolor irure in aute aliqua ullamco.',
-                created_at: date,
-                updated_at: date,
-                deleted_at: date
-              },
-            ]),
-            connection.table('cast_posts').insert([
-              {
-                text_to_json: '{"a": "foo", "b": "bar"}',
-                text_to_collection: '[{"name":"foo1"}, {"name":"bar2"}]',
-                custom_cast: '{"a": "foo", "b": "bar"}',
-                some_string: 1,
-                some_int: '1',
-                some_date: date,
-                some_datetime: date,
-                is_published: 1,
-                created_at: date,
-                updated_at: date,
-              },
-            ]),
-          ])
-        })
+        return Promise.all(
+          [
+            'users',
+            'tags',
+            'posts',
+            'post_tag',
+            'administrators',
+            'comments',
+            'media',
+            'cast_posts',
+            'soft_delete_posts',
+            'uuid_users',
+          ].map((table) => {
+            return connection.schema.dropTableIfExists(table)
+          }),
+        )
+          .then(() => {
+            return connection.schema
+              .createTable('users', (table) => {
+                table.increments('id')
+                table.string('name')
+                table.string('first_name')
+                table.timestamps()
+              })
+              .createTable('uuid_users', (table) => {
+                table.string('id').primary()
+                table.string('name')
+                table.timestamps()
+              })
+              .createTable('media', (table) => {
+                table.increments('id')
+                table.integer('mediaable_id').defaultTo(0)
+                table.string('mediaable_type').defaultTo('')
+                table.string('uuid').defaultTo('')
+                table.timestamps()
+              })
+              .createTable('tags', (table) => {
+                table.increments('id')
+                table.string('name')
+                table.timestamps()
+              })
+              .createTable('administrators', (table) => {
+                table.increments('id')
+                table.string('username')
+                table.string('password')
+                table.timestamps()
+              })
+              .createTable('posts', (table) => {
+                table.increments('id')
+                table.integer('user_id').defaultTo(0)
+                table.string('name')
+                table.text('content')
+                table.timestamps()
+              })
+              .createTable('post_tag', (table) => {
+                table.increments('id')
+                table.integer('post_id').defaultTo(0)
+                table.integer('tag_id').defaultTo(0)
+                table.timestamps()
+              })
+              .createTable('comments', function (table) {
+                table.increments('id')
+                table.integer('post_id').defaultTo(0)
+                table.string('name')
+                table.string('email')
+                table.text('comment')
+                table.timestamps()
+              })
+              .createTable('soft_delete_posts', function (table) {
+                table.increments('id')
+                table.string('name')
+                table.text('content')
+                table.datetime('deleted_at').defaultTo(null)
+                table.timestamps()
+              })
+              .createTable('cast_posts', function (table) {
+                table.increments('id')
+                table.text('text_to_json')
+                table.text('text_to_collection')
+                table.text('custom_cast')
+                table.integer('some_string')
+                table.string('some_int')
+                table.datetime('some_date').defaultTo(null)
+                table.datetime('some_datetime').defaultTo(null)
+                table.tinyint('is_published').defaultTo(0)
+                table.timestamps()
+              })
+          })
+          .then(() => {
+            const date = dayjs().format('YYYY-MM-DD HH:mm:ss')
+            return Promise.all([
+              connection.table('users').insert([
+                {
+                  first_name: 'Tim',
+                  name: 'Shuri',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  first_name: 'X',
+                  name: 'Alice',
+                  created_at: date,
+                  updated_at: date,
+                },
+              ]),
+              // connection.table('uuid_users').insert([]),
+              connection.table('administrators').insert([
+                {
+                  username: 'test1',
+                  password: 'testpwd1',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  username: 'test2',
+                  password: 'testpwd2',
+                  created_at: date,
+                  updated_at: date,
+                },
+              ]),
+              connection.table('post_tag').insert([
+                {
+                  post_id: 1,
+                  tag_id: 1,
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  post_id: 1,
+                  tag_id: 2,
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  post_id: 1,
+                  tag_id: 3,
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  post_id: 4,
+                  tag_id: 1,
+                  created_at: date,
+                  updated_at: date,
+                },
+              ]),
+              connection.table('comments').insert([
+                {
+                  post_id: 3,
+                  name: '(blank)',
+                  email: 'test@example.com',
+                  comment: 'this is neat.',
+                  created_at: date,
+                  updated_at: date,
+                },
+              ]),
+              connection.table('tags').insert([
+                {
+                  name: 'cool',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  name: 'boring',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  name: 'exciting',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  name: 'amazing',
+                  created_at: date,
+                  updated_at: date,
+                },
+              ]),
+              connection.table('posts').insert([
+                {
+                  user_id: 1,
+                  name: 'This is a new Title!',
+                  content:
+                    'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  user_id: 2,
+                  name: 'This is a new Title 2!',
+                  content:
+                    'Lorem ipsum Veniam ex amet occaecat dolore in pariatur minim est exercitation deserunt Excepteur enim officia occaecat in exercitation aute et ad esse ex in in dolore amet consequat quis sed mollit et id incididunt sint dolore velit officia dolor dolore laboris dolor Duis ea ex quis deserunt anim nisi qui culpa laboris nostrud Duis anim deserunt esse laboris nulla qui in dolor voluptate aute reprehenderit amet ut et non voluptate elit irure mollit dolor consectetur nisi adipisicing commodo et mollit dolore incididunt cupidatat nulla ut irure deserunt non officia laboris fugiat ut pariatur ut non aliqua eiusmod dolor et nostrud minim elit occaecat commodo consectetur cillum elit laboris mollit dolore amet id qui eiusmod nulla elit eiusmod est ad aliqua aute enim ut aliquip ex in Ut nisi sint exercitation est mollit veniam cupidatat adipisicing occaecat dolor irure in aute aliqua ullamco.',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  user_id: 2,
+                  name: 'This is a new Title 3!',
+                  content:
+                    'Lorem ipsum Reprehenderit esse esse consectetur aliquip magna.',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  user_id: 30,
+                  name: 'This is a new Title 4!',
+                  content: 'Lorem ipsum Anim sed eu sint aute.',
+                  created_at: date,
+                  updated_at: date,
+                },
+                {
+                  user_id: 4,
+                  name: 'This is a new Title 5!',
+                  content:
+                    'Lorem ipsum Commodo consectetur eu ea amet laborum nulla eiusmod minim veniam ullamco nostrud sed mollit consectetur veniam mollit Excepteur quis cupidatat.',
+                  created_at: date,
+                  updated_at: date,
+                },
+              ]),
+              connection.table('soft_delete_posts').insert([
+                {
+                  name: 'This is a new Title!',
+                  content:
+                    'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                  created_at: date,
+                  updated_at: date,
+                  deleted_at: null,
+                },
+                {
+                  name: 'This is a new Title 2!',
+                  content:
+                    'Lorem ipsum Veniam ex amet occaecat dolore in pariatur minim est exercitation deserunt Excepteur enim officia occaecat in exercitation aute et ad esse ex in in dolore amet consequat quis sed mollit et id incididunt sint dolore velit officia dolor dolore laboris dolor Duis ea ex quis deserunt anim nisi qui culpa laboris nostrud Duis anim deserunt esse laboris nulla qui in dolor voluptate aute reprehenderit amet ut et non voluptate elit irure mollit dolor consectetur nisi adipisicing commodo et mollit dolore incididunt cupidatat nulla ut irure deserunt non officia laboris fugiat ut pariatur ut non aliqua eiusmod dolor et nostrud minim elit occaecat commodo consectetur cillum elit laboris mollit dolore amet id qui eiusmod nulla elit eiusmod est ad aliqua aute enim ut aliquip ex in Ut nisi sint exercitation est mollit veniam cupidatat adipisicing occaecat dolor irure in aute aliqua ullamco.',
+                  created_at: date,
+                  updated_at: date,
+                  deleted_at: date,
+                },
+                {
+                  name: 'This is a new Title 3!',
+                  content:
+                    'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                  created_at: date,
+                  updated_at: date,
+                  deleted_at: null,
+                },
+                {
+                  name: 'This is a new Title 4!',
+                  content:
+                    'Lorem ipsum Veniam ex amet occaecat dolore in pariatur minim est exercitation deserunt Excepteur enim officia occaecat in exercitation aute et ad esse ex in in dolore amet consequat quis sed mollit et id incididunt sint dolore velit officia dolor dolore laboris dolor Duis ea ex quis deserunt anim nisi qui culpa laboris nostrud Duis anim deserunt esse laboris nulla qui in dolor voluptate aute reprehenderit amet ut et non voluptate elit irure mollit dolor consectetur nisi adipisicing commodo et mollit dolore incididunt cupidatat nulla ut irure deserunt non officia laboris fugiat ut pariatur ut non aliqua eiusmod dolor et nostrud minim elit occaecat commodo consectetur cillum elit laboris mollit dolore amet id qui eiusmod nulla elit eiusmod est ad aliqua aute enim ut aliquip ex in Ut nisi sint exercitation est mollit veniam cupidatat adipisicing occaecat dolor irure in aute aliqua ullamco.',
+                  created_at: date,
+                  updated_at: date,
+                  deleted_at: date,
+                },
+              ]),
+              connection.table('cast_posts').insert([
+                {
+                  text_to_json: '{"a": "foo", "b": "bar"}',
+                  text_to_collection: '[{"name":"foo1"}, {"name":"bar2"}]',
+                  custom_cast: '{"a": "foo", "b": "bar"}',
+                  some_string: 1,
+                  some_int: '1',
+                  some_date: date,
+                  some_datetime: date,
+                  is_published: 1,
+                  created_at: date,
+                  updated_at: date,
+                },
+              ]),
+            ])
+          })
       })
 
       afterAll(() => {
@@ -803,20 +850,35 @@ describe('Integration test', async () => {
         describe('raw', () => {
           it('should execute raw SQL query and return correct result', async () => {
             if (process.env.DB === 'sqlite') {
-              const user = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1])
-              expect(user).toEqual([{
-                id: 2
-              }])
+              const user = await connection.raw(
+                'SELECT id FROM users WHERE id > ? LIMIT 1',
+                [1],
+              )
+              expect(user).toEqual([
+                {
+                  id: 2,
+                },
+              ])
             } else if (process.env.DB === 'mysql') {
-              const res = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1])
-              expect(res[0]).toEqual([{
-                id: 2
-              }])
+              const res = await connection.raw(
+                'SELECT id FROM users WHERE id > ? LIMIT 1',
+                [1],
+              )
+              expect(res[0]).toEqual([
+                {
+                  id: 2,
+                },
+              ])
             } else if (process.env.DB === 'postgres') {
-              const res = await connection.raw('SELECT id FROM users WHERE id > ? LIMIT 1', [1])
-              expect(res.rows).toEqual([{
-                id: 2
-              }])
+              const res = await connection.raw(
+                'SELECT id FROM users WHERE id > ? LIMIT 1',
+                [1],
+              )
+              expect(res.rows).toEqual([
+                {
+                  id: 2,
+                },
+              ])
             }
           })
         })
@@ -830,23 +892,35 @@ describe('Integration test', async () => {
 
           it('allows passing an object to query', () => {
             const query = connection.table('users')
-            expect(remove(query._statements, (e: any) => e.grouping !== 'where').length).toBe(0)
+            expect(
+              remove(query._statements, (e: any) => e.grouping !== 'where')
+                .length,
+            ).toBe(0)
 
             const q = query.where('id', 1).orWhere('id', '>', 10)
             expect(q).toStrictEqual(query)
-            expect(remove(query._statements, (e: any) => e.grouping !== 'where').length).toBe(2)
+            expect(
+              remove(query._statements, (e: any) => e.grouping !== 'where')
+                .length,
+            ).toBe(2)
           })
 
           it('allows passing a function to query', () => {
             const query = connection.table('users')
-            expect(remove(query._statements, (e: any) => e.grouping !== 'where').length).toBe(0)
+            expect(
+              remove(query._statements, (e: any) => e.grouping !== 'where')
+                .length,
+            ).toBe(0)
 
             const q = query.where((q) => {
               q.where('id', 1).orWhere('id', '>', '10')
             })
 
             expect(q).toEqual(query)
-            expect(remove(query._statements, (e: any) => e.grouping !== 'where').length).toBe(1)
+            expect(
+              remove(query._statements, (e: any) => e.grouping !== 'where')
+                .length,
+            ).toBe(1)
           })
 
           describe('#first() & #find()', () => {
@@ -860,9 +934,14 @@ describe('Integration test', async () => {
             })
 
             it('allows specification of select columns in query', () => {
-              return connection.table('users').where('id', 1).select(['id', 'first_name']).first().then((user) => {
-                expect(user).toEqual({ id: 1, first_name: 'Tim' })
-              })
+              return connection
+                .table('users')
+                .where('id', 1)
+                .select(['id', 'first_name'])
+                .first()
+                .then((user) => {
+                  expect(user).toEqual({ id: 1, first_name: 'Tim' })
+                })
             })
           })
 
@@ -871,11 +950,15 @@ describe('Integration test', async () => {
               const users = await connection.table('users').get()
 
               expect(users.length).toBe(2)
-              expect(users.map((user: any) => user.name)).toEqual(['Shuri', 'Alice'])
+              expect(users.map((user: any) => user.name)).toEqual([
+                'Shuri',
+                'Alice',
+              ])
             })
 
             it('returns an empty collection if there are no results', async () => {
-              const users = await connection.table('users')
+              const users = await connection
+                .table('users')
                 .where('name', 'hal9000')
                 .get()
 
@@ -887,57 +970,90 @@ describe('Integration test', async () => {
             it('fetches a single page of results with defaults', async () => {
               const names: string[] = []
 
-              await connection.table('tags').orderBy('id', 'asc').chunk(2, (tags) => {
-                tags.map(tag => {
-                  names.push(tag.name)
+              await connection
+                .table('tags')
+                .orderBy('id', 'asc')
+                .chunk(2, (tags) => {
+                  tags.map((tag) => {
+                    names.push(tag.name)
+                  })
                 })
-              })
 
               expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing'])
 
-              await connection.table('tags').orderBy('id', 'desc').chunk(2, (tags) => {
-                tags.map(tag => {
-                  names.push(tag.name)
+              await connection
+                .table('tags')
+                .orderBy('id', 'desc')
+                .chunk(2, (tags) => {
+                  tags.map((tag) => {
+                    names.push(tag.name)
+                  })
                 })
-              })
 
-              expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing', 'amazing', 'exciting', 'boring', 'cool'])
+              expect(names).toEqual([
+                'cool',
+                'boring',
+                'exciting',
+                'amazing',
+                'amazing',
+                'exciting',
+                'boring',
+                'cool',
+              ])
             })
           })
 
           describe('take/skip/limit/offset/forPage', () => {
             it('should allow specifying limit and offset', () => {
-              return connection.table('users').limit(1).offset(1).get().then((users) => {
-                expect(users.length).toBe(1)
-                expect(users[0].id).toBe(2)
-              })
+              return connection
+                .table('users')
+                .limit(1)
+                .offset(1)
+                .get()
+                .then((users) => {
+                  expect(users.length).toBe(1)
+                  expect(users[0].id).toBe(2)
+                })
             })
 
             it('should allow specifying take and skip', () => {
-              return connection.table('users').take(1).skip(1).get().then((users) => {
-                expect(users.length).toBe(1)
-                expect(users[0].id).toBe(2)
-              })
+              return connection
+                .table('users')
+                .take(1)
+                .skip(1)
+                .get()
+                .then((users) => {
+                  expect(users.length).toBe(1)
+                  expect(users[0].id).toBe(2)
+                })
             })
 
             it('should allow specifying forPage', () => {
-              return connection.table('users').forPage(2, 1).get().then((users) => {
-                expect(users.length).toBe(1)
-                expect(users[0].id).toBe(2)
-              })
+              return connection
+                .table('users')
+                .forPage(2, 1)
+                .get()
+                .then((users) => {
+                  expect(users.length).toBe(1)
+                  expect(users[0].id).toBe(2)
+                })
             })
           })
 
           describe('#paginate()', () => {
             it('fetches a single page of results with defaults', () => {
-              return connection.table('users').paginate()
+              return connection
+                .table('users')
+                .paginate()
                 .then((users) => {
                   expect(users).toBeInstanceOf(Paginator)
                 })
             })
 
             it('fetches a page of results with specified page size', () => {
-              return connection.table('users').paginate(1, 2)
+              return connection
+                .table('users')
+                .paginate(1, 2)
                 .then((results) => {
                   expect(results).toBeInstanceOf(Paginator)
                   expect(results.count()).toBe(2)
@@ -947,7 +1063,10 @@ describe('Integration test', async () => {
             })
 
             it('fetches a page by page number', () => {
-              return connection.table('users').orderBy('id', 'asc').paginate(1, 2)
+              return connection
+                .table('users')
+                .orderBy('id', 'asc')
+                .paginate(1, 2)
                 .then((results) => {
                   expect(results.get(0)!.id).toBe(1)
                   expect(results.get(1)!.id).toBe(2)
@@ -958,33 +1077,41 @@ describe('Integration test', async () => {
               it('counts grouped rows instead of total rows', () => {
                 let total: number
 
-                return connection.table('posts').count().then(count => {
-                  total = parseInt(String(count))
+                return connection
+                  .table('posts')
+                  .count()
+                  .then((count) => {
+                    total = parseInt(String(count))
 
-                  return connection.table('posts')
-                    .select('user_id')
-                    .groupBy('user_id')
-                    .whereNotNull('user_id')
-                    .paginate()
-                }).then(posts => {
-                  expect(posts.count()).toBeLessThanOrEqual(total)
-                })
+                    return connection
+                      .table('posts')
+                      .select('user_id')
+                      .groupBy('user_id')
+                      .whereNotNull('user_id')
+                      .paginate()
+                  })
+                  .then((posts) => {
+                    expect(posts.count()).toBeLessThanOrEqual(total)
+                  })
               })
 
               it('counts grouped rows when using table name qualifier', () => {
                 let total: number
 
-                connection.table('posts').count()
+                connection
+                  .table('posts')
+                  .count()
                   .then((count) => {
                     total = parseInt(String(count), 10)
 
-                    return connection.table('posts')
+                    return connection
+                      .table('posts')
                       .select('user_id')
                       .groupBy('posts.user_id')
                       .whereNotNull('user_id')
                       .paginate()
                   })
-                  .then(posts => {
+                  .then((posts) => {
                     expect(posts.count()).toBeLessThanOrEqual(total)
                   })
               })
@@ -994,12 +1121,14 @@ describe('Integration test', async () => {
               it('counts distinct occurences of a column instead of total rows', () => {
                 let total: number
 
-                return connection.table('posts').count()
-                  .then(count => {
+                return connection
+                  .table('posts')
+                  .count()
+                  .then((count) => {
                     total = count
                     return connection.table('posts').distinct('user_id').get()
                   })
-                  .then(distinctPostUsers => {
+                  .then((distinctPostUsers) => {
                     expect(distinctPostUsers.length).toBeLessThanOrEqual(total)
                   })
               })
@@ -1008,17 +1137,19 @@ describe('Integration test', async () => {
 
           describe('orderBy', () => {
             it('returns results in the correct order', () => {
-              const asc = connection.table('users')
+              const asc = connection
+                .table('users')
                 .orderBy('id', 'asc')
                 .get()
-                .then(result => {
+                .then((result) => {
                   return result.map((user: User) => user.id)
                 })
 
-              const desc = connection.table('users')
+              const desc = connection
+                .table('users')
                 .orderBy('id', 'desc')
                 .get()
-                .then(result => {
+                .then((result) => {
                   return result.map((user: User) => user.id)
                 })
 
@@ -1042,7 +1173,7 @@ describe('Integration test', async () => {
         describe('#make', () => {
           it('should return a Model instance', () => {
             const user = make(User, {
-              id: 1
+              id: 1,
             })
             expect(user).toBeInstanceOf(User)
 
@@ -1051,13 +1182,13 @@ describe('Integration test', async () => {
               posts: [
                 {
                   id: 1,
-                  title: 'Test'
+                  title: 'Test',
                 },
                 {
                   id: 2,
-                  title: 'Test 2'
-                }
-              ]
+                  title: 'Test 2',
+                },
+              ],
             })
             expect(anotherUser).toBeInstanceOf(User)
             expect(anotherUser.posts).toBeInstanceOf(Collection)
@@ -1069,12 +1200,12 @@ describe('Integration test', async () => {
             const data = [
               {
                 id: 1,
-                name: 'Test'
+                name: 'Test',
               },
               {
                 id: 2,
-                name: 'Test 2'
-              }
+                name: 'Test 2',
+              },
             ]
             const users = make(User, data)
             expect(users).toBeInstanceOf(Collection)
@@ -1093,19 +1224,19 @@ describe('Integration test', async () => {
               data: [
                 {
                   id: 1,
-                  name: 'Test'
+                  name: 'Test',
                 },
                 {
                   id: 2,
-                  name: 'Test 2'
-                }
+                  name: 'Test 2',
+                },
               ],
               current_page: 1,
               per_page: 10,
             }
 
             const users = make(User, data, {
-              paginated: true
+              paginated: true,
             })
             expect(users).toBeInstanceOf(Paginator)
             expect(users.total()).toBe(2)
@@ -1115,7 +1246,7 @@ describe('Integration test', async () => {
             expect(users.items().get(1)).toBeInstanceOf(User)
 
             const users2 = makePaginator(User, data, {
-              paginated: true
+              paginated: true,
             })
             expect(users2).toBeInstanceOf(Paginator)
             expect(users2.total()).toBe(2)
@@ -1127,7 +1258,7 @@ describe('Integration test', async () => {
 
           it('should return a Model instance', () => {
             const user = User.make({
-              id: 1
+              id: 1,
             })
             expect(user).toBeInstanceOf(User)
 
@@ -1136,13 +1267,13 @@ describe('Integration test', async () => {
               posts: [
                 {
                   id: 1,
-                  title: 'Test'
+                  title: 'Test',
                 },
                 {
                   id: 2,
-                  title: 'Test 2'
-                }
-              ]
+                  title: 'Test 2',
+                },
+              ],
             })
             expect(anotherUser).toBeInstanceOf(User)
             expect(anotherUser.posts).toBeInstanceOf(Collection)
@@ -1153,7 +1284,7 @@ describe('Integration test', async () => {
 
         describe('first', () => {
           it('should create a new model instance', async () => {
-            const user = await User.query().first() as User
+            const user = (await User.query().first()) as User
 
             expect(user.getTable()).toBe('users')
             expect(user).toBeInstanceOf(User)
@@ -1165,7 +1296,7 @@ describe('Integration test', async () => {
           // let model
 
           beforeEach(() => {
-            new User
+            new User()
             // model = new User
           })
 
@@ -1181,23 +1312,43 @@ describe('Integration test', async () => {
 
           it('allows passing an object to query', () => {
             const query = User.query()
-            expect(remove(query.query._statements, (e: any) => e.grouping !== 'where').length).toBe(0)
+            expect(
+              remove(
+                query.query._statements,
+                (e: any) => e.grouping !== 'where',
+              ).length,
+            ).toBe(0)
 
             const q = query.where('id', 1).orWhere('id', '>', 10)
             expect(q).toStrictEqual(query)
-            expect(remove(query.query._statements, (e: any) => e.grouping !== 'where').length).toBe(2)
+            expect(
+              remove(
+                query.query._statements,
+                (e: any) => e.grouping !== 'where',
+              ).length,
+            ).toBe(2)
           })
 
           it('allows passing a function to query', () => {
             const query = User.query()
-            expect(remove(query.query._statements, (e: any) => e.grouping !== 'where').length).toBe(0)
+            expect(
+              remove(
+                query.query._statements,
+                (e: any) => e.grouping !== 'where',
+              ).length,
+            ).toBe(0)
 
             const q = query.where((q) => {
               q.where('id', 1).orWhere('id', '>', '10')
             })
 
             expect(q).toEqual(query)
-            expect(remove(query.query._statements, (e: any) => e.grouping !== 'where').length).toBe(1)
+            expect(
+              remove(
+                query.query._statements,
+                (e: any) => e.grouping !== 'where',
+              ).length,
+            ).toBe(1)
           })
         })
 
@@ -1213,37 +1364,50 @@ describe('Integration test', async () => {
           })
 
           it('allows specification of select columns in query', () => {
-            return User.query().where('id', 1).select(['id', 'first_name']).first().then((user) => {
-              expect(user!.toData()).toEqual({ id: 1, first_name: 'Tim' })
-            })
+            return User.query()
+              .where('id', 1)
+              .select(['id', 'first_name'])
+              .first()
+              .then((user) => {
+                expect(user!.toData()).toEqual({ id: 1, first_name: 'Tim' })
+              })
           })
 
           it('resolves to null if no record exists and the {require: false} option is passed', () => {
-            return User.query().where('id', 200).first().then(user => {
-              expect(user).toBeNull()
-            })
+            return User.query()
+              .where('id', 200)
+              .first()
+              .then((user) => {
+                expect(user).toBeNull()
+              })
           })
 
           it('rejects with an error if no record exists', () => {
-            return User.query().where('id', 200).firstOrFail().then(() => {
-              // expect(user).toBeNull();
-            }).catch((e: any) => {
-              expect(e).toBeInstanceOf(ModelNotFoundError)
-            })
+            return User.query()
+              .where('id', 200)
+              .firstOrFail()
+              .then(() => {
+                // expect(user).toBeNull();
+              })
+              .catch((e: any) => {
+                expect(e).toBeInstanceOf(ModelNotFoundError)
+              })
           })
 
           it('locks the table when called with the forUpdate option during a transaction', async () => {
             let userId = 0
 
-            const user = new User
+            const user = new User()
             user.first_name = 'foo'
             await user.save()
 
             userId = user.id
 
             await Promise.all([
-              connection.transaction(trx => {
-                return User.query(trx).forUpdate().find(user.id)
+              connection.transaction((trx) => {
+                return User.query(trx)
+                  .forUpdate()
+                  .find(user.id)
                   .then(() => {
                     return delay(100)
                   })
@@ -1258,7 +1422,7 @@ describe('Integration test', async () => {
                 return User.query().where('id', user.id).update({
                   first_name: 'changed',
                 })
-              })
+              }),
             ])
 
             await User.query().where('id', userId).delete()
@@ -1268,13 +1432,16 @@ describe('Integration test', async () => {
             let userId: string
             const user = new User({ first_name: 'foo' })
 
-            return user.save()
+            return user
+              .save()
               .then(() => {
                 userId = user.id
 
                 return Promise.all([
-                  connection.transaction(trx => {
-                    return User.query(trx).forShare().find(user.id)
+                  connection.transaction((trx) => {
+                    return User.query(trx)
+                      .forShare()
+                      .find(user.id)
                       .then(() => delay(100))
                       .then(() => User.query(trx).find(user.id))
                       .then((user: User) => {
@@ -1285,7 +1452,7 @@ describe('Integration test', async () => {
                     return User.query().where('id', user.id).update({
                       first_name: 'changed',
                     })
-                  })
+                  }),
                 ])
               })
               .then(() => {
@@ -1304,9 +1471,7 @@ describe('Integration test', async () => {
           })
 
           it('returns an empty collection if there are no results', async () => {
-            const users = await User.query()
-              .where('name', 'hal9000')
-              .get()
+            const users = await User.query().where('name', 'hal9000').get()
 
             expect(users).toBeInstanceOf(Collection)
             expect(users.count()).toBe(0)
@@ -1316,9 +1481,12 @@ describe('Integration test', async () => {
             let posts = await Post.query().idOf(3).get()
             expect(posts.modelKeys()).toEqual([3])
 
-            posts = await Post.query().idOf(3).orWhere((q: any) => {
-              q.idOf(4)
-            }).get()
+            posts = await Post.query()
+              .idOf(3)
+              .orWhere((q: any) => {
+                q.idOf(4)
+              })
+              .get()
             expect(posts.modelKeys()).toEqual([3, 4])
           })
         })
@@ -1335,35 +1503,49 @@ describe('Integration test', async () => {
 
             expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing'])
 
-            await Tag.query().orderBy('id', 'desc').chunk(2, (tags) => {
-              tags.map(tag => {
-                names.push(tag.name)
+            await Tag.query()
+              .orderBy('id', 'desc')
+              .chunk(2, (tags) => {
+                tags.map((tag) => {
+                  names.push(tag.name)
+                })
               })
-            })
 
-            expect(names).toEqual(['cool', 'boring', 'exciting', 'amazing', 'amazing', 'exciting', 'boring', 'cool'])
+            expect(names).toEqual([
+              'cool',
+              'boring',
+              'exciting',
+              'amazing',
+              'amazing',
+              'exciting',
+              'boring',
+              'cool',
+            ])
           })
         })
 
         describe('#paginate()', () => {
           it('fetches a single page of results with defaults', () => {
-            return User.query().paginate()
+            return User.query()
+              .paginate()
               .then((users) => {
                 expect(users).toBeInstanceOf(Paginator)
               })
           })
 
           it('returns an empty collection if there are no results', () => {
-            return Comment.query().delete()
+            return Comment.query()
+              .delete()
               .then(() => Comment.query().paginate())
-              .then(results => {
+              .then((results) => {
                 expect(results).toBeInstanceOf(Paginator)
                 expect(results.count()).toBe(0)
               })
           })
 
           it('fetches a page of results with specified page size', () => {
-            return User.query().paginate(1, 2)
+            return User.query()
+              .paginate(1, 2)
               .then((results) => {
                 expect(results).toBeInstanceOf(Paginator)
                 expect(results.count()).toBe(2)
@@ -1373,7 +1555,9 @@ describe('Integration test', async () => {
           })
 
           it('fetches a page by page number', () => {
-            return User.query().orderBy('id', 'asc').paginate(1, 2)
+            return User.query()
+              .orderBy('id', 'asc')
+              .paginate(1, 2)
               .then((results) => {
                 expect(results.get(0)!.id).toBe(1)
                 expect(results.get(1)!.id).toBe(2)
@@ -1386,10 +1570,10 @@ describe('Integration test', async () => {
               //   user_id: 0,
               //   name: 'a new post'
               // });
-              return connection.transaction(async trx => {
+              return connection.transaction(async (trx) => {
                 await Post.query(trx).insert({
                   user_id: 0,
-                  name: 'a new post'
+                  name: 'a new post',
                 })
 
                 const posts = await Post.query(trx).paginate(1, 25)
@@ -1402,35 +1586,43 @@ describe('Integration test', async () => {
             it('counts grouped rows instead of total rows', () => {
               let total: number
 
-              return Post.query().count().then(count => {
-                total = parseInt(String(count))
+              return Post.query()
+                .count()
+                .then((count) => {
+                  total = parseInt(String(count))
 
-                return Post.query()
-                  // .max('id')
-                  .select('user_id')
-                  .groupBy('user_id')
-                  .whereNotNull('user_id')
-                  .paginate()
-              }).then(posts => {
-                expect(posts.count()).toBeLessThanOrEqual(total)
-              })
+                  return (
+                    Post.query()
+                      // .max('id')
+                      .select('user_id')
+                      .groupBy('user_id')
+                      .whereNotNull('user_id')
+                      .paginate()
+                  )
+                })
+                .then((posts) => {
+                  expect(posts.count()).toBeLessThanOrEqual(total)
+                })
             })
 
             it('counts grouped rows when using table name qualifier', () => {
               let total: number
 
-              Post.query().count()
-                .then(count => {
+              Post.query()
+                .count()
+                .then((count) => {
                   total = parseInt(String(count), 10)
 
-                  return Post.query()
-                    // .max('id')
-                    .select('user_id')
-                    .groupBy('posts.user_id')
-                    .whereNotNull('user_id')
-                    .paginate()
+                  return (
+                    Post.query()
+                      // .max('id')
+                      .select('user_id')
+                      .groupBy('posts.user_id')
+                      .whereNotNull('user_id')
+                      .paginate()
+                  )
                 })
-                .then(posts => {
+                .then((posts) => {
                   expect(posts.count()).toBeLessThanOrEqual(total)
                 })
             })
@@ -1440,12 +1632,13 @@ describe('Integration test', async () => {
             it('counts distinct occurences of a column instead of total rows', () => {
               let total: number
 
-              return Post.query().count()
-                .then(count => {
+              return Post.query()
+                .count()
+                .then((count) => {
                   total = count
                   return Post.query().distinct('user_id').get()
                 })
-                .then(distinctPostUsers => {
+                .then((distinctPostUsers) => {
                   expect(distinctPostUsers.count()).toBeLessThanOrEqual(total)
                 })
             })
@@ -1457,14 +1650,14 @@ describe('Integration test', async () => {
             const asc = User.query()
               .orderBy('id', 'asc')
               .get()
-              .then(result => {
+              .then((result) => {
                 return result.pluck('id').all()
               })
 
             const desc = User.query()
               .orderBy('id', 'desc')
               .get()
-              .then(result => {
+              .then((result) => {
                 return result.pluck('id').all()
               })
 
@@ -1495,7 +1688,7 @@ describe('Integration test', async () => {
             const count = await Post.query().count()
             expect(count).toBe(6)
 
-            const post = new Post
+            const post = new Post()
             post.user_id = 0
             post.name = 'Fourth post'
             await post.save()
@@ -1512,9 +1705,10 @@ describe('Integration test', async () => {
           })
 
           it('saves a new object with unique id', async () => {
-            const pattern = /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/
+            const pattern =
+              /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/
 
-            const user = new UuidUser
+            const user = new UuidUser()
             user.name = 'Joey'
             await user.save()
 
@@ -1524,7 +1718,6 @@ describe('Integration test', async () => {
             expect(uuser!.name).toBe('Joey')
             expect(uuser!.id).toBe(user.id)
           })
-
 
           it('saves all attributes that are currently set on the model plus the ones passed as argument', async () => {
             const post = new Post({
@@ -1543,25 +1736,28 @@ describe('Integration test', async () => {
           })
 
           it('updates an existing object', () => {
-            return (Post.query().where('id', 5).update({ name: 'Fourth Post Updated' }))
+            return Post.query()
+              .where('id', 5)
+              .update({ name: 'Fourth Post Updated' })
               .then(() => {
                 return Post.query().where('name', 'Fourth Post Updated').get()
               })
-              .then(posts => {
+              .then((posts) => {
                 expect(posts.last().id).toBe(5)
                 expect(posts.all()).toHaveLength(1)
               })
           })
 
           it('allows passing a method to save, to call insert or update explicitly', () => {
-            return Post.query().insert({
-              user_id: 0,
-              name: 'Fifth post, explicity created'
-            })
+            return Post.query()
+              .insert({
+                user_id: 0,
+                name: 'Fifth post, explicity created',
+              })
               .then(() => {
                 return Post.query().all()
               })
-              .then(posts => {
+              .then((posts) => {
                 expect(posts.count()).toBe(8)
                 expect(posts.last().id).toBe(9)
               })
@@ -1578,34 +1774,41 @@ describe('Integration test', async () => {
 
         describe('#delete()', () => {
           it('issues a delete to the builder, returning a promise', () => {
-            return Post.query().where('id', 5)
+            return Post.query()
+              .where('id', 5)
               .delete()
               .then(() => {
                 return Post.query().all()
               })
-              .then(posts => {
+              .then((posts) => {
                 expect(posts.count()).toBe(7)
               })
           })
 
           it('will not throw an error when trying to delete a non-existent object', () => {
-            return Post.query().where('id', 1024).delete().then(count => {
-              expect(count).toBe(0)
-            })
+            return Post.query()
+              .where('id', 1024)
+              .delete()
+              .then((count) => {
+                expect(count).toBe(0)
+              })
           })
         })
 
         describe('#count()', () => {
           it('counts the number of models in a collection', () => {
-            return Post.query().count()
-              .then(count => {
+            return Post.query()
+              .count()
+              .then((count) => {
                 expect(count).toBe(7)
               })
           })
 
           it('counts a filtered query', () => {
-            return Post.query().where('user_id', 1).count()
-              .then(count => {
+            return Post.query()
+              .where('user_id', 1)
+              .count()
+              .then((count) => {
                 expect(count).toBe(1)
               })
           })
@@ -1616,7 +1819,7 @@ describe('Integration test', async () => {
             let admin!: Admin
 
             beforeEach(() => {
-              admin = new Admin
+              admin = new Admin()
               admin.username = 'a_new_user'
               return admin.save()
             })
@@ -1627,64 +1830,89 @@ describe('Integration test', async () => {
 
             it('is the same between saving and fetching models', async () => {
               const newAdmin = await Admin.query().find(admin.id)
-              expect(dayjs(newAdmin.created_at)).toEqual(dayjs(admin.created_at))
-              expect(dayjs(newAdmin.updated_at)).toEqual(dayjs(admin.updated_at))
+              expect(dayjs(newAdmin.created_at)).toEqual(
+                dayjs(admin.created_at),
+              )
+              expect(dayjs(newAdmin.updated_at)).toEqual(
+                dayjs(admin.updated_at),
+              )
             })
 
             it('is the same between saving and fetching all models', () => {
               return Admin.query()
                 .where('id', admin.id)
                 .get()
-                .then(admins => {
-                  expect(dayjs(admins.get(0).created_at)).toEqual(dayjs(admin.created_at))
-                  expect(dayjs(admins.get(0).updated_at)).toEqual(dayjs(admin.updated_at))
+                .then((admins) => {
+                  expect(dayjs(admins.get(0).created_at)).toEqual(
+                    dayjs(admin.created_at),
+                  )
+                  expect(dayjs(admins.get(0).updated_at)).toEqual(
+                    dayjs(admin.updated_at),
+                  )
                 })
             })
 
             it('is the same after updating model', () => {
               admin.username = 'updated_user'
-              return admin.save()
+              return admin
+                .save()
                 .then(() => {
                   return Admin.query().find(admin.id)
                 })
-                .then(newAdmin => {
-                  expect(dayjs(newAdmin.created_at)).toEqual(dayjs(admin.created_at))
-                  expect(dayjs(newAdmin.updated_at)).toEqual(dayjs(admin.updated_at))
+                .then((newAdmin) => {
+                  expect(dayjs(newAdmin.created_at)).toEqual(
+                    dayjs(admin.created_at),
+                  )
+                  expect(dayjs(newAdmin.updated_at)).toEqual(
+                    dayjs(admin.updated_at),
+                  )
                 })
             })
           })
 
           describe('On update', () => {
             it('will set the updated_at timestamp to the user supplied value', () => {
-              const admin = new Admin
+              const admin = new Admin()
               let oldUpdatedAt: string
               const newUpdatedAt = '2022-02-02 12:13:14'
 
-              return admin.save()
+              return admin
+                .save()
                 .then(() => {
-                  oldUpdatedAt = dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss')
+                  oldUpdatedAt = dayjs(admin.updated_at).format(
+                    'YYYY-MM-DD HH:mm:ss',
+                  )
                   admin.updated_at = newUpdatedAt
                   return admin.save()
                 })
                 .then(() => {
-                  expect(dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss')).toEqual(newUpdatedAt)
-                  expect(dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss')).not.toEqual(oldUpdatedAt)
+                  expect(
+                    dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                  ).toEqual(newUpdatedAt)
+                  expect(
+                    dayjs(admin.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                  ).not.toEqual(oldUpdatedAt)
                 })
             })
 
             it('will set the created_at timestamp to the user supplied value', () => {
-              const admin = new Admin
+              const admin = new Admin()
               let oldCreatedAt: string
               const newCreatedAt = '2022-02-02 12:13:14'
 
-              return admin.save()
+              return admin
+                .save()
                 .then(() => {
-                  oldCreatedAt = dayjs(admin.created_at).format('YYYY-MM-DD HH:mm:ss')
+                  oldCreatedAt = dayjs(admin.created_at).format(
+                    'YYYY-MM-DD HH:mm:ss',
+                  )
                   admin.created_at = newCreatedAt
                   return admin.save()
                 })
                 .then(() => {
-                  const create_at = dayjs(admin.created_at).format('YYYY-MM-DD HH:mm:ss')
+                  const create_at = dayjs(admin.created_at).format(
+                    'YYYY-MM-DD HH:mm:ss',
+                  )
                   expect(create_at).toEqual(newCreatedAt)
                   expect(create_at).not.toEqual(oldCreatedAt)
                 })
@@ -1695,40 +1923,41 @@ describe('Integration test', async () => {
             let model!: User
 
             beforeEach(() => {
-              model = new User
+              model = new User()
             })
 
             it('sets created_at and updated_at when is passed as option', () => {
-              return model.save()
-                .then(() => {
-                  expect(model.create_at).not.toBeNaN()
-                  expect(model.updated_at).not.toBeNaN()
-                })
+              return model.save().then(() => {
+                expect(model.create_at).not.toBeNaN()
+                expect(model.updated_at).not.toBeNaN()
+              })
             })
 
-            it('sets created_at to the user specified value if present in the model\'s attributes', () => {
+            it("sets created_at to the user specified value if present in the model's attributes", () => {
               const date = '1999-01-01 01:01:01'
               model.created_at = date
-              return model.save()
-                .then(() => {
-                  expect(dayjs(model.created_at).format('YYYY-MM-DD HH:mm:ss')).toBe(date)
-                })
+              return model.save().then(() => {
+                expect(
+                  dayjs(model.created_at).format('YYYY-MM-DD HH:mm:ss'),
+                ).toBe(date)
+              })
             })
 
-            it('sets updated_at to the user specified value if present in the model\'s attributes', () => {
+            it("sets updated_at to the user specified value if present in the model's attributes", () => {
               const date = '1999-01-01 01:01:01'
               model.updated_at = date
-              return model.save()
-                .then(() => {
-                  expect(dayjs(model.updated_at).format('YYYY-MM-DD HH:mm:ss')).toBe(date)
-                })
+              return model.save().then(() => {
+                expect(
+                  dayjs(model.updated_at).format('YYYY-MM-DD HH:mm:ss'),
+                ).toBe(date)
+              })
             })
           })
         })
 
         describe('exists', () => {
           it('uses the id to determine if the model exists', async () => {
-            const user = new User
+            const user = new User()
             expect(user.exists).toBeFalsy()
 
             user.name = 'new_user'
@@ -1754,13 +1983,13 @@ describe('Integration test', async () => {
           })
 
           it('returns true if no arguments are provided and an attribute of the model has changed', async () => {
-            const user = await User.query().first() as User
+            const user = (await User.query().first()) as User
             user.name = 'changed name'
             expect(user.isDirty()).toBe(true)
           })
 
-          it('returns false if no arguments are provided and the model hasn\'t changed', async () => {
-            const user = await User.query().first() as User
+          it("returns false if no arguments are provided and the model hasn't changed", async () => {
+            const user = (await User.query().first()) as User
             expect(user.isDirty()).toBe(false)
           })
 
@@ -1776,7 +2005,7 @@ describe('Integration test', async () => {
             if (originalName) {
               await Post.query().insert({
                 user_id: 0,
-                name: originalName
+                name: originalName,
               })
             }
           })
@@ -1788,10 +2017,14 @@ describe('Integration test', async () => {
             const count = await SoftDeletePost.query().count()
             expect(count).toBe(2)
 
-            const withTrashedCount = await SoftDeletePost.query().withTrashed().count()
+            const withTrashedCount = await SoftDeletePost.query()
+              .withTrashed()
+              .count()
             expect(withTrashedCount).toBe(4)
 
-            const onlyTrashedCount = await SoftDeletePost.query().onlyTrashed().count()
+            const onlyTrashedCount = await SoftDeletePost.query()
+              .onlyTrashed()
+              .count()
             expect(onlyTrashedCount).toBe(2)
           })
 
@@ -1814,11 +2047,17 @@ describe('Integration test', async () => {
           })
 
           it('#restore', async () => {
-            await SoftDeletePost.query().withTrashed().whereIn('id', [1, 2]).restore()
+            await SoftDeletePost.query()
+              .withTrashed()
+              .whereIn('id', [1, 2])
+              .restore()
             let count = await SoftDeletePost.query().count()
             expect(count).toBe(2)
 
-            const post = await SoftDeletePost.query().withTrashed().where('id', 3).first()
+            const post = await SoftDeletePost.query()
+              .withTrashed()
+              .where('id', 3)
+              .first()
             await post!.restore()
             expect(post!.trashed()).toBe(false)
 
@@ -1831,7 +2070,9 @@ describe('Integration test', async () => {
             let count = await SoftDeletePost.query().count()
             expect(count).toBe(2)
 
-            const post = await SoftDeletePost.query().withTrashed().first() as User
+            const post = (await SoftDeletePost.query()
+              .withTrashed()
+              .first()) as User
             await post.forceDelete()
 
             count = await SoftDeletePost.query().withTrashed().count()
@@ -1849,10 +2090,9 @@ describe('Integration test', async () => {
               a: 'foo',
               b: 'bar',
             })
-            expect(post.text_to_collection).toEqual(collect([
-              { name: 'foo1' },
-              { name: 'bar2' }
-            ]))
+            expect(post.text_to_collection).toEqual(
+              collect([{ name: 'foo1' }, { name: 'bar2' }]),
+            )
             expect(post.custom_cast).toEqual({
               a: 'foo',
               b: 'bar',
@@ -1865,9 +2105,11 @@ describe('Integration test', async () => {
             expect(post.attributes.text_to_json).toBe('{"a":"bar","b":"foo"}')
             post.text_to_collection = collect([
               { name: 'bar1' },
-              { name: 'foo2' }
+              { name: 'foo2' },
             ])
-            expect(post.attributes.text_to_collection).toBe('[{"name":"bar1"},{"name":"foo2"}]')
+            expect(post.attributes.text_to_collection).toBe(
+              '[{"name":"bar1"},{"name":"foo2"}]',
+            )
             post.custom_cast = { a: 'bar', b: 'foo' }
             expect(post.attributes.custom_cast).toBe('{"a":"bar","b":"foo"}')
           })
@@ -1879,9 +2121,12 @@ describe('Integration test', async () => {
             let posts = await Post.query().idOf(3).get()
             expect(posts.modelKeys()).toEqual([3])
 
-            posts = await Post.query().idOf(3).orWhere((q: any) => {
-              q.idOf(4)
-            }).get()
+            posts = await Post.query()
+              .idOf(3)
+              .orWhere((q: any) => {
+                q.idOf(4)
+              })
+              .get()
             expect(posts.modelKeys()).toEqual([3, 4])
 
             const post = await Post.query().with('default_author').find(4)
@@ -1894,8 +2139,8 @@ describe('Integration test', async () => {
               name: 'This is a new Title 4!',
               content: 'Lorem ipsum Anim sed eu sint aute.',
               default_author: {
-                name: 'Default Author'
-              }
+                name: 'Default Author',
+              },
             })
             expect(post.slug).toBe('this-is-a-new-title-4')
           })
@@ -1912,7 +2157,7 @@ describe('Integration test', async () => {
           })
 
           it('handles hasMany (posts)', async () => {
-            const user = await User.query().find(1) as User
+            const user = (await User.query().find(1)) as User
             const posts = await user.related('posts').get()
 
             expect(posts).toBeInstanceOf(Collection)
@@ -1929,9 +2174,11 @@ describe('Integration test', async () => {
             count = await User.query().has('posts', '>', 1).count()
             expect(count).toBe(1)
 
-            count = await User.query().whereHas('posts', (q) => {
-              return q.where('name', '=', 'This is a new Title 3!')
-            }).count()
+            count = await User.query()
+              .whereHas('posts', (q) => {
+                return q.where('name', '=', 'This is a new Title 3!')
+              })
+              .count()
             expect(count).toBe(1)
 
             // count = await User.query().whereExists((q) => {
@@ -1942,54 +2189,93 @@ describe('Integration test', async () => {
           })
 
           it('handles whereRelation', async () => {
-            let count = await User.query().whereRelation('posts', 'name', '=', 'This is a new Title 3!').count()
+            let count = await User.query()
+              .whereRelation('posts', 'name', '=', 'This is a new Title 3!')
+              .count()
             expect(count).toBe(1)
 
-            count = await User.query().whereRelation('posts', 'name', '=', 'This is a new Title 6!').count()
+            count = await User.query()
+              .whereRelation('posts', 'name', '=', 'This is a new Title 6!')
+              .count()
             expect(count).toBe(0)
           })
         })
 
         describe('Eager Loading', () => {
           it('eager loads "hasOne" relationships correctly', async () => {
-            return Post.query().with('thumbnail').find(1)
-              .then(post => {
+            return Post.query()
+              .with('thumbnail')
+              .find(1)
+              .then((post) => {
                 const xpost = omit(post.toData(), ['updated_at', 'created_at'])
-                expect(xpost).toEqual({ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'thumbnail': null, 'user_id': 1 })
+                expect(xpost).toEqual({
+                  content:
+                    'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                  id: 1,
+                  name: 'changed name',
+                  thumbnail: null,
+                  user_id: 1,
+                })
               })
           })
 
           it('does not load "hasOne" relationship when it doesn\'t exist', () => {
-            return Post.query().with('thumbnail').find(3)
-              .then(post => {
+            return Post.query()
+              .with('thumbnail')
+              .find(3)
+              .then((post) => {
                 expect(post.toData().thumbnail).toBeNull()
               })
           })
 
           it('eager loads "hasMany" relationships correctly', () => {
-            return User.query().with('posts').find(1)
-              .then(user => {
+            return User.query()
+              .with('posts')
+              .find(1)
+              .then((user) => {
                 const xuser = omit(user.toData(), ['updated_at', 'created_at'])
                 xuser.posts = xuser.posts.map((post: Post) => {
                   return omit(post, ['updated_at', 'created_at'])
                 })
-                expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1 }] })
+                expect(xuser).toEqual({
+                  first_name: 'Tim',
+                  id: 1,
+                  name: 'Shuri',
+                  posts: [
+                    {
+                      content:
+                        'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                      id: 1,
+                      name: 'changed name',
+                      user_id: 1,
+                    },
+                  ],
+                })
               })
           })
 
           it('eager loads "belongsTo" relationships correctly', () => {
-            return Post.query().with('author').find(1)
-              .then(post => {
-                const author = omit(post.toData().author, ['updated_at', 'created_at'])
+            return Post.query()
+              .with('author')
+              .find(1)
+              .then((post) => {
+                const author = omit(post.toData().author, [
+                  'updated_at',
+                  'created_at',
+                ])
                 expect(author).toEqual({
-                  'first_name': 'Tim', 'id': 1, 'name': 'Shuri',
+                  first_name: 'Tim',
+                  id: 1,
+                  name: 'Shuri',
                 })
               })
           })
 
           it('does not load "belongsTo" relationship when foreignKey is null', () => {
-            return Post.query().with('author').find(4)
-              .then(post => {
+            return Post.query()
+              .with('author')
+              .find(4)
+              .then((post) => {
                 expect(post.toData().author).toBeNull()
               })
           })
@@ -2005,8 +2291,8 @@ describe('Integration test', async () => {
               name: 'This is a new Title 4!',
               content: 'Lorem ipsum Anim sed eu sint aute.',
               default_author: {
-                name: 'Default Author'
-              }
+                name: 'Default Author',
+              },
             })
 
             post = await Post.query().with('default_post_author').find(4)
@@ -2019,14 +2305,16 @@ describe('Integration test', async () => {
               name: 'This is a new Title 4!',
               content: 'Lorem ipsum Anim sed eu sint aute.',
               default_post_author: {
-                name: 'This is a new Title 4! - Default Author'
-              }
+                name: 'This is a new Title 4! - Default Author',
+              },
             })
           })
 
           it('eager loads "belongsToMany" models correctly', () => {
-            return Post.query().with('tags').find(1)
-              .then(post => {
+            return Post.query()
+              .with('tags')
+              .find(1)
+              .then((post) => {
                 const xpost = omit(post.toData(), ['updated_at', 'created_at'])
                 xpost.tags = xpost.tags.map((tag: Tag) => {
                   tag = omit(tag, ['updated_at', 'created_at']) as Tag
@@ -2034,44 +2322,78 @@ describe('Integration test', async () => {
                 })
 
                 expect(xpost).toEqual({
-                  'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
-                  'id': 1, 'name': 'changed name', 'tags': [{ 'id': 1, 'name': 'cool', 'pivot': { 'post_id': 1, 'tag_id': 1 } }, { 'id': 2, 'name': 'boring', 'pivot': { 'post_id': 1, 'tag_id': 2 } }, { 'id': 3, 'name': 'exciting', 'pivot': { 'post_id': 1, 'tag_id': 3 } }], 'user_id': 1
+                  content:
+                    'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                  id: 1,
+                  name: 'changed name',
+                  tags: [
+                    { id: 1, name: 'cool', pivot: { post_id: 1, tag_id: 1 } },
+                    { id: 2, name: 'boring', pivot: { post_id: 1, tag_id: 2 } },
+                    {
+                      id: 3,
+                      name: 'exciting',
+                      pivot: { post_id: 1, tag_id: 3 },
+                    },
+                  ],
+                  user_id: 1,
                 })
               })
           })
 
           it('maintains eager loaded column specifications', () => {
-            return Post.query().with({
-              author: (q: any) => q.select('id', 'name'),
-            }).find(1)
-              .then(post => {
+            return Post.query()
+              .with({
+                author: (q: any) => q.select('id', 'name'),
+              })
+              .find(1)
+              .then((post) => {
                 const xpost = omit(post.toData(), ['updated_at', 'created_at'])
                 expect(xpost).toEqual({
-                  'author': { 'id': 1, 'name': 'Shuri' }, 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1
+                  author: { id: 1, name: 'Shuri' },
+                  content:
+                    'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                  id: 1,
+                  name: 'changed name',
+                  user_id: 1,
                 })
               })
           })
 
           it('maintains eager loaded column specifications by string', () => {
-            return Post.query().with('author:id,name').find(1)
-              .then(post => {
+            return Post.query()
+              .with('author:id,name')
+              .find(1)
+              .then((post) => {
                 const xpost = omit(post.toData(), ['updated_at', 'created_at'])
-                expect(xpost).toEqual({ 'author': { 'id': 1, 'name': 'Shuri' }, 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'user_id': 1 })
+                expect(xpost).toEqual({
+                  author: { id: 1, name: 'Shuri' },
+                  content:
+                    'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                  id: 1,
+                  name: 'changed name',
+                  user_id: 1,
+                })
               })
           })
 
           it('throws an error on undefined first withRelated relations', async () => {
-            await expect(Post.query().with('undefinedRelation').find(1)).rejects.toThrow()
+            await expect(
+              Post.query().with('undefinedRelation').find(1),
+            ).rejects.toThrow()
           })
 
           it('throws an error on undefined non-first withRelated relations', async () => {
-            await expect(Post.query().with(['author', 'undefinedRelation']).find(1)).rejects.toThrow()
+            await expect(
+              Post.query().with(['author', 'undefinedRelation']).find(1),
+            ).rejects.toThrow()
           })
         })
 
         describe('Nested Eager Loading', () => {
           it('eager loads "hasMany" -> "belongsToMany"', () => {
-            return User.query().with('posts.tags').first()
+            return User.query()
+              .with('posts.tags')
+              .first()
               .then((user) => {
                 const xuser = omit(user!.toData(), ['updated_at', 'created_at'])
                 xuser.posts = xuser.posts.map((post: Post) => {
@@ -2082,15 +2404,50 @@ describe('Integration test', async () => {
                   return post
                 })
 
-                expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'tags': [{ 'id': 1, 'name': 'cool', 'pivot': { 'post_id': 1, 'tag_id': 1 } }, { 'id': 2, 'name': 'boring', 'pivot': { 'post_id': 1, 'tag_id': 2 } }, { 'id': 3, 'name': 'exciting', 'pivot': { 'post_id': 1, 'tag_id': 3 } }], 'user_id': 1 }] })
+                expect(xuser).toEqual({
+                  first_name: 'Tim',
+                  id: 1,
+                  name: 'Shuri',
+                  posts: [
+                    {
+                      content:
+                        'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                      id: 1,
+                      name: 'changed name',
+                      tags: [
+                        {
+                          id: 1,
+                          name: 'cool',
+                          pivot: { post_id: 1, tag_id: 1 },
+                        },
+                        {
+                          id: 2,
+                          name: 'boring',
+                          pivot: { post_id: 1, tag_id: 2 },
+                        },
+                        {
+                          id: 3,
+                          name: 'exciting',
+                          pivot: { post_id: 1, tag_id: 3 },
+                        },
+                      ],
+                      user_id: 1,
+                    },
+                  ],
+                })
               })
           })
 
           it('does multi deep eager loads', () => {
-            return User.query().with({
-              'posts.tags': (q: any) => q.orderBy('tags.id', 'desc'),
-            }, 'posts.thumbnail').first()
-              .then(user => {
+            return User.query()
+              .with(
+                {
+                  'posts.tags': (q: any) => q.orderBy('tags.id', 'desc'),
+                },
+                'posts.thumbnail',
+              )
+              .first()
+              .then((user) => {
                 const xuser = omit(user!.toData(), ['updated_at', 'created_at'])
                 xuser.posts = xuser.posts.map((post: Post) => {
                   post = omit(post, ['updated_at', 'created_at']) as Post
@@ -2099,7 +2456,38 @@ describe('Integration test', async () => {
                   })
                   return post
                 })
-                expect(xuser).toEqual({ 'first_name': 'Tim', 'id': 1, 'name': 'Shuri', 'posts': [{ 'content': 'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.', 'id': 1, 'name': 'changed name', 'tags': [{ 'id': 3, 'name': 'exciting', 'pivot': { 'post_id': 1, 'tag_id': 3 } }, { 'id': 2, 'name': 'boring', 'pivot': { 'post_id': 1, 'tag_id': 2 } }, { 'id': 1, 'name': 'cool', 'pivot': { 'post_id': 1, 'tag_id': 1 } }], 'thumbnail': null, 'user_id': 1 }] })
+                expect(xuser).toEqual({
+                  first_name: 'Tim',
+                  id: 1,
+                  name: 'Shuri',
+                  posts: [
+                    {
+                      content:
+                        'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
+                      id: 1,
+                      name: 'changed name',
+                      tags: [
+                        {
+                          id: 3,
+                          name: 'exciting',
+                          pivot: { post_id: 1, tag_id: 3 },
+                        },
+                        {
+                          id: 2,
+                          name: 'boring',
+                          pivot: { post_id: 1, tag_id: 2 },
+                        },
+                        {
+                          id: 1,
+                          name: 'cool',
+                          pivot: { post_id: 1, tag_id: 1 },
+                        },
+                      ],
+                      thumbnail: null,
+                      user_id: 1,
+                    },
+                  ],
+                })
               })
           })
         })
@@ -2119,13 +2507,13 @@ describe('Integration test', async () => {
 
           it('eager loads attributes on a collection', async () => {
             const posts = await Post.query().get()
-            posts.map(post => {
+            posts.map((post) => {
               expect(post.author).toBeUndefined()
               expect(post.tags).toBeUndefined()
             })
 
             await posts.load(['author', 'tags'])
-            posts.map(post => {
+            posts.map((post) => {
               expect(post.author).not.toBeUndefined()
               expect(post.tags).not.toBeUndefined()
             })
@@ -2157,7 +2545,7 @@ describe('Integration test', async () => {
 
         class HookPost extends compose(Base, SoftDeletes) {
           table = 'posts'
-          static boot () {
+          static boot() {
             super.boot()
             this.creating(() => {
               hits.creating++
@@ -2212,7 +2600,6 @@ describe('Integration test', async () => {
             forceDeleted: 0,
           })
         })
-
 
         it('hit creating, created, saving, saved hooks if use create() create post', async () => {
           await HookPost.query().create({
@@ -2294,7 +2681,10 @@ describe('Integration test', async () => {
         it('should return data in a custom format', async () => {
           Paginator.setFormatter((paginator) => {
             return {
-              data: paginator!.items().map(item => item.id).all(),
+              data: paginator!
+                .items()
+                .map((item) => item.id)
+                .all(),
               meta: {
                 total: paginator!.total(),
                 perPage: paginator!.perPage(),
@@ -2302,7 +2692,7 @@ describe('Integration test', async () => {
                 lastPage: paginator!.lastPage(),
                 from: paginator!.firstItem(),
                 to: paginator!.lastItem(),
-              }
+              },
             }
           })
           const posts = await Tag.query().paginate(1, 3)
@@ -2315,7 +2705,7 @@ describe('Integration test', async () => {
               lastPage: 2,
               from: 1,
               to: 3,
-            }
+            },
           })
           Paginator.setFormatter(null)
         })

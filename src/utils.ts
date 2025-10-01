@@ -47,26 +47,32 @@ export const getAttrName = (attrMethod: string) => {
 
 /**
  * Tap into a model a collection instance
- * 
- * @param instance 
- * @param callback 
- * @returns 
+ *
+ * @param instance
+ * @param callback
+ * @returns
  */
-export const tap = <I> (instance: I, callback: (ins: I) => Promise<I> | I): Promise<I> | I => {
+export const tap = <I>(
+  instance: I,
+  callback: (ins: I) => Promise<I> | I,
+): Promise<I> | I => {
   const result = callback(instance)
   return result instanceof Promise ? result.then(() => instance) : instance
 }
 
 export const { compose } = comp
 
-export const flatten = <A = any> (arr: A[]) => arr.flat()
+export const flatten = <A = any>(arr: A[]) => arr.flat()
 
-export const flattenDeep = (arr: any) => Array.isArray(arr)
-  ? arr.reduce((a, b) => a.concat(flattenDeep(b)), [])
-  : [arr]
+export const flattenDeep = (arr: any) =>
+  Array.isArray(arr)
+    ? arr.reduce((a, b) => a.concat(flattenDeep(b)), [])
+    : [arr]
 
-export const kebabCase = (str: string) => trim(dash(str.replace(/[^a-zA-Z0-9_-]/g, '-')), '_-')
-export const snakeCase = (str: string) => trim(snake(str.replace(/[^a-zA-Z0-9_-]/g, '-')), '_-')
+export const kebabCase = (str: string) =>
+  trim(dash(str.replace(/[^a-zA-Z0-9_-]/g, '-')), '_-')
+export const snakeCase = (str: string) =>
+  trim(snake(str.replace(/[^a-zA-Z0-9_-]/g, '-')), '_-')
 
 export const defineConfig = (config: TConfig): XGeneric<TConfig> => {
   return config
@@ -84,5 +90,5 @@ export default {
   defineConfig,
   getAttrName,
   compose,
-  tap
+  tap,
 }
