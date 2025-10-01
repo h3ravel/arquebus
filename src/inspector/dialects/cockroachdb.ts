@@ -190,7 +190,7 @@ export default class CockroachDB implements SchemaInspector {
   columnInfo (): Promise<Column[]>;
   columnInfo (table: string): Promise<Column[]>;
   columnInfo (table: string, column: string): Promise<Column>;
-  async columnInfo<T> (table?: string, column?: string) {
+  async columnInfo (table?: string, column?: string) {
     const { knex } = this
 
     const bindings: any[] = []

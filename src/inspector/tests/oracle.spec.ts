@@ -1,11 +1,12 @@
-import knex, { Knex } from 'knex';
-import { expect } from 'chai';
-import schemaInspector from '../lib';
-import { SchemaInspector } from '../lib/types/schema-inspector';
+import type { Knex } from 'knex'
+import knex from 'knex'
+import { expect } from 'chai'
+import schemaInspector from '../lib'
+import type { SchemaInspector } from '../lib/types/schema-inspector'
 
 describe('oracledb', () => {
-  let database: Knex;
-  let inspector: SchemaInspector;
+  let database: Knex
+  let inspector: SchemaInspector
 
   before(() => {
     database = knex({
@@ -18,13 +19,13 @@ describe('oracledb', () => {
         database: 'xe',
         charset: 'utf8',
       },
-    });
-    inspector = schemaInspector(database);
-  });
+    })
+    inspector = schemaInspector(database)
+  })
 
   after(async () => {
-    await database.destroy();
-  });
+    await database.destroy()
+  })
 
   describe('.tables', () => {
     it('returns tables', async () => {
@@ -33,9 +34,9 @@ describe('oracledb', () => {
         'TEAMS',
         'USERS',
         'PAGE_VISITS',
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.tableInfo', () => {
     it('returns information for all tables', async () => {
@@ -44,22 +45,22 @@ describe('oracledb', () => {
         { name: 'USERS' },
         { name: 'PAGE_VISITS' },
         { name: 'DETAILED_PAGE_VISITS' },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for specific table', async () => {
       expect(await inspector.tableInfo('TEAMS'.toUpperCase())).to.deep.equal({
         name: 'TEAMS',
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('.hasTable', () => {
     it('returns if table exists or not', async () => {
-      expect(await inspector.hasTable('TEAMS')).to.equal(true);
-      expect(await inspector.hasTable('FOOBAR')).to.equal(false);
-    });
-  });
+      expect(await inspector.hasTable('TEAMS')).to.equal(true)
+      expect(await inspector.hasTable('FOOBAR')).to.equal(false)
+    })
+  })
 
   describe('.columns', () => {
     it('returns information for all tables', async () => {
@@ -83,8 +84,8 @@ describe('oracledb', () => {
         { table: 'TEAMS', column: 'CREDITS' },
         { table: 'USERS', column: 'ID' },
         { table: 'USERS', column: 'TEAM_ID' },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for specific table', async () => {
       expect(await inspector.columns('TEAMS')).to.have.deep.members([
@@ -96,9 +97,9 @@ describe('oracledb', () => {
         { column: 'CREDITS', table: 'TEAMS' },
         { column: 'CREATED_AT', table: 'TEAMS' },
         { column: 'ACTIVATED_AT', table: 'TEAMS' },
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.columnInfo', () => {
     it('returns information for all columns in all tables', async () => {
@@ -445,8 +446,8 @@ describe('oracledb', () => {
           foreign_key_table: null,
           comment: null,
         },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for all columns in specific table', async () => {
       expect(await inspector.columnInfo('TEAMS')).to.have.deep.members([
@@ -594,8 +595,8 @@ describe('oracledb', () => {
           foreign_key_table: null,
           comment: null,
         },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for a specific column in a specific table', async () => {
       expect(await inspector.columnInfo('TEAMS', 'UUID')).to.deep.equal({
@@ -615,29 +616,29 @@ describe('oracledb', () => {
         foreign_key_column: null,
         foreign_key_table: null,
         comment: null,
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('.hasColumn', () => {
     it('returns has column', async () => {
-      expect(await inspector.hasColumn('TEAMS', 'ID')).to.equal(true);
+      expect(await inspector.hasColumn('TEAMS', 'ID')).to.equal(true)
       expect(await inspector.hasColumn('PAGE_VISITS', 'INVALID')).to.equal(
         false
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('.primary', () => {
     it('returns primary key for a table', async () => {
-      expect(await inspector.primary('TEAMS')).to.equal('ID');
-      expect(await inspector.primary('PAGE_VISITS')).to.equal(null);
+      expect(await inspector.primary('TEAMS')).to.equal('ID')
+      expect(await inspector.primary('PAGE_VISITS')).to.equal(null)
       expect(await inspector.primary('DETAILED_PAGE_VISITS')).to.deep.equal([
         'DOMAIN',
         'REQUEST_PATH',
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.foreignKeys', () => {
     it('returns foreign keys for all tables', async () => {
@@ -651,11 +652,11 @@ describe('oracledb', () => {
           on_delete: 'CASCADE',
           on_update: null,
         },
-      ]);
-    });
+      ])
+    })
 
     it('filters based on table param', async () => {
-      expect(await inspector.foreignKeys('teams')).to.deep.equal([]);
-    });
-  });
-});
+      expect(await inspector.foreignKeys('teams')).to.deep.equal([])
+    })
+  })
+})

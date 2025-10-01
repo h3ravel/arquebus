@@ -215,7 +215,7 @@ export default class MSSQL implements SchemaInspector {
   columnInfo (): Promise<Column[]>;
   columnInfo (table: string): Promise<Column[]>;
   columnInfo (table: string, column: string): Promise<Column>;
-  async columnInfo<T> (table?: string, column?: string) {
+  async columnInfo (table?: string, column?: string) {
     const dbName = this.knex.client.database()
 
     const query = this.knex
