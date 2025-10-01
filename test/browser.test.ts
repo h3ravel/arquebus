@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, test } from "vitest";
+import { beforeEach, describe, expect, it, test } from 'vitest';
 import browser, {
   Attribute,
   Collection,
@@ -6,28 +6,26 @@ import browser, {
   Paginator,
   make,
   makeCollection,
-} from "src/browser";
+} from 'src/browser';
 
-import { compose } from "src/utils";
+import { compose } from 'src/utils';
 
-describe("browser environment test", () => {
-  test("should load the browser version of the module", async () => {
-    // Test automatically loads the browser version
-    const module = await import("@h3ravel/arquebus/browser");
+describe('browser environment test', () => {
+  test('should load the browser version of the module', async () => {
+    const module = await import('@h3ravel/arquebus/browser');
     expect(module.isBrowser).toBe(true);
   });
 
-  test("should load the node version of the module", async () => {
-    // Test that it is the browser version of the module
-    const module = (await import("@h3ravel/arquebus")) as any;
+  test('should load the node version of the module', async () => {
+    const module = (await import('@h3ravel/arquebus')) as any;
     expect(module.isBrowser).toBe(undefined);
   });
 });
 
-describe("Model", () => {
+describe('Model', () => {
   const SomePlugin = (Model: any): any => {
     return class extends Model {
-      pluginAttribtue: string = "plugin";
+      pluginAttribtue: string = 'plugin';
       pluginMethod(): string {
         return this.pluginAttribtue;
       }
@@ -46,42 +44,42 @@ describe("Model", () => {
     }
 
     relationTags(): any {
-      return this.belongsToMany(Tag as any, "post_tag");
+      return this.belongsToMany(Tag as any, 'post_tag');
     }
 
     relationThumbnail(): any {
-      return this.belongsTo(Thumbnail as any, "thumbnail_id");
+      return this.belongsTo(Thumbnail as any, 'thumbnail_id');
     }
   }
 
   class Tag extends Model {
     relationPosts(): any {
-      return this.belongsToMany(Post, "post_tag");
+      return this.belongsToMany(Post, 'post_tag');
     }
   }
 
   class Thumbnail extends Model {}
 
-  it("return the table name of the plural model name", () => {
+  it('return the table name of the plural model name', () => {
     const user: User = new User();
-    expect(user.getTable()).toBe("users");
+    expect(user.getTable()).toBe('users');
   });
 
-  describe("#compose", () => {
-    it("should return a Model instance", () => {
+  describe('#compose', () => {
+    it('should return a Model instance', () => {
       const user: User = new User();
       expect(user).toBeInstanceOf(Model);
     });
 
     it("has mixin's attributes and methods", () => {
       const user: any = new User();
-      expect(user.pluginAttribtue).toBe("plugin");
-      expect(user.pluginMethod()).toBe("plugin");
+      expect(user.pluginAttribtue).toBe('plugin');
+      expect(user.pluginMethod()).toBe('plugin');
     });
   });
 
-  describe("#make", () => {
-    it("should return a Model instance", () => {
+  describe('#make', () => {
+    it('should return a Model instance', () => {
       const user = make(User as any, {
         id: 1,
       }) as InstanceType<typeof User>;
@@ -92,53 +90,53 @@ describe("Model", () => {
         posts: [
           {
             id: 1,
-            title: "Test",
+            title: 'Test',
           },
           {
             id: 2,
-            title: "Test 2",
+            title: 'Test 2',
           },
         ],
       }) as InstanceType<typeof User>;
       expect(anotherUser).toBeInstanceOf(User);
       expect(anotherUser.posts).toBeInstanceOf(Collection);
       expect(anotherUser.posts.count()).toBe(2);
-      expect(anotherUser.posts.get(1).title).toBe("Test 2");
+      expect(anotherUser.posts.get(1).title).toBe('Test 2');
     });
 
-    it("should return a Collection instance", () => {
+    it('should return a Collection instance', () => {
       const data: Array<Record<string, unknown>> = [
         {
           id: 1,
-          name: "Test",
+          name: 'Test',
         },
         {
           id: 2,
-          name: "Test 2",
+          name: 'Test 2',
         },
       ];
       const users = make(User as any, data) as Collection<any>;
       expect(users).toBeInstanceOf(Collection);
       expect(users.count()).toBe(2);
-      expect(users.get(1).name).toBe("Test 2");
+      expect(users.get(1).name).toBe('Test 2');
 
       const users2 = makeCollection(User as any, data) as Collection<any>;
       expect(users2).toBeInstanceOf(Collection);
       expect(users2.count()).toBe(2);
-      expect(users2.get(1).name).toBe("Test 2");
+      expect(users2.get(1).name).toBe('Test 2');
     });
 
-    it("should return a Paginator instance", () => {
+    it('should return a Paginator instance', () => {
       const data = {
         total: 2,
         data: [
           {
             id: 1,
-            name: "Test",
+            name: 'Test',
           },
           {
             id: 2,
-            name: "Test 2",
+            name: 'Test 2',
           },
         ],
         current_page: 1,
@@ -164,7 +162,7 @@ describe("Model", () => {
       expect(users2.items().get(1)).toBeInstanceOf(User);
     });
 
-    it("should return a Model instance", () => {
+    it('should return a Model instance', () => {
       const user = User.make({
         id: 1,
       });
@@ -175,30 +173,30 @@ describe("Model", () => {
         posts: [
           {
             id: 1,
-            title: "Test",
+            title: 'Test',
           },
           {
             id: 2,
-            title: "Test 2",
+            title: 'Test 2',
           },
         ],
       });
       expect(anotherUser).toBeInstanceOf(User);
       expect(anotherUser.posts).toBeInstanceOf(Collection);
       expect(anotherUser.posts.count()).toBe(2);
-      expect(anotherUser.posts.get(1).title).toBe("Test 2");
+      expect(anotherUser.posts.get(1).title).toBe('Test 2');
     });
   });
 
-  describe("#toData & #toJson", () => {
+  describe('#toData & #toJson', () => {
     class User extends Model {
       attributeFullName() {
         return Attribute.make({
           get: (value, attributes) =>
             `${attributes.firstName} ${attributes.lastName}`,
           set: (value, _attributes) => ({
-            firstName: value.split(" ")[0],
-            lastName: value.split(" ")[1],
+            firstName: value.split(' ')[0],
+            lastName: value.split(' ')[1],
           }),
         });
       }
@@ -208,7 +206,7 @@ describe("Model", () => {
       }
 
       set another_full_name(value) {
-        const names = value.split(" ");
+        const names = value.split(' ');
         this.attributes.firstName = names[0];
         this.attributes.lastName = names[1];
       }
@@ -219,202 +217,199 @@ describe("Model", () => {
     beforeEach(() => {
       testModel = new User({
         id: 1,
-        firstName: "Joe",
-        lastName: "Shmoe",
-        address: "123 Main St.",
+        firstName: 'Joe',
+        lastName: 'Shmoe',
+        address: '123 Main St.',
       });
     });
 
-    it("includes the relations loaded on the model", () => {
+    it('includes the relations loaded on the model', () => {
       testModel.setRelation(
-        "posts",
+        'posts',
         new Collection([new Post({ id: 1 }), new Post({ id: 2 })])
       );
 
       const data = testModel.toData();
 
       expect(Object.keys(data)).toEqual([
-        "id",
-        "firstName",
-        "lastName",
-        "address",
-        "posts",
+        'id',
+        'firstName',
+        'lastName',
+        'address',
+        'posts',
       ]);
       expect(data.posts.length).toBe(2);
     });
 
-    it("serializes correctly", () => {
-      testModel.setVisible(["firstName"]);
+    it('serializes correctly', () => {
+      testModel.setVisible(['firstName']);
       expect(testModel.toJson()).toBe('{"firstName":"Joe"}');
       expect(testModel.toString()).toBe('{"firstName":"Joe"}');
     });
 
-    describe("#visible & #hidden", () => {
+    describe('#visible & #hidden', () => {
       it("only shows the fields specified in the model's 'visible' property", () => {
-        testModel.visible = ["firstName"];
-        expect(testModel.toData()).toEqual({ firstName: "Joe" });
+        testModel.visible = ['firstName'];
+        expect(testModel.toData()).toEqual({ firstName: 'Joe' });
       });
 
       it("hides the fields specified in the model's 'hidden' property", () => {
-        expect(testModel.setHidden(["firstName"]).toData()).toEqual({
+        expect(testModel.setHidden(['firstName']).toData()).toEqual({
           id: 1,
-          lastName: "Shmoe",
-          address: "123 Main St.",
+          lastName: 'Shmoe',
+          address: '123 Main St.',
         });
-        testModel.setHidden(["firstName", "lastName"]).makeVisible("firstName");
-        expect(testModel.getHidden()).toEqual(["lastName"]);
+        testModel.setHidden(['firstName', 'lastName']).makeVisible('firstName');
+        expect(testModel.getHidden()).toEqual(['lastName']);
         expect(testModel.toData()).toEqual({
           id: 1,
-          firstName: "Joe",
-          address: "123 Main St.",
+          firstName: 'Joe',
+          address: '123 Main St.',
         });
       });
 
       it("hides the fields specified in the 'options.hidden' property", () => {
-        testModel.setHidden(["firstName", "id"]);
+        testModel.setHidden(['firstName', 'id']);
         expect(testModel.toData()).toEqual({
-          lastName: "Shmoe",
-          address: "123 Main St.",
+          lastName: 'Shmoe',
+          address: '123 Main St.',
         });
       });
 
       it("prioritizes 'hidden' if there are conflicts when using both 'hidden' and 'visible'", () => {
-        testModel.setVisible(["firstName", "lastName"]);
-        testModel.setHidden(["lastName"]);
-        expect(testModel.toData()).toEqual({ firstName: "Joe" });
+        testModel.setVisible(['firstName', 'lastName']);
+        testModel.setHidden(['lastName']);
+        expect(testModel.toData()).toEqual({ firstName: 'Joe' });
       });
 
       it("allows overriding the model's 'hidden' property with a 'setHidden' argument", () => {
-        testModel.hidden = ["lastName"];
-        testModel.setHidden(["firstName", "id"]);
+        testModel.hidden = ['lastName'];
+        testModel.setHidden(['firstName', 'id']);
         const data = testModel.toData();
         expect(data).toEqual({
-          lastName: "Shmoe",
-          address: "123 Main St.",
+          lastName: 'Shmoe',
+          address: '123 Main St.',
         });
       });
 
       it("allows overriding the model's 'hidden' property with a 'makeHidden' argument", () => {
-        testModel.hidden = ["lastName"];
-        testModel.makeHidden(["firstName", "id"]);
+        testModel.hidden = ['lastName'];
+        testModel.makeHidden(['firstName', 'id']);
         const data = testModel.toData();
         expect(data).toEqual({
-          address: "123 Main St.",
+          address: '123 Main St.',
         });
       });
 
       it("prioritizes 'setHidden' when overriding both the model's 'hidden' and 'visible' properties with 'setHidden' and 'setVisible' arguments", async () => {
-        testModel.visible = ["lastName", "address"];
-        testModel.hidden = ["address"];
+        testModel.visible = ['lastName', 'address'];
+        testModel.hidden = ['address'];
         const data = testModel
-          .setVisible(["firstName", "lastName"])
-          .setHidden(["lastName"])
+          .setVisible(['firstName', 'lastName'])
+          .setHidden(['lastName'])
           .toData();
 
-        expect(data).toEqual({ firstName: "Joe" });
+        expect(data).toEqual({ firstName: 'Joe' });
 
-        const knex = (await import("knex")).default({ client: "mysql" });
+        const knex = (await import('knex')).default({ client: 'mysql' });
         console.log(knex.client.JoinClause);
       });
 
-      it("append virtual attribute", () => {
+      it('append virtual attribute', () => {
         const data = testModel
-          .append(["another_full_name", "full_name"])
+          .append(['another_full_name', 'full_name'])
           .toData();
         expect(data).toEqual({
-          address: "123 Main St.",
-          firstName: "Joe",
-          another_full_name: "Joe Shmoe",
-          full_name: "Joe Shmoe",
+          address: '123 Main St.',
+          firstName: 'Joe',
+          another_full_name: 'Joe Shmoe',
+          full_name: 'Joe Shmoe',
           id: 1,
-          lastName: "Shmoe",
+          lastName: 'Shmoe',
         });
 
-        testModel.another_full_name = "Bill Gates";
+        testModel.another_full_name = 'Bill Gates';
         expect(testModel.toData()).toEqual({
-          address: "123 Main St.",
-          firstName: "Bill",
-          another_full_name: "Bill Gates",
-          full_name: "Bill Gates",
+          address: '123 Main St.',
+          firstName: 'Bill',
+          another_full_name: 'Bill Gates',
+          full_name: 'Bill Gates',
           id: 1,
-          lastName: "Gates",
+          lastName: 'Gates',
         });
 
-        expect(testModel.isDirty("firstName")).toBeTruthy();
-        expect(testModel.isDirty("lastName")).toBeTruthy();
+        expect(testModel.isDirty('firstName')).toBeTruthy();
+        expect(testModel.isDirty('lastName')).toBeTruthy();
         expect(testModel.isDirty()).toBeTruthy();
       });
     });
 
-    it("model getter settings", () => {
-      expect(testModel.full_name).toBe("Joe Shmoe");
+    it('model getter settings', () => {
+      expect(testModel.full_name).toBe('Joe Shmoe');
     });
 
-    it("model setter settings", () => {
-      testModel.full_name = "Bill Gates";
-      expect(testModel.firstName).toBe("Bill");
-      expect(testModel.lastName).toBe("Gates");
+    it('model setter settings', () => {
+      testModel.full_name = 'Bill Gates';
+      expect(testModel.firstName).toBe('Bill');
+      expect(testModel.lastName).toBe('Gates');
     });
   });
 
-  describe("#isDirty", () => {
-    it("returns true if an attribute was set on a new model instance", () => {
-      const model = new Model({ test: "something" });
-      expect(model.isDirty("test")).toBeTruthy();
+  describe('#isDirty', () => {
+    it('returns true if an attribute was set on a new model instance', () => {
+      const model = new Model({ test: 'something' });
+      expect(model.isDirty('test')).toBeTruthy();
     });
 
     it("returns false if the attribute isn't set on a new model instance", () => {
-      const model = new Model({ test_test: "something" });
-      // expect(model.getDirty()).toEqual({ a: 1})
-      expect(model.isDirty("id")).toBeFalsy();
+      const model = new Model({ test_test: 'something' });
+      expect(model.isDirty('id')).toBeFalsy();
       expect(model.isDirty()).toBeTruthy();
     });
 
-    it("returns true if an existing attribute is updated", () => {
+    it('returns true if an existing attribute is updated', () => {
       const model = new Model();
-      model.test = "something else";
-
-      expect(model.isDirty("test")).toBeTruthy();
+      model.test = 'something else';
+      expect(model.isDirty('test')).toBeTruthy();
     });
   });
 });
 
-describe("Collection", () => {
+describe('Collection', () => {
   let collection!: Collection<any>;
   class User extends Model {
-    protected primaryKey = "some_id";
+    protected primaryKey = 'some_id';
   }
   class Post extends Model {}
 
   beforeEach(() => {
     collection = new Collection([
-      new User({ some_id: 1, name: "Test" }),
-      new User({ name: "Test2" }),
-      new Post({ id: 2, name: "Test3" }),
+      new User({ some_id: 1, name: 'Test' }),
+      new User({ name: 'Test2' }),
+      new Post({ id: 2, name: 'Test3' }),
     ]);
   });
 
-  it("should initialize the items passed to the constructor", () => {
+  it('should initialize the items passed to the constructor', () => {
     expect(collection.count()).toBe(3);
     expect(collection.modelKeys()).toEqual([1, undefined, 2]);
-    // expect(collection.get(1).getKey()).toBeUndefined();
   });
 
-  it("should ", () => {
+  it('should ', () => {
     expect(collection.toData()).toEqual([
-      { some_id: 1, name: "Test" },
-      { name: "Test2" },
-      { id: 2, name: "Test3" },
+      { some_id: 1, name: 'Test' },
+      { name: 'Test2' },
+      { id: 2, name: 'Test3' },
     ]);
   });
 });
 
-describe("Integration test", () => {
-  describe("Client: ", () => {
+describe('Integration test', () => {
+  describe('Client: ', () => {
     class Base extends Model {}
 
     class User extends Base {
-      hidden = ["password", "remember_token"];
+      hidden = ['password', 'remember_token'];
 
       attributeFullName() {
         return Attribute.make({
@@ -430,11 +425,11 @@ describe("Integration test", () => {
 
     class Post extends Base {
       scopeIdOf(query: any, id: number) {
-        return query.where("id", id);
+        return query.where('id', id);
       }
 
       scopePublish(query: any) {
-        return query.where("status", 1);
+        return query.where('status', 1);
       }
 
       relationAuthor(): any {
@@ -443,18 +438,18 @@ describe("Integration test", () => {
 
       relationDefaultAuthor(): any {
         return this.belongsTo(User).withDefault({
-          name: "Default Author",
+          name: 'Default Author',
         });
       }
 
       relationDefaultPostAuthor(): any {
         return this.belongsTo(User).withDefault((user: any, post: any) => {
-          user.name = post.name + " - Default Author";
+          user.name = post.name + ' - Default Author';
         });
       }
 
       relationThumbnail() {
-        return this.belongsTo(Media, "thumbnail_id");
+        return this.belongsTo(Media, 'thumbnail_id');
       }
 
       relationMedia() {
@@ -480,23 +475,23 @@ describe("Integration test", () => {
 
     class Media extends Base {}
 
-    describe("Model", () => {
-      describe("#isDirty()", () => {
-        it("returns true if passing an attribute name that has changed since the last sync", () => {
+    describe('Model', () => {
+      describe('#isDirty()', () => {
+        it('returns true if passing an attribute name that has changed since the last sync', () => {
           const user = new User();
-          user.name = "changed name";
-          expect(user.isDirty("name")).toBe(true);
+          user.name = 'changed name';
+          expect(user.isDirty('name')).toBe(true);
         });
 
-        it("returns false if passing an attribute name that has not changed since the last sync", () => {
+        it('returns false if passing an attribute name that has not changed since the last sync', () => {
           const user = new User();
-          user.name = "changed name";
-          expect(user.isDirty("id")).toBe(false);
+          user.name = 'changed name';
+          expect(user.isDirty('id')).toBe(false);
         });
 
-        it("returns true if no arguments are provided and an attribute of the model has changed", () => {
+        it('returns true if no arguments are provided and an attribute of the model has changed', () => {
           const user = new User();
-          user.name = "changed name";
+          user.name = 'changed name';
           expect(user.isDirty()).toBe(true);
         });
 
