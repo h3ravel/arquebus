@@ -6,30 +6,30 @@ import type { Table } from '../types/table'
 import { stripQuotes } from '../utils/strip-quotes'
 
 type RawTable = {
-  TABLE_NAME: string;
-  TABLE_SCHEMA: string;
-  TABLE_CATALOG: string;
-};
+  TABLE_NAME: string
+  TABLE_SCHEMA: string
+  TABLE_CATALOG: string
+}
 
 type RawColumn = {
-  table: string;
-  name: string;
-  data_type: string;
-  max_length: number | null;
-  numeric_precision: number | null;
-  numeric_scale: number | null;
-  is_generated: boolean | null;
-  is_nullable: 'YES' | 'NO';
-  default_value: string | null;
-  is_unique: true | null;
-  is_primary_key: true | null;
-  has_auto_increment: 'YES' | 'NO';
-  foreign_key_table: string | null;
-  foreign_key_column: string | null;
-  generation_expression: string | null;
-};
+  table: string
+  name: string
+  data_type: string
+  max_length: number | null
+  numeric_precision: number | null
+  numeric_scale: number | null
+  is_generated: boolean | null
+  is_nullable: 'YES' | 'NO'
+  default_value: string | null
+  is_unique: true | null
+  is_primary_key: true | null
+  has_auto_increment: 'YES' | 'NO'
+  foreign_key_table: string | null
+  foreign_key_column: string | null
+  generation_expression: string | null
+}
 
-export function rawColumnToColumn (rawColumn: RawColumn): Column {
+export function rawColumnToColumn(rawColumn: RawColumn): Column {
   return {
     ...rawColumn,
     default_value: parseDefaultValue(rawColumn.default_value),
@@ -44,7 +44,7 @@ export function rawColumnToColumn (rawColumn: RawColumn): Column {
     max_length: parseMaxLength(rawColumn),
   }
 
-  function parseMaxLength (rawColumn: RawColumn) {
+  function parseMaxLength(rawColumn: RawColumn) {
     const max_length = Number(rawColumn.max_length)
     if (
       Number.isNaN(max_length) ||
@@ -68,7 +68,7 @@ export function rawColumnToColumn (rawColumn: RawColumn): Column {
   }
 }
 
-export function parseDefaultValue (value: string | null) {
+export function parseDefaultValue(value: string | null) {
   if (value === null) return null
 
   while (value.startsWith('(') && value.endsWith(')')) {
@@ -94,16 +94,16 @@ export default class MSSQL implements SchemaInspector {
   /**
    * Set the schema to be used in other methods
    */
-  withSchema (schema: string) {
+  withSchema(schema: string) {
     this.schema = schema
     return this
   }
 
-  get schema () {
+  get schema() {
     return this._schema || 'dbo'
   }
 
-  set schema (value: string) {
+  set schema(value: string) {
     this._schema = value
   }
 
@@ -113,7 +113,7 @@ export default class MSSQL implements SchemaInspector {
   /**
    * List all existing tables in the current schema/database
    */
-  async tables () {
+  async tables() {
     const records = await this.knex
       .select<{ TABLE_NAME: string }[]>('TABLE_NAME')
       .from('INFORMATION_SCHEMA.TABLES')
@@ -129,9 +129,9 @@ export default class MSSQL implements SchemaInspector {
    * Get the table info for a given table. If table parameter is undefined, it will return all tables
    * in the current schema/database
    */
-  tableInfo (): Promise<Table[]>;
-  tableInfo (table: string): Promise<Table>;
-  async tableInfo<T> (table?: string) {
+  tableInfo(): Promise<Table[]>
+  tableInfo(table: string): Promise<Table>
+  async tableInfo<T>(table?: string) {
     const query = this.knex
       .select('TABLE_NAME', 'TABLE_SCHEMA', 'TABLE_CATALOG', 'TABLE_TYPE')
       .from('INFORMATION_SCHEMA.TABLES')
@@ -167,7 +167,7 @@ export default class MSSQL implements SchemaInspector {
   /**
    * Check if a table exists in the current schema/database
    */
-  async hasTable (table: string): Promise<boolean> {
+  async hasTable(table: string): Promise<boolean> {
     const result = await this.knex
       .count<{ count: 0 | 1 }>({ count: '*' })
       .from('INFORMATION_SCHEMA.TABLES')
@@ -186,7 +186,7 @@ export default class MSSQL implements SchemaInspector {
   /**
    * Get all the available columns in the current schema/database. Can be filtered to a specific table
    */
-  async columns (table?: string) {
+  async columns(table?: string) {
     const query = this.knex
       .select<
         { TABLE_NAME: string; COLUMN_NAME: string }[]
@@ -212,10 +212,10 @@ export default class MSSQL implements SchemaInspector {
   /**
    * Get the column info for all columns, columns in a given table, or a specific column.
    */
-  columnInfo (): Promise<Column[]>;
-  columnInfo (table: string): Promise<Column[]>;
-  columnInfo (table: string, column: string): Promise<Column>;
-  async columnInfo<T> (table?: string, column?: string) {
+  columnInfo(): Promise<Column[]>
+  columnInfo(table: string): Promise<Column[]>
+  columnInfo(table: string, column: string): Promise<Column>
+  async columnInfo<T>(table?: string, column?: string) {
     const dbName = this.knex.client.database()
 
     const query = this.knex
@@ -245,19 +245,19 @@ export default class MSSQL implements SchemaInspector {
         COL_NAME ([fk].[referenced_object_id],
           [fk].[referenced_column_id]) AS [foreign_key_column],
         [cc].[is_computed] as [is_generated],
-        [cc].[definition] as [generation_expression]`)
+        [cc].[definition] as [generation_expression]`),
       )
       .from(this.knex.raw('??.[sys].[columns] [c]', [dbName]))
       .joinRaw(
-        'JOIN [sys].[types] [t] ON [c].[user_type_id] = [t].[user_type_id]'
+        'JOIN [sys].[types] [t] ON [c].[user_type_id] = [t].[user_type_id]',
       )
       .joinRaw('JOIN [sys].[tables] [o] ON [o].[object_id] = [c].[object_id]')
       .joinRaw('JOIN [sys].[schemas] [s] ON [s].[schema_id] = [o].[schema_id]')
       .joinRaw(
-        'LEFT JOIN [sys].[computed_columns] AS [cc] ON [cc].[object_id] = [c].[object_id] AND [cc].[column_id] = [c].[column_id]'
+        'LEFT JOIN [sys].[computed_columns] AS [cc] ON [cc].[object_id] = [c].[object_id] AND [cc].[column_id] = [c].[column_id]',
       )
       .joinRaw(
-        'LEFT JOIN [sys].[foreign_key_columns] AS [fk] ON [fk].[parent_object_id] = [c].[object_id] AND [fk].[parent_column_id] = [c].[column_id]'
+        'LEFT JOIN [sys].[foreign_key_columns] AS [fk] ON [fk].[parent_object_id] = [c].[object_id] AND [fk].[parent_column_id] = [c].[column_id]',
       )
       .joinRaw(
         `LEFT JOIN (
@@ -279,7 +279,7 @@ export default class MSSQL implements SchemaInspector {
         ON [i].[object_id] = [c].[object_id]
         AND [i].[column_id] = [c].[column_id]
         AND ISNULL([i].[index_column_count], 1) = 1
-        AND ISNULL([i].[index_priority], 1) = 1`
+        AND ISNULL([i].[index_priority], 1) = 1`,
       )
       .where({ 's.name': this.schema })
 
@@ -303,7 +303,7 @@ export default class MSSQL implements SchemaInspector {
   /**
    * Check if a table exists in the current schema/database
    */
-  async hasColumn (table: string, column: string): Promise<boolean> {
+  async hasColumn(table: string, column: string): Promise<boolean> {
     const result = await this.knex
       .count<{ count: 0 | 1 }>({ count: '*' })
       .from('INFORMATION_SCHEMA.COLUMNS')
@@ -321,7 +321,7 @@ export default class MSSQL implements SchemaInspector {
   /**
    * Get the primary key column for the given table
    */
-  async primary (table: string) {
+  async primary(table: string) {
     const results = await this.knex.raw(
       `SELECT
          Col.Column_Name
@@ -334,7 +334,7 @@ export default class MSSQL implements SchemaInspector {
          AND Constraint_Type = 'PRIMARY KEY'
          AND Col.Table_Name = ?
          AND Tab.CONSTRAINT_SCHEMA = ?`,
-      [table, this.schema]
+      [table, this.schema],
     )
 
     const columnName =
@@ -349,7 +349,7 @@ export default class MSSQL implements SchemaInspector {
   // Foreign Keys
   // ===============================================================================================
 
-  async foreignKeys (table?: string) {
+  async foreignKeys(table?: string) {
     const result = await this.knex.raw<ForeignKey[]>(
       `
       SELECT
@@ -367,7 +367,7 @@ export default class MSSQL implements SchemaInspector {
       WHERE
         OBJECT_SCHEMA_NAME (f.parent_object_id) = ?;
     `,
-      [this.schema]
+      [this.schema],
     )
 
     if (table) {

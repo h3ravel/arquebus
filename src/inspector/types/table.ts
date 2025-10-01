@@ -1,20 +1,20 @@
 export interface Table {
-  name: string;
+  name: string
 
   // Not supported in SQLite + comment in mssql
-  comment?: string | null;
-  schema?: string;
+  comment?: string | null
+  schema?: string
 
   // MySQL Only
-  collation?: string;
-  engine?: string;
+  collation?: string
+  engine?: string
 
   // Postgres Only
-  owner?: string;
+  owner?: string
 
   // SQLite Only
-  sql?: string;
+  sql?: string
 
   //MSSQL only
-  catalog?: string;
+  catalog?: string
 }

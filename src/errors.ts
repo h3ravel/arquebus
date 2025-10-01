@@ -11,35 +11,34 @@ class BaseError extends Error {
 class ModelNotFoundError extends BaseError {
   model?: IModel
   ids: (string | number)[] | string | number = []
-  constructor() { super('') }
-  setModel (model: IModel, ids = []) {
+  constructor() {
+    super('')
+  }
+  setModel(model: IModel, ids = []) {
     this.model = model
     this.ids = isArray(ids) ? ids : [ids]
     this.message = `No query results for model [${model}]`
     if (this.ids.length > 0) {
       this.message += ' ' + this.ids.join(', ')
-    }
-    else {
+    } else {
       this.message += '.'
     }
     return this
   }
-  getModel () {
+  getModel() {
     return this.model
   }
-  getIds () {
+  getIds() {
     return this.ids
   }
 }
-class RelationNotFoundError extends BaseError {
-}
-class InvalidArgumentError extends BaseError {
-}
+class RelationNotFoundError extends BaseError {}
+class InvalidArgumentError extends BaseError {}
 export { ModelNotFoundError }
 export { RelationNotFoundError }
 export { InvalidArgumentError }
 export default {
   ModelNotFoundError,
   RelationNotFoundError,
-  InvalidArgumentError
+  InvalidArgumentError,
 }

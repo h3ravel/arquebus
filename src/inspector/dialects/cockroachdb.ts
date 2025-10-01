@@ -6,41 +6,41 @@ import type { Table } from '../types/table'
 import { stripQuotes } from '../utils/strip-quotes'
 
 type RawTable = {
-  table_name: string;
-  table_schema: 'public' | string;
-  table_comment: string | null;
-};
+  table_name: string
+  table_schema: 'public' | string
+  table_comment: string | null
+}
 
 type RawColumn = {
-  name: string;
-  table: string;
-  schema: string;
-  data_type: string;
-  is_nullable: boolean;
-  generation_expression: null | string;
-  default_value: null | string;
-  is_generated: boolean;
-  max_length: null | number;
-  comment: null | string;
-  numeric_precision: null | number;
-  numeric_scale: null | number;
-};
+  name: string
+  table: string
+  schema: string
+  data_type: string
+  is_nullable: boolean
+  generation_expression: null | string
+  default_value: null | string
+  is_generated: boolean
+  max_length: null | number
+  comment: null | string
+  numeric_precision: null | number
+  numeric_scale: null | number
+}
 
 type Constraint = {
-  type: 'f' | 'p' | 'u';
-  table: string;
-  column: string;
-  foreign_key_schema: null | string;
-  foreign_key_table: null | string;
-  foreign_key_column: null | string;
-  has_auto_increment: null | boolean;
-};
+  type: 'f' | 'p' | 'u'
+  table: string
+  column: string
+  foreign_key_schema: null | string
+  foreign_key_table: null | string
+  foreign_key_column: null | string
+  has_auto_increment: null | boolean
+}
 
 /**
  * Converts CockroachDB default value to JS
  * Eg `'example'::character varying` => `example`
  */
-export function parseDefaultValue (value: string | null) {
+export function parseDefaultValue(value: string | null) {
   if (value === null) return null
   if (value.startsWith('nextval(')) return value
 
@@ -75,7 +75,7 @@ export default class CockroachDB implements SchemaInspector {
   /**
    * Set the schema to be used in other methods
    */
-  withSchema (schema: string) {
+  withSchema(schema: string) {
     this.schema = schema
     this.explodedSchema = [this.schema]
     return this
@@ -87,7 +87,7 @@ export default class CockroachDB implements SchemaInspector {
   /**
    * List all existing tables in the current schema/database
    */
-  async tables () {
+  async tables() {
     const records = await this.knex
       .select<{ tablename: string }[]>('tablename')
       .from('pg_catalog.pg_tables')
@@ -99,9 +99,9 @@ export default class CockroachDB implements SchemaInspector {
    * Get the table info for a given table. If table parameter is undefined, it will return all tables
    * in the current schema/database
    */
-  tableInfo (): Promise<Table[]>;
-  tableInfo (table: string): Promise<Table>;
-  async tableInfo (table?: string) {
+  tableInfo(): Promise<Table[]>
+  tableInfo(table: string): Promise<Table>
+  async tableInfo(table?: string) {
     const query = this.knex
       .select(
         'table_name',
@@ -111,7 +111,7 @@ export default class CockroachDB implements SchemaInspector {
           .from('pg_class')
           .where({ relkind: 'r' })
           .andWhere({ relname: 'table_name' })
-          .as('table_comment')
+          .as('table_comment'),
       )
       .from('information_schema.tables')
       .whereIn('table_schema', this.explodedSchema)
@@ -146,7 +146,7 @@ export default class CockroachDB implements SchemaInspector {
   /**
    * Check if a table exists in the current schema/database
    */
-  async hasTable (table: string) {
+  async hasTable(table: string) {
     const subquery = this.knex
       .select()
       .from('information_schema.tables')
@@ -164,7 +164,7 @@ export default class CockroachDB implements SchemaInspector {
   /**
    * Get all the available columns in the current schema/database. Can be filtered to a specific table
    */
-  async columns (table?: string) {
+  async columns(table?: string) {
     const query = this.knex
       .select<
         { table_name: string; column_name: string }[]
@@ -187,10 +187,10 @@ export default class CockroachDB implements SchemaInspector {
   /**
    * Get the column info for all columns, columns in a given table, or a specific column.
    */
-  columnInfo (): Promise<Column[]>;
-  columnInfo (table: string): Promise<Column[]>;
-  columnInfo (table: string, column: string): Promise<Column>;
-  async columnInfo<T> (table?: string, column?: string) {
+  columnInfo(): Promise<Column[]>
+  columnInfo(table: string): Promise<Column[]>
+  columnInfo(table: string, column: string): Promise<Column>
+  async columnInfo<T>(table?: string, column?: string) {
     const { knex } = this
 
     const bindings: any[] = []
@@ -198,7 +198,7 @@ export default class CockroachDB implements SchemaInspector {
     if (column) bindings.push(column)
 
     const schemaIn = this.explodedSchema.map(
-      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`
+      (schemaName) => `${this.knex.raw('?', [schemaName])}::regnamespace`,
     )
 
     const [columns, constraints] = await Promise.all([
@@ -264,7 +264,7 @@ export default class CockroachDB implements SchemaInspector {
            AND NOT att.attisdropped
          ORDER BY rel.relname, att.attnum) res;
        `,
-        bindings
+        bindings,
       ),
       knex.raw<{ rows: Constraint[] }>(
         `
@@ -287,27 +287,27 @@ export default class CockroachDB implements SchemaInspector {
            ${table ? 'AND rel.relname = ?' : ''}
            ${column ? 'AND att.attname = ?' : ''}
          `,
-        bindings
+        bindings,
       ),
     ])
 
     const parsedColumms: Column[] = columns.rows.map((col): Column => {
       const constraintsForColumn = constraints.rows.filter(
         (constraint) =>
-          constraint.table === col.table && constraint.column === col.name
+          constraint.table === col.table && constraint.column === col.name,
       )
 
       const foreignKeyConstraint = constraintsForColumn.find(
-        (constraint) => constraint.type === 'f'
+        (constraint) => constraint.type === 'f',
       )
 
       return {
         ...col,
         is_unique: constraintsForColumn.some((constraint) =>
-          ['u', 'p'].includes(constraint.type)
+          ['u', 'p'].includes(constraint.type),
         ),
         is_primary_key: constraintsForColumn.some(
-          (constraint) => constraint.type === 'p'
+          (constraint) => constraint.type === 'p',
         ),
         has_auto_increment:
           ['integer', 'bigint'].includes(col.data_type) &&
@@ -326,7 +326,7 @@ export default class CockroachDB implements SchemaInspector {
   /**
    * Check if the given table contains the given column
    */
-  async hasColumn (table: string, column: string) {
+  async hasColumn(table: string, column: string) {
     const subquery = this.knex
       .select()
       .from('information_schema.columns')
@@ -344,7 +344,7 @@ export default class CockroachDB implements SchemaInspector {
   /**
    * Get the primary key column for the given table
    */
-  async primary (table: string) {
+  async primary(table: string) {
     const result = await this.knex
       .select('information_schema.key_column_usage.column_name')
       .from('information_schema.key_column_usage')
@@ -352,16 +352,16 @@ export default class CockroachDB implements SchemaInspector {
         this.on(
           'information_schema.table_constraints.constraint_name',
           '=',
-          'information_schema.key_column_usage.constraint_name'
+          'information_schema.key_column_usage.constraint_name',
         ).andOn(
           'information_schema.table_constraints.table_name',
           '=',
-          'information_schema.key_column_usage.table_name'
+          'information_schema.key_column_usage.table_name',
         )
       })
       .whereIn(
         'information_schema.table_constraints.table_schema',
-        this.explodedSchema
+        this.explodedSchema,
       )
       .andWhere({
         'information_schema.table_constraints.constraint_type': 'PRIMARY KEY',
@@ -378,7 +378,7 @@ export default class CockroachDB implements SchemaInspector {
   // Foreign Keys
   // ===============================================================================================
 
-  async foreignKeys (table?: string) {
+  async foreignKeys(table?: string) {
     const result = await this.knex.raw<{ rows: ForeignKey[] }>(`
       SELECT
         c.conrelid::regclass::text AS "table",
@@ -470,11 +470,11 @@ export default class CockroachDB implements SchemaInspector {
 
     return rowsWithoutQuotes
 
-    function stripRowQuotes (row: ForeignKey): ForeignKey {
+    function stripRowQuotes(row: ForeignKey): ForeignKey {
       return Object.fromEntries(
         Object.entries(row).map(([key, value]) => {
           return [key, stripQuotes(value)]
-        })
+        }),
       ) as ForeignKey
     }
   }

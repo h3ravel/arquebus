@@ -9,7 +9,12 @@ class HasMany extends compose(Relation, HasOneOrMany) {
   foreignKey?: string | null
   localKey?: string | null
 
-  constructor(query: any, parent: any, foreignKey?: string | null, localKey?: string | null) {
+  constructor(
+    query: any,
+    parent: any,
+    foreignKey?: string | null,
+    localKey?: string | null,
+  ) {
     super(query, parent)
     this.foreignKey = foreignKey
     this.localKey = localKey
@@ -17,36 +22,36 @@ class HasMany extends compose(Relation, HasOneOrMany) {
     return this.asProxy()
   }
 
-  initRelation (models: Model[], relation: string) {
-    models.map(model => {
+  initRelation(models: Model[], relation: string) {
+    models.map((model) => {
       model.setRelation(relation, new Collection([]))
     })
     return models
   }
 
-  async getResults () {
+  async getResults() {
     return this.getParentKey() !== null
       ? await this.query.get()
       : new Collection([])
   }
 
-  getForeignKeyName () {
+  getForeignKeyName() {
     const segments = this.foreignKey?.split('.')
     return segments?.pop()
   }
 
-  buildDictionary (results: any) {
+  buildDictionary(results: any) {
     const foreign = this.getForeignKeyName()!
-    return collect(results).mapToDictionary((result: any) => [
-      result[foreign], result
-    ]).all()
+    return collect(results)
+      .mapToDictionary((result: any) => [result[foreign], result])
+      .all()
   }
 
-  match (models: Model[], results: any, relation: string) {
+  match(models: Model[], results: any, relation: string) {
     return this.matchOneOrMany(models, results, relation, 'many')
   }
 
-  addEagerConstraints (models: Model[]) {
+  addEagerConstraints(models: Model[]) {
     this.query.whereIn(this.foreignKey!, this.getKeys(models, this.localKey))
   }
 }

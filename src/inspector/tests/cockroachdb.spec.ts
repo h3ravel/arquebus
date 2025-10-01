@@ -1,11 +1,12 @@
-import knex, { Knex } from 'knex';
-import { expect } from 'chai';
-import schemaInspector from '../lib';
-import { SchemaInspector } from '../lib/types/schema-inspector';
+import type { Knex } from 'knex'
+import knex from 'knex'
+import { expect } from 'chai'
+import schemaInspector from '../lib'
+import type { SchemaInspector } from '../lib/types/schema-inspector'
 
 describe('cockroachdb-no-search-path', () => {
-  let database: Knex;
-  let inspector: SchemaInspector;
+  let database: Knex
+  let inspector: SchemaInspector
 
   before(() => {
     database = knex({
@@ -18,13 +19,13 @@ describe('cockroachdb-no-search-path', () => {
         database: 'defaultdb',
         charset: 'utf8',
       },
-    });
-    inspector = schemaInspector(database);
-  });
+    })
+    inspector = schemaInspector(database)
+  })
 
   after(async () => {
-    await database.destroy();
-  });
+    await database.destroy()
+  })
 
   describe('.tables', () => {
     it('returns tables', async () => {
@@ -34,9 +35,9 @@ describe('cockroachdb-no-search-path', () => {
         'users',
         'camelCase',
         'page_visits',
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.tableInfo', () => {
     it('returns information for all tables', async () => {
@@ -46,24 +47,24 @@ describe('cockroachdb-no-search-path', () => {
         { name: 'teams', schema: 'public', comment: null },
         { name: 'users', schema: 'public', comment: null },
         { name: 'detailed_page_visits', schema: 'public', comment: null },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for specific table', async () => {
       expect(await inspector.tableInfo('teams')).to.deep.equal({
         comment: null,
         name: 'teams',
         schema: 'public',
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('.hasTable', () => {
     it('returns if table exists or not', async () => {
-      expect(await inspector.hasTable('teams')).to.equal(true);
-      expect(await inspector.hasTable('foobar')).to.equal(false);
-    });
-  });
+      expect(await inspector.hasTable('teams')).to.equal(true)
+      expect(await inspector.hasTable('foobar')).to.equal(false)
+    })
+  })
 
   describe('.columns', () => {
     it('returns information for all tables', async () => {
@@ -90,8 +91,8 @@ describe('cockroachdb-no-search-path', () => {
           { table: 'detailed_page_visits', column: 'domain' },
           { table: 'detailed_page_visits', column: 'request_path' },
           { table: 'detailed_page_visits', column: 'user_agent' },
-        ]);
-      });
+        ])
+      })
 
       expect(await inspector.columns()).to.have.deep.members([
         { table: 'teams', column: 'id' },
@@ -115,8 +116,8 @@ describe('cockroachdb-no-search-path', () => {
         { table: 'detailed_page_visits', column: 'domain' },
         { table: 'detailed_page_visits', column: 'request_path' },
         { table: 'detailed_page_visits', column: 'user_agent' },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for specific table', async () => {
       expect(await inspector.columns('teams')).to.have.deep.members([
@@ -128,9 +129,9 @@ describe('cockroachdb-no-search-path', () => {
         { table: 'teams', column: 'credits' },
         { table: 'teams', column: 'created_at' },
         { table: 'teams', column: 'activated_at' },
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.columnInfo', () => {
     it('returns information for all columns in all tables', async () => {
@@ -555,8 +556,8 @@ describe('cockroachdb-no-search-path', () => {
           foreign_key_table: null,
           foreign_key_column: null,
         },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for all columns in specific table', async () => {
       expect(await inspector.columnInfo('teams')).to.have.deep.members([
@@ -720,8 +721,8 @@ describe('cockroachdb-no-search-path', () => {
           schema: 'public',
           foreign_key_schema: null,
         },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for a specific column in a specific table', async () => {
       expect(await inspector.columnInfo('teams', 'uuid')).to.deep.equal({
@@ -743,34 +744,34 @@ describe('cockroachdb-no-search-path', () => {
         foreign_key_column: null,
         foreign_key_table: null,
         comment: null,
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('.primary', () => {
     it('returns primary key for a table', async () => {
-      expect(await inspector.primary('teams')).to.equal('id');
-      expect(await inspector.primary('camelCase')).to.equal('primaryKey');
-      expect(await inspector.primary('page_visits')).to.equal(null);
+      expect(await inspector.primary('teams')).to.equal('id')
+      expect(await inspector.primary('camelCase')).to.equal('primaryKey')
+      expect(await inspector.primary('page_visits')).to.equal(null)
       expect(await inspector.primary('detailed_page_visits')).to.deep.equal([
         'domain',
         'request_path',
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.transaction', () => {
     it('works with transactions transaction', async () => {
       database.transaction(async (trx) => {
-        expect(await schemaInspector(trx).primary('teams')).to.equal('id');
-      });
-    });
-  });
-});
+        expect(await schemaInspector(trx).primary('teams')).to.equal('id')
+      })
+    })
+  })
+})
 
 describe('cockroachdb-with-search-path', () => {
-  let database: Knex;
-  let inspector: SchemaInspector;
+  let database: Knex
+  let inspector: SchemaInspector
 
   before(() => {
     database = knex({
@@ -784,27 +785,27 @@ describe('cockroachdb-with-search-path', () => {
         database: 'defaultdb',
         charset: 'utf8',
       },
-    });
-    inspector = schemaInspector(database);
-  });
+    })
+    inspector = schemaInspector(database)
+  })
 
   after(async () => {
-    await database.destroy();
-  });
+    await database.destroy()
+  })
 
   describe('.primary', () => {
     it('returns primary key for a table', async () => {
-      expect(await inspector.primary('test')).to.equal('id');
-    });
-  });
+      expect(await inspector.primary('test')).to.equal('id')
+    })
+  })
 
   describe('.transaction', () => {
     it('works with transactions transaction', async () => {
       database.transaction(async (trx) => {
-        expect(await schemaInspector(trx).primary('test')).to.equal('id');
-      });
-    });
-  });
+        expect(await schemaInspector(trx).primary('test')).to.equal('id')
+      })
+    })
+  })
 
   describe('.foreignKeys', () => {
     it('returns foreign keys for all tables', async () => {
@@ -819,11 +820,11 @@ describe('cockroachdb-with-search-path', () => {
           on_delete: 'CASCADE',
           on_update: 'CASCADE',
         },
-      ]);
-    });
+      ])
+    })
 
     it('filters based on table param', async () => {
-      expect(await inspector.foreignKeys('teams')).to.deep.equal([]);
-    });
-  });
-});
+      expect(await inspector.foreignKeys('teams')).to.deep.equal([])
+    })
+  })
+})

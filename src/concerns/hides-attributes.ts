@@ -2,11 +2,11 @@ import type { MixinConstructor } from 'types/generics'
 import { diff as difference } from 'radashi'
 import { flattenDeep } from '../utils'
 
-const HidesAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
+const HidesAttributes = <TBase extends MixinConstructor>(Model: TBase) => {
   return class extends Model {
     hidden: any[] = []
     visible: any[] = []
-    makeVisible (...keys: string[]) {
+    makeVisible(...keys: string[]) {
       const visible = flattenDeep(keys)
       if (this.visible.length > 0) {
         this.visible = [...this.visible, ...visible]
@@ -14,24 +14,24 @@ const HidesAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       this.hidden = difference(this.hidden, visible)
       return this
     }
-    makeHidden (key: string[], ...keys: string[]) {
+    makeHidden(key: string[], ...keys: string[]) {
       const hidden = flattenDeep([...key, ...keys])
       if (this.hidden.length > 0) {
         this.hidden = [...this.hidden, ...hidden]
       }
       return this
     }
-    getHidden () {
+    getHidden() {
       return this.hidden
     }
-    getVisible () {
+    getVisible() {
       return this.visible
     }
-    setHidden (hidden: any[]) {
+    setHidden(hidden: any[]) {
       this.hidden = hidden
       return this
     }
-    setVisible (visible: any[]) {
+    setVisible(visible: any[]) {
       this.visible = visible
       return this
     }

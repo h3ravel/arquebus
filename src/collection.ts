@@ -6,18 +6,21 @@ import type { ICollection } from 'types/utils'
 import Model from './model'
 import type BModel from './browser/model'
 
-class Collection<I extends Model | BModel> extends BaseCollection<I> implements ICollection<I> {
-  private newConstructor (...args: any[]) {
+class Collection<I extends Model | BModel>
+  extends BaseCollection<I>
+  implements ICollection<I>
+{
+  private newConstructor(...args: any[]) {
     const constr = this.getConstructor()
 
     return new constr(...args)
   }
 
-  getConstructor<T extends typeof Collection<I>> (this: InstanceType<T>) {
+  getConstructor<T extends typeof Collection<I>>(this: InstanceType<T>) {
     return this.constructor as T
   }
 
-  async load (...relations: (string[] | I[] | string | I)[]) {
+  async load(...relations: (string[] | I[] | string | I)[]) {
     if (this.isNotEmpty()) {
       const query = (this.first() as any).constructor.query().with(...relations)
       const items = await query.eagerLoadRelations(this.items)
@@ -27,51 +30,60 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> implements 
     return this
   }
 
-  async loadAggregate<I> (relations: I, column: string, action: string | null | TFunction = null) {
+  async loadAggregate<I>(
+    relations: I,
+    column: string,
+    action: string | null | TFunction = null,
+  ) {
     if (this.isEmpty()) {
       return this
     }
-    const models = (await (this.first().newModelQuery() as any)
-      .whereIn(this.first().getKeyName(), this.modelKeys())
-      .select(this.first().getKeyName())
-      .withAggregate(relations, column, action)
-      .get())
-      .keyBy(this.first().getKeyName())
-    const attributes = difference(Object.keys(models.first().getAttributes()), [models.first().getKeyName()])
+    const models = (
+      await (this.first().newModelQuery() as any)
+        .whereIn(this.first().getKeyName(), this.modelKeys())
+        .select(this.first().getKeyName())
+        .withAggregate(relations, column, action)
+        .get()
+    ).keyBy(this.first().getKeyName())
+    const attributes = difference(Object.keys(models.first().getAttributes()), [
+      models.first().getKeyName(),
+    ])
     this.each((model) => {
-      const extraAttributes = pick(models.get(model.getKey()).getAttributes(), attributes)
-      model.fill(extraAttributes)
-        .syncOriginalAttributes(...attributes)
+      const extraAttributes = pick(
+        models.get(model.getKey()).getAttributes(),
+        attributes,
+      )
+      model.fill(extraAttributes).syncOriginalAttributes(...attributes)
     })
     return this
   }
 
-  loadCount (relations: I) {
+  loadCount(relations: I) {
     return this.loadAggregate(relations, '*', 'count')
   }
 
-  loadMax (relation: I, column: string) {
+  loadMax(relation: I, column: string) {
     return this.loadAggregate(relation, column, 'max')
   }
-  loadMin (relation: I, column: string) {
+  loadMin(relation: I, column: string) {
     return this.loadAggregate(relation, column, 'min')
   }
-  loadSum (relation: I, column: string) {
+  loadSum(relation: I, column: string) {
     return this.loadAggregate(relation, column, 'sum')
   }
-  loadAvg (relation: I, column: string) {
+  loadAvg(relation: I, column: string) {
     return this.loadAggregate(relation, column, 'avg')
   }
-  mapThen (callback: () => void) {
+  mapThen(callback: () => void) {
     return Promise.all(this.map(callback))
   }
-  modelKeys () {
-    return this.all().map(item => item.getKey())
+  modelKeys() {
+    return this.all().map((item) => item.getKey())
   }
-  contains<K, V> (key: keyof I | K | TFunction, value?: V): boolean;
-  contains<K, V> (key: K, operator?: string, value?: V) {
+  contains<K, V>(key: keyof I | K | TFunction, value?: V): boolean
+  contains<K, V>(key: K, operator?: string, value?: V) {
     if (arguments.length > 1) {
-      return super.contains(key, value ?? operator)//, value)
+      return super.contains(key, value ?? operator) //, value)
     }
     if (key instanceof Model) {
       return super.contains((model: Model) => {
@@ -82,21 +94,21 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> implements 
       return model.getKey() == key
     })
   }
-  diff (items: ICollection<any> | any[]) {
+  diff(items: ICollection<any> | any[]) {
     const diff = new (this.constructor as any)()
-    const dictionary = this.getDictionary(items);
-    (this.items as unknown as any[]).map((item) => {
+    const dictionary = this.getDictionary(items)
+    ;(this.items as unknown as any[]).map((item) => {
       if (dictionary[item.getKey()] === undefined) {
         diff.add(item)
       }
     })
     return diff
   }
-  except (keys: any[]) {
+  except(keys: any[]) {
     const dictionary = omit(this.getDictionary(), keys)
     return new (this.constructor as any)(Object.values(dictionary))
   }
-  intersect (items: I[]) {
+  intersect(items: I[]) {
     const intersect = new (this.constructor as any)()
     if (isEmpty(items)) {
       return intersect
@@ -109,13 +121,13 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> implements 
     }
     return intersect
   }
-  unique (key?: TFunction | keyof I, _strict = false) {
+  unique(key?: TFunction | keyof I, _strict = false) {
     if (key) {
-      return super.unique(key)//, strict)
+      return super.unique(key) //, strict)
     }
     return new (this.constructor as any)(Object.values(this.getDictionary()))
   }
-  find (key: any, defaultValue = null) {
+  find(key: any, defaultValue = null) {
     // const Model = Model
     if (key instanceof Model) {
       key = key.getKey()
@@ -129,76 +141,83 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> implements 
     collect(this.items as unknown as Model[]).first((model) => {
       return model.getKey() == key
     })
-    return (this.items as unknown as any[]).filter(model => {
-      return model.getKey() == key
-    })[0] || defaultValue
+    return (
+      (this.items as unknown as any[]).filter((model) => {
+        return model.getKey() == key
+      })[0] || defaultValue
+    )
   }
-  async fresh (...args: any[]) {
+  async fresh(...args: any[]) {
     if (this.isEmpty()) {
       return new (this.constructor as any)()
     }
     const model = this.first()
-    const freshModels = (await (model.newQuery() as any)
-      .with(...args)
-      .whereIn(model.getKeyName(), this.modelKeys())
-      .get())
-      .getDictionary()
-    return this.filter(model => {
+    const freshModels = (
+      await (model.newQuery() as any)
+        .with(...args)
+        .whereIn(model.getKeyName(), this.modelKeys())
+        .get()
+    ).getDictionary()
+    return this.filter((model) => {
       return model.exists && freshModels[model.getKey()] !== undefined
-    }).map(model => {
+    }).map((model) => {
       return freshModels[model.getKey()]
     })
   }
-  makeVisible (attributes: any) {
-    return this.each(item => {
+  makeVisible(attributes: any) {
+    return this.each((item) => {
       item.makeVisible(attributes)
     })
   }
-  makeHidden (attributes: any) {
-    return this.each(item => {
+  makeHidden(attributes: any) {
+    return this.each((item) => {
       item.makeHidden(attributes)
     })
   }
-  append (attributes: any) {
-    return this.each(item => {
+  append(attributes: any) {
+    return this.each((item) => {
       item.append(attributes)
     })
   }
-  only (keys: any[]) {
+  only(keys: any[]) {
     if (keys === null) {
       return new Collection(this.items)
     }
     const dictionary = pick(this.getDictionary(), keys)
     return new (this.constructor as any)(Object.values(dictionary))
   }
-  getDictionary (items?: ICollection<any> | any[]) {
+  getDictionary(items?: ICollection<any> | any[]) {
     items = !items ? (this.items as unknown as any[]) : items
     const dictionary: TGeneric = {}
-    items.map(value => {
+    items.map((value) => {
       dictionary[value.getKey()] = value
     })
     return dictionary
   }
-  toQuery () {
+  toQuery() {
     const model = this.first()
     if (!model) {
       throw new Error('Unable to create query for empty collection.')
     }
     const modelName = model.constructor.name as any
-    if (this.filter(model => {
-      return !(model instanceof modelName)
-    }).isNotEmpty()) {
+    if (
+      this.filter((model) => {
+        return !(model instanceof modelName)
+      }).isNotEmpty()
+    ) {
       throw new Error('Unable to create query for collection with mixed types.')
     }
     return (model.newModelQuery() as any).whereKey(this.modelKeys())
   }
-  toData () {
-    return this.all().map(item => typeof item.toData == 'function' ? item.toData() : item)
+  toData() {
+    return this.all().map((item) =>
+      typeof item.toData == 'function' ? item.toData() : item,
+    )
   }
-  toJSON () {
+  toJSON() {
     return this.toData()
   }
-  toJson (...args: any[]) {
+  toJson(...args: any[]) {
     return JSON.stringify(this.toData(), ...args)
   }
   [Symbol.iterator]: () => Iterator<I> = () => {
@@ -206,14 +225,16 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> implements 
     const length = this.items.length
     let n = 0
     return {
-      next () {
-        return n < length ? {
-          value: (items as any)[n++],
-          done: false
-        } : {
-          done: true
-        }
-      }
+      next() {
+        return n < length
+          ? {
+              value: (items as any)[n++],
+              done: false,
+            }
+          : {
+              done: true,
+            }
+      },
     } as Iterator<I>
   }
 }

@@ -1,48 +1,62 @@
 import type { MixinConstructor, TGeneric } from 'types/generics'
 import { flat as flatten, omit } from 'radashi'
-import { flattenDeep, getAttrMethod, getGetterMethod, getSetterMethod } from '../utils'
+import {
+  flattenDeep,
+  getAttrMethod,
+  getGetterMethod,
+  getSetterMethod,
+} from '../utils'
 
 import CastsAttributes from '../casts-attributes'
 import collect from 'collect.js'
 import dayjs from 'dayjs'
 
-const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
+const HasAttributes = <TBase extends MixinConstructor>(Model: TBase) => {
   return class extends Model {
     static castTypeCache: TGeneric = {}
     attributes: TGeneric = {}
     original: TGeneric = {}
-    casts: TGeneric<typeof CastsAttributes | 'int' | 'json' | 'string' | 'date' | 'boolean' | 'datetime' | 'collection'> = {}
+    casts: TGeneric<
+      | typeof CastsAttributes
+      | 'int'
+      | 'json'
+      | 'string'
+      | 'date'
+      | 'boolean'
+      | 'datetime'
+      | 'collection'
+    > = {}
     changes: TGeneric = {}
     appends: any[] = []
 
-    setAppends (appends: any[]) {
+    setAppends(appends: any[]) {
       this.appends = appends
       return this
     }
-    append (...keys: any[]) {
+    append(...keys: any[]) {
       const appends = flattenDeep(keys)
       this.appends = [...this.appends, ...appends]
       return this
     }
-    normalizeCastClassResponse (key: string, value: string): TGeneric {
+    normalizeCastClassResponse(key: string, value: string): TGeneric {
       return value?.constructor?.name === 'Object'
-        ? value as unknown as TGeneric
+        ? (value as unknown as TGeneric)
         : {
-          [key]: value
-        }
+            [key]: value,
+          }
     }
-    syncOriginal () {
+    syncOriginal() {
       this.original = this.getAttributes()
       return this
     }
-    syncChanges () {
+    syncChanges() {
       this.changes = this.getDirty()
       return this
     }
-    syncOriginalAttribute (attribute: string) {
+    syncOriginalAttribute(attribute: string) {
       this.syncOriginalAttributes(attribute)
     }
-    syncOriginalAttributes (...attributes: string[]) {
+    syncOriginalAttributes(...attributes: string[]) {
       attributes = flattenDeep(attributes)
       const modelAttributes = this.getAttributes()
       for (const attribute of attributes) {
@@ -50,7 +64,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       }
       return this
     }
-    isDirty (...attributes: string[]) {
+    isDirty(...attributes: string[]) {
       const changes = this.getDirty()
       attributes = flattenDeep(attributes)
       if (attributes.length === 0) {
@@ -63,7 +77,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       }
       return false
     }
-    getDirty () {
+    getDirty() {
       const dirty: TGeneric = {}
       const attributes = this.getAttributes()
       for (const key in attributes) {
@@ -74,7 +88,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       }
       return dirty
     }
-    originalIsEquivalent (key: string) {
+    originalIsEquivalent(key: string) {
       if (this.original[key] === undefined) {
         return false
       }
@@ -82,25 +96,24 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       const original = this.original[key]
       if (attribute === original) {
         return true
-      }
-      else {
+      } else {
         return false
       }
     }
-    setAttributes (attributes: TGeneric) {
+    setAttributes(attributes: TGeneric) {
       this.attributes = { ...attributes }
     }
-    setRawAttributes (attributes: TGeneric, sync = false) {
+    setRawAttributes(attributes: TGeneric, sync = false) {
       this.attributes = attributes
       if (sync) {
         this.syncOriginal()
       }
       return this
     }
-    getAttributes () {
+    getAttributes() {
       return { ...this.attributes }
     }
-    setAttribute (key: string, value: string) {
+    setAttribute(key: string, value: string) {
       const setterMethod = getSetterMethod(key)
       if (typeof this[setterMethod] === 'function') {
         this[setterMethod](value)
@@ -109,12 +122,17 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       const attrMethod = getAttrMethod(key)
       if (typeof this[attrMethod] === 'function') {
         const attribute = this[attrMethod]()
-        const callback = attribute.set || ((value: any) => {
-          this.attributes[key] = value
-        })
+        const callback =
+          attribute.set ||
+          ((value: any) => {
+            this.attributes[key] = value
+          })
         this.attributes = {
           ...this.attributes,
-          ...this.normalizeCastClassResponse(key, callback(value, this.attributes))
+          ...this.normalizeCastClassResponse(
+            key,
+            callback(value, this.attributes),
+          ),
         }
         return this
       }
@@ -136,7 +154,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       this.attributes[key] = value
       return this
     }
-    getAttribute (key: string) {
+    getAttribute(key: string) {
       if (!key) {
         return
       }
@@ -163,7 +181,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       }
       return
     }
-    castAttribute (key: string, value: string) {
+    castAttribute(key: string, value: string) {
       const castType = this.getCastType(key)
       if (!castType) {
         return value
@@ -190,15 +208,13 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
         case 'json':
           try {
             return JSON.parse(value)
-          }
-          catch {
+          } catch {
             return null
           }
         case 'collection':
           try {
             return collect(JSON.parse(value))
-          }
-          catch {
+          } catch {
             return collect([])
           }
         case 'date':
@@ -214,7 +230,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       }
       return value
     }
-    attributesToData () {
+    attributesToData() {
       let attributes = { ...this.attributes }
       for (const key in attributes) {
         if (this.hidden.includes(key)) {
@@ -233,7 +249,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       const casts = this.getCasts()
       for (const key in casts) {
         const value = casts[key]
-        if ((key in attributes) === false) {
+        if (key in attributes === false) {
           continue
         }
         attributes[key] = this.castAttribute(key, attributes[key])
@@ -241,7 +257,9 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
           attributes[key] = this.serializeDate(attributes[key])
         }
         if (key in attributes && this.isCustomDateTimeCast(value)) {
-          attributes[key] = dayjs(attributes[key]).format(String(value).split(':')[1])
+          attributes[key] = dayjs(attributes[key]).format(
+            String(value).split(':')[1],
+          )
         }
       }
       for (const key of this.appends) {
@@ -249,107 +267,102 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       }
       return attributes
     }
-    mutateAttribute (key: string, value: string | null) {
+    mutateAttribute(key: string, value: string | null) {
       if (typeof this[getGetterMethod(key)] === 'function') {
         return this[getGetterMethod(key)](value)
-      }
-      else if (typeof this[getAttrMethod(key)] === 'function') {
+      } else if (typeof this[getAttrMethod(key)] === 'function') {
         const caster = this[getAttrMethod(key)]()
         return caster.get(key, this.attributes)
-      }
-      else if (key in this) {
+      } else if (key in this) {
         return this[key]
       }
       return value
     }
-    mutateAttributeForArray (_key: string, _value: string) {
-    }
-    isDateAttribute (key: string) {
+    mutateAttributeForArray(_key: string, _value: string) {}
+    isDateAttribute(key: string) {
       return this.getDates().includes(key) || this.isDateCastable(key)
     }
-    serializeDate (date?: Date | string | null) {
+    serializeDate(date?: Date | string | null) {
       return date ? dayjs(date).toISOString() : null
     }
-    getDates () {
-      return this.usesTimestamps() ? [
-        this.getCreatedAtColumn(),
-        this.getUpdatedAtColumn(),
-      ] : []
+    getDates() {
+      return this.usesTimestamps()
+        ? [this.getCreatedAtColumn(), this.getUpdatedAtColumn()]
+        : []
     }
-    getCasts () {
+    getCasts() {
       if (this.getIncrementing()) {
         return {
           [this.getKeyName()]: this.getKeyType(),
-          ...this.casts
+          ...this.casts,
         }
       }
       return this.casts
     }
-    getCastType (key: string) {
+    getCastType(key: string) {
       const castType = this.getCasts()[key]
       let castTypeCacheKey
       if (typeof castType === 'string') {
         castTypeCacheKey = castType
-      }
-      else if ((new castType) instanceof CastsAttributes) {
+      } else if (new castType() instanceof CastsAttributes) {
         castTypeCacheKey = castType.name
       }
-      if (castTypeCacheKey && this.getConstructor().castTypeCache[castTypeCacheKey] !== undefined) {
+      if (
+        castTypeCacheKey &&
+        this.getConstructor().castTypeCache[castTypeCacheKey] !== undefined
+      ) {
         return this.getConstructor().castTypeCache[castTypeCacheKey]
       }
       let convertedCastType
       if (this.isCustomDateTimeCast(castType)) {
         convertedCastType = 'custom_datetime'
-      }
-      else if (this.isDecimalCast(castType)) {
+      } else if (this.isDecimalCast(castType)) {
         convertedCastType = 'decimal'
-      }
-      else if (this.isCustomCast(castType)) {
+      } else if (this.isCustomCast(castType)) {
         convertedCastType = castType
-      }
-      else {
+      } else {
         convertedCastType = String(castType).toLocaleLowerCase().trim()
       }
-      return this.getConstructor()[castTypeCacheKey!] = convertedCastType
+      return (this.getConstructor()[castTypeCacheKey!] = convertedCastType)
     }
-    hasCast (key: string, types: readonly string[] = []) {
+    hasCast(key: string, types: readonly string[] = []) {
       if (key in this.casts) {
         types = flatten(types as unknown as readonly string[][])
         return types.length > 0 ? types.includes(this.getCastType(key)) : true
       }
       return false
     }
-    withDayjs (date: string) {
+    withDayjs(date: string) {
       return dayjs(date)
     }
-    isCustomCast (cast: any) {
-      return typeof cast === 'function' && (new cast) instanceof CastsAttributes
+    isCustomCast(cast: any) {
+      return typeof cast === 'function' && new cast() instanceof CastsAttributes
     }
-    isCustomDateTimeCast (cast: any) {
+    isCustomDateTimeCast(cast: any) {
       if (typeof cast !== 'string') {
         return false
       }
       return cast.startsWith('date:') || cast.startsWith('datetime:')
     }
-    isDecimalCast (cast: any) {
+    isDecimalCast(cast: any) {
       if (typeof cast !== 'string') {
         return false
       }
       return cast.startsWith('decimal:')
     }
-    isDateCastable (key: string) {
+    isDateCastable(key: string) {
       return this.hasCast(key, ['date', 'datetime'])
     }
-    fromDateTime (value: string) {
+    fromDateTime(value: string) {
       return dayjs(this.asDateTime(value)).format(this.getDateFormat())
     }
-    getDateFormat () {
+    getDateFormat() {
       return this.dateFormat || 'YYYY-MM-DD HH:mm:ss'
     }
-    asDecimal (value: string, decimals: number) {
+    asDecimal(value: string, decimals: number) {
       return parseFloat(value).toFixed(decimals)
     }
-    asDateTime (value: any) {
+    asDateTime(value: any) {
       if (value === null) {
         return null
       }
@@ -361,7 +374,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       }
       return new Date(value)
     }
-    asDate (value: string) {
+    asDate(value: string) {
       const date = this.asDateTime(value)
       return dayjs(date).startOf('day').toDate()
     }

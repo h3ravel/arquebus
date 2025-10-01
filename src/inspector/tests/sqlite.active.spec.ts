@@ -11,7 +11,7 @@ for (const sqliteClientName of ['sqlite3']) {
   // for (const sqliteClientName of ['sqlite3', 'better-sqlite3']) {
   describe(sqliteClientName, () => {
     config.sqlite.connection = {
-      filename: process.cwd() + '/src/inspector/tests/db/sqlite.db'
+      filename: process.cwd() + '/src/inspector/tests/db/sqlite.db',
     }
 
     arquebus.addConnection(config.sqlite, config.sqlite.client)
@@ -20,8 +20,7 @@ for (const sqliteClientName of ['sqlite3']) {
     const database: Knex = connection.connector
     const inspector: SchemaInspector = schemaInspector.inspect(database)
 
-    beforeAll(() => {
-    })
+    beforeAll(() => {})
 
     afterAll(async () => {
       await database.destroy()
@@ -658,19 +657,19 @@ for (const sqliteClientName of ['sqlite3']) {
           {
             table: 'teams',
             constraint_name: 'unique_name_description',
-            columns: ['name', 'description']
+            columns: ['name', 'description'],
           },
           { table: 'teams', constraint_name: 'uuid', columns: ['uuid'] },
           {
             table: 'teams',
             constraint_name: 'sqlite_autoindex_teams_1',
-            columns: ['uuid']
+            columns: ['uuid'],
           },
           {
             table: 'detailed_page_visits',
             constraint_name: 'sqlite_autoindex_detailed_page_visits_1',
-            columns: ['domain', 'request_path']
-          }
+            columns: ['domain', 'request_path'],
+          },
         ])
       })
 

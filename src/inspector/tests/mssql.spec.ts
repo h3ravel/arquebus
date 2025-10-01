@@ -1,11 +1,12 @@
-import knex, { Knex } from 'knex';
-import { expect } from 'chai';
-import schemaInspector from '../lib';
-import { SchemaInspector } from '../lib/types/schema-inspector';
+import type { Knex } from 'knex'
+import knex from 'knex'
+import { expect } from 'chai'
+import schemaInspector from '../lib'
+import type { SchemaInspector } from '../lib/types/schema-inspector'
 
 describe('mssql', () => {
-  let database: Knex;
-  let inspector: SchemaInspector;
+  let database: Knex
+  let inspector: SchemaInspector
 
   before(() => {
     database = knex({
@@ -18,13 +19,13 @@ describe('mssql', () => {
         database: 'test_db',
         charset: 'utf8',
       },
-    });
-    inspector = schemaInspector(database);
-  });
+    })
+    inspector = schemaInspector(database)
+  })
 
   after(async () => {
-    await database.destroy();
-  });
+    await database.destroy()
+  })
 
   describe('.tables', () => {
     it('returns tables', async () => {
@@ -33,9 +34,9 @@ describe('mssql', () => {
         'teams',
         'users',
         'page_visits',
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.tableInfo', () => {
     it('returns information for all tables', async () => {
@@ -60,32 +61,32 @@ describe('mssql', () => {
           schema: 'dbo',
           catalog: 'test_db',
         },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for specific table', async () => {
       expect(await inspector.tableInfo('teams')).to.deep.equal({
         name: 'teams',
         schema: 'dbo',
         catalog: 'test_db',
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('.hasTable', () => {
     it('returns if table exists or not', async () => {
-      expect(await inspector.hasTable('teams')).to.equal(true);
-      expect(await inspector.hasTable('foobar')).to.equal(false);
-    });
-  });
+      expect(await inspector.hasTable('teams')).to.equal(true)
+      expect(await inspector.hasTable('foobar')).to.equal(false)
+    })
+  })
 
   describe('.hasColumns', () => {
     it('returns if table and column exists or not', async () => {
-      expect(await inspector.hasColumn('teams', 'credits')).to.equal(true);
-      expect(await inspector.hasColumn('teams', 'foobar')).to.equal(false);
-      expect(await inspector.hasColumn('foobar', 'foobar')).to.equal(false);
-    });
-  });
+      expect(await inspector.hasColumn('teams', 'credits')).to.equal(true)
+      expect(await inspector.hasColumn('teams', 'foobar')).to.equal(false)
+      expect(await inspector.hasColumn('foobar', 'foobar')).to.equal(false)
+    })
+  })
 
   describe('.columns', () => {
     it('returns information for all tables', async () => {
@@ -109,8 +110,8 @@ describe('mssql', () => {
         { table: 'detailed_page_visits', column: 'domain' },
         { table: 'detailed_page_visits', column: 'request_path' },
         { table: 'detailed_page_visits', column: 'user_agent' },
-      ]);
-    });
+      ])
+    })
 
     it('returns information for specific table', async () => {
       expect(await inspector.columns('teams')).to.have.deep.members([
@@ -122,9 +123,9 @@ describe('mssql', () => {
         { column: 'credits', table: 'teams' },
         { column: 'created_at', table: 'teams' },
         { column: 'activated_at', table: 'teams' },
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.columnInfo', () => {
     it('returns information for all columns in all tables', async () => {
@@ -452,8 +453,8 @@ describe('mssql', () => {
           is_generated: false,
           generation_expression: null,
         },
-      ]);
-    });
+      ])
+    })
     it('returns information for all columns in specific table', async () => {
       expect(await inspector.columnInfo('teams')).to.have.deep.members([
         {
@@ -592,8 +593,8 @@ describe('mssql', () => {
           foreign_key_column: null,
           foreign_key_table: null,
         },
-      ]);
-    });
+      ])
+    })
     it('returns information for a specific column in a specific table', async () => {
       expect(await inspector.columnInfo('teams', 'uuid')).to.deep.equal({
         name: 'uuid',
@@ -611,20 +612,20 @@ describe('mssql', () => {
         has_auto_increment: false,
         foreign_key_column: null,
         foreign_key_table: null,
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('.primary', () => {
     it('returns primary key for a table', async () => {
-      expect(await inspector.primary('teams')).to.equal('id');
-      expect(await inspector.primary('page_visits')).to.equal(null);
+      expect(await inspector.primary('teams')).to.equal('id')
+      expect(await inspector.primary('page_visits')).to.equal(null)
       expect(await inspector.primary('detailed_page_visits')).to.deep.equal([
         'domain',
         'request_path',
-      ]);
-    });
-  });
+      ])
+    })
+  })
 
   describe('.foreignKeys', () => {
     it('returns foreign keys for all tables', async () => {
@@ -639,11 +640,11 @@ describe('mssql', () => {
           on_delete: 'CASCADE',
           on_update: 'CASCADE',
         },
-      ]);
-    });
+      ])
+    })
 
     it('filters based on table param', async () => {
-      expect(await inspector.foreignKeys('teams')).to.deep.equal([]);
-    });
-  });
-});
+      expect(await inspector.foreignKeys('teams')).to.deep.equal([])
+    })
+  })
+})
