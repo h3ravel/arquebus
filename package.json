@@ -92,6 +92,16 @@
         "default": "./dist/inspector/index.cjs"
       }
     },
+    "./seeders": {
+      "import": {
+        "types": "./dist/seeders/index.d.ts",
+        "default": "./dist/seeders/index.js"
+      },
+      "require": {
+        "types": "./dist/seeders/index.d.cts",
+        "default": "./dist/seeders/index.cjs"
+      }
+    },
     "./browser": {
       "import": {
         "types": "./dist/browser/index.d.ts",

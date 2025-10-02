@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import net from 'net'
 
 import type { Knex } from 'knex'
 import type { SchemaInspector } from 'src/inspector/types/schema-inspector'
@@ -6,7 +7,28 @@ import { arquebus } from 'src'
 import config from 'test/config'
 import { SchemaInspector as schemaInspector } from 'src/inspector'
 
-describe('mysql', () => {
+async function isPortReachable(host: string, port: number, timeout = 500): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    const socket = new net.Socket()
+    let settled = false
+    const done = (result: boolean) => {
+      if (settled) return
+      settled = true
+      try { socket.destroy() } catch {}
+      resolve(result)
+    }
+    socket.setTimeout(timeout)
+    socket.once('error', () => done(false))
+    socket.once('timeout', () => done(false))
+    socket.connect(port, host, () => done(true))
+  })
+}
+
+const mysqlHost = (config.mysql.connection as any).host ?? 'localhost'
+const mysqlPort = (config.mysql.connection as any).port ?? 3306
+const mysqlUp = await isPortReachable(mysqlHost, mysqlPort)
+
+describe.runIf(mysqlUp)('mysql', () => {
   arquebus.addConnection(config.mysql, config.mysql.client)
   const connection = arquebus.fire(config.mysql.client)
 

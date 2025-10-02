@@ -14,6 +14,7 @@
     "outDir": "dist",
     "useDefineForClassFields": true,
     "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
     "paths": {
       "cli/*": ["src/cli/*"],
       "package": ["package.json"],

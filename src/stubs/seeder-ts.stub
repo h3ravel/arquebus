@@ -1,0 +1,9 @@
+import { arquebus, Seeder } from '@h3ravel/arquebus'
+import type QueryBuilder from '@h3ravel/arquebus/types/query-builder'
+
+export default class {{ name }} extends Seeder {
+  async run(connection: QueryBuilder) {
+    // Example: insert sample data
+    await connection.table('users').insert({ name: 'John Doe' })
+  }
+}
