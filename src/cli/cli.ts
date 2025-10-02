@@ -94,7 +94,7 @@ export class Cli {
           .choices(['js', 'ts'])
           .default('js', 'generates a js config'),
       )
-      .action(async (type) => {
+      .action(async (type: 'js' | 'ts') => {
         if (!this.modulePath)
           this.output.error([
             'ERROR: No local arquebus install found',
@@ -134,7 +134,15 @@ export class Cli {
       .option('-t, --table [string]', 'The table to migrate')
       .option('-c, --create [string]', 'The table to be created')
       .option('-p, --path [path]', 'The path to the migrations directory.')
-      .action(async (name, opts) => {
+      .action(async (
+        name: string,
+        opts: {
+          type?: 'js' | 'ts'
+          table?: string
+          create?: string | boolean
+          path?: string
+        },
+      ) => {
         if (!this.configPath) this.terminateNotFound()
 
         try {
@@ -145,14 +153,14 @@ export class Cli {
           )
 
           let table = opts.table
-          let create: boolean = opts.create || false
-          if (!table && typeof create === 'string') {
-            table = create
+          let create: boolean = Boolean(opts.create) && opts.create !== ''
+          if (!table && typeof opts.create === 'string') {
+            table = opts.create
             create = true
           }
           if (!table) {
             const guessed = TableGuesser.guess(name)
-            table = guessed[0]
+            table = guessed[0] as string | undefined
             create = !!guessed[1]
           }
 
@@ -180,7 +188,7 @@ export class Cli {
       .command('migrate:publish <package>')
       .description('Publish any migration files from packages.')
       .option('-p, --path [path]', 'The path to the migrations directory.')
-      .action(async (pkg, opts) => {
+      .action(async (pkg: string, opts: { path?: string }) => {
         if (!this.configPath) {
           this.terminateNotFound()
         }
@@ -220,7 +228,7 @@ export class Cli {
         'Force the migrations to be run so they can be rolled back individually.',
       )
       .option('-p, --path [path]', 'The path to the migrations directory.')
-      .action(async (opts) => {
+      .action(async (opts: { step?: number | string; path?: string }) => {
         if (!this.configPath) {
           this.terminateNotFound()
         }
@@ -228,7 +236,8 @@ export class Cli {
         const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
 
         try {
-          await new Migrate(basePath).run(this.config, opts, true)
+          const step = typeof opts.step === 'string' ? parseInt(opts.step) : opts.step
+          await new Migrate(basePath).run(this.config, { ...opts, step }, true)
         } catch (e) {
           this.output.error('ERROR: ' + e)
         }
@@ -242,7 +251,7 @@ export class Cli {
       .description('Rollback the last database migration.')
       .option('-s, --step [number]', 'The number of migrations to be reverted.')
       .option('-p, --path [path]', 'The path to the migrations directory.')
-      .action(async (opts) => {
+      .action(async (opts: { step?: number | string; path?: string }) => {
         if (!this.configPath) this.terminateNotFound()
 
         const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
@@ -250,7 +259,7 @@ export class Cli {
         try {
           await new Migrate(basePath, undefined, (msg, sts) => {
             if (sts) this.output[sts](msg)
-          }).rollback(this.config, opts, true)
+          }).rollback(this.config, { ...opts, step: typeof opts.step === 'string' ? parseInt(opts.step) : opts.step }, true)
         } catch (e) {
           this.output.error('ERROR: ' + e)
         }
@@ -263,7 +272,7 @@ export class Cli {
       .command('migrate:reset')
       .description('Rollback all database migrations.')
       .option('-p, --path [path]', 'The path to the migrations directory.')
-      .action(async (opts) => {
+      .action(async (opts: { path?: string }) => {
         if (!this.configPath) this.terminateNotFound()
 
         const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
@@ -284,7 +293,7 @@ export class Cli {
       .command('migrate:refresh')
       .description('Reset and re-run all migrations.')
       .option('-p, --path [path]', 'The path to the migrations directory.')
-      .action(async (opts) => {
+      .action(async (opts: { path?: string }) => {
         if (!this.configPath) this.terminateNotFound()
 
         const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
@@ -305,7 +314,7 @@ export class Cli {
       .command('migrate:fresh')
       .description('Drop all tables and re-run all migrations.')
       .option('-p, --path [path]', 'The path to the migrations directory.')
-      .action(async (opts) => {
+      .action(async (opts: { path?: string }) => {
         if (!this.configPath) this.terminateNotFound()
 
         const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
@@ -326,7 +335,7 @@ export class Cli {
       .command('migrate:status')
       .description('Show the status of each migration.')
       .option('-p, --path [path]', 'The path to the migrations directory.')
-      .action(async (opts) => {
+      .action(async (opts: { path?: string }) => {
         if (!this.configPath) this.terminateNotFound()
 
         const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
@@ -361,6 +370,81 @@ export class Cli {
       })
 
     /**
+     * Run database seeders
+     */
+    program
+      .command('db:seed')
+      .description('Run database seeders.')
+      .option('-p, --path [path]', 'The path to the seeders directory.')
+      .action(async (opts: { path?: string }) => {
+        if (!this.configPath) this.terminateNotFound()
+
+        const basePath = opts.path ? path.join(this.cwd, opts.path) : this.cwd
+        try {
+          const { arquebus } = await new Migrate(basePath).setupConnection({
+            ...(this.config as any),
+            skipConnection: false,
+          })
+          const { SeederRunner } = await import('src/seeders')
+          const runner = new SeederRunner(arquebus)
+          const seederPath = path.join(
+            basePath,
+            this.config.seeders?.path ?? './seeders',
+          )
+          await runner.setConnection(this.config.client).run([seederPath])
+          this.output.success('Seeders executed successfully.')
+        } catch (e) {
+          this.output.error('ERROR: ' + e)
+        }
+      })
+
+    /**
+     * Create a new seeder file
+     */
+    program
+      .command('make:seeder <name>')
+      .description('Create a new Seeder file.')
+      .addOption(
+        new Option('-l, --type [string]', 'Type of seeder file to generate.')
+          .choices(['js', 'ts'])
+          .default('js', 'generates a js seeder file'),
+      )
+      .option('--force', 'Force creation if seeder already exists.', false)
+      .option('-p, --path [path]', 'The path to the seeders directory.')
+      .action(async (
+        name: string,
+        opts: { type?: 'js' | 'ts'; force?: boolean; path?: string },
+      ) => {
+        if (!this.configPath) this.terminateNotFound()
+
+        const seederPath = path.join(
+          this.cwd,
+          opts.path ?? this.config.seeders?.path ?? './seeders',
+          name.toLowerCase() + '.' + opts.type,
+        )
+
+        try {
+          if (!opts.force && (await Utils.fileExists(seederPath))) {
+            this.output.error('ERROR: Seeder already exists.')
+          }
+
+          await mkdir(path.dirname(seederPath), { recursive: true })
+
+          const stubPath = path.join(
+            this.modulePath,
+            `src/stubs/seeder-${opts.type}.stub`,
+          )
+
+          let stub = await readFile(stubPath, 'utf-8')
+          stub = stub.replace(/{{ name }}/g, name)
+          await writeFile(seederPath, stub)
+          this.output.success(`Created Seeder: ${seederPath}`)
+        } catch (e) {
+          this.output.error('ERROR: ' + e)
+        }
+      })
+
+    /**
      * Create a new model file
      */
     program
@@ -373,7 +457,10 @@ export class Cli {
       )
       .option('--force', 'Force creation if model already exists.', false)
       .option('-p, --path [path]', 'The path to the models directory.')
-      .action(async (name, opts) => {
+      .action(async (
+        name: string,
+        opts: { type?: 'js' | 'ts'; force?: boolean; path?: string },
+      ) => {
         if (!this.configPath) this.terminateNotFound()
 
         const modelPath = path.join(

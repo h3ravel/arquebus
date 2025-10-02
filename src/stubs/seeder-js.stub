@@ -1,0 +1,8 @@
+import { Seeder } from '@h3ravel/arquebus'
+
+export default class {{ name }} extends Seeder {
+  async run(connection) {
+    // Example: insert sample data
+    await connection.table('users').insert({ name: 'John Doe' })
+  }
+}

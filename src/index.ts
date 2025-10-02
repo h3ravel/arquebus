@@ -6,6 +6,7 @@ import HasUniqueIds from './concerns/has-unique-ids'
 import type { IPaginatorParams } from 'types/utils'
 import { Migrate } from './migrate'
 import Migration from './migrations/migration'
+import { Seeder, SeederCreator, SeederRunner } from './seeders'
 import Model from './model'
 import Paginator from './paginator'
 import Pivot from './pivot'
@@ -67,6 +68,9 @@ export {
   Attribute,
   CastsAttributes,
   Migration,
+  Seeder,
+  SeederCreator,
+  SeederRunner,
   Migrate,
   Scope,
   SoftDeletes,

@@ -94,6 +94,24 @@ const users = await User.query()
 await user.load('posts');
 ```
 
+## Seeders
+- Create a seeder: `npx arquebus make:seeder UsersSeeder`
+- Run seeders: `npx arquebus db:seed` or `npx arquebus db:seed --path ./database/seeders`
+- Seeder class example (TypeScript):
+
+```ts
+import { Seeder } from '@h3ravel/arquebus'
+import type QueryBuilder from '@h3ravel/arquebus/types/query-builder'
+
+export default class UsersSeeder extends Seeder {
+  async run(connection: QueryBuilder) {
+    await connection.table('users').insert({ name: 'Alice' })
+  }
+}
+```
+
+Seeders execute with the same connection setup as migrations. The CLI resolves paths from `--basePath` and `--path` and loads seeders from `.ts`/`.js` files exporting a default class with a `run` method.
+
 ## Show Your Support
 
 Please ⭐️ this repository if this project helped you

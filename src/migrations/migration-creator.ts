@@ -27,7 +27,7 @@ export class MigrationCreator {
   async create(
     name: string,
     dir: string,
-    table: string,
+    table?: string,
     create: boolean = false,
   ) {
     const stub = await this.getStub(table, create)
@@ -92,8 +92,8 @@ export class MigrationCreator {
     return await readFile(stub, 'utf-8')
   }
 
-  populateStub(stub: string, table: string) {
-    if (table !== null) {
+  populateStub(stub: string, table?: string) {
+    if (table) {
       stub = stub.replace(/DummyTable|{{\s*table\s*}}/g, table)
     }
     return stub
@@ -108,7 +108,7 @@ export class MigrationCreator {
     return path.join(dir, `${datePrefix}_${name}.${this.type}`)
   }
 
-  async firePostCreateHooks(table: string, filePath: string) {
+  async firePostCreateHooks(table: string | undefined, filePath: string) {
     for (const callback of this.postCreate) {
       await callback(table, filePath)
     }

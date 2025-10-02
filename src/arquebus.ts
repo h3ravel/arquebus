@@ -13,6 +13,7 @@ import type { ModelOptions, TBaseConfig, TConfig } from 'types/container'
 import type { TFunction, TGeneric } from 'types/generics'
 import path from 'path'
 import { existsSync } from 'fs'
+import { Utils } from './cli/utils'
 
 class arquebus<M extends Model = Model> {
   static connectorFactory: typeof Knex | null = null
@@ -110,14 +111,17 @@ class arquebus<M extends Model = Model> {
   getConnection(name: string | null = null) {
     name = name || 'default'
 
-    if (this.manager[name] === undefined) {
+    // Resolve config with fallback to 'default' when named connection is absent
+    const resolvedName = this.connections[name] ? name : 'default'
+
+    if (this.manager[resolvedName] === undefined) {
       const queryBuilder = new QueryBuilder(
-        this.connections[name],
+        this.connections[resolvedName],
         arquebus.getConnectorFactory(),
       )
-      ;(this.manager as any)[name] = queryBuilder
+      ;(this.manager as any)[resolvedName] = queryBuilder
     }
-    return this.manager[name]
+    return this.manager[resolvedName]
   }
 
   addConnection(config: TConfig | TBaseConfig, name: string = 'default') {
@@ -167,6 +171,32 @@ class arquebus<M extends Model = Model> {
         throw new Error(
           'arquebus.config.ts found in production without build step',
         )
+      }
+    }
+
+    // Try to locate config by walking up directories (supports test/cli setup)
+    const candidateDirs = [
+      process.cwd(),
+      path.join(process.cwd(), 'test', 'cli'),
+      path.join(process.cwd(), 'test'),
+    ]
+    for (const dir of candidateDirs) {
+      const found = Utils.findUpConfig(dir, 'arquebus.config', [
+        'js',
+        'ts',
+        'cjs',
+      ])
+      if (found) {
+        const isTs = found.endsWith('.ts')
+        if (!isTs || process.env.NODE_ENV !== 'production') {
+          config = (await import(found)).default
+          if (addConnection) instance.addConnection(config, config.client)
+          return config
+        } else {
+          throw new Error(
+            'arquebus.config.ts found in production without build step',
+          )
+        }
       }
     }
 
