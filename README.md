@@ -6,7 +6,7 @@
 
 [![Framework][ix]][lx]
 [![Arquebus ORM][i1]][l1]
-[![Downloads][d1]][d1]
+[![Downloads][d1]][l1]
 [![Tests][tei]][tel]
 [![License][lini]][linl]
 
@@ -95,17 +95,18 @@ await user.load('posts');
 ```
 
 ## Seeders
+
 - Create a seeder: `npx arquebus make:seeder UsersSeeder`
 - Run seeders: `npx arquebus db:seed` or `npx arquebus db:seed --path ./database/seeders`
 - Seeder class example (TypeScript):
 
 ```ts
-import { Seeder } from '@h3ravel/arquebus'
-import type QueryBuilder from '@h3ravel/arquebus/types/query-builder'
+import { Seeder } from '@h3ravel/arquebus';
+import type QueryBuilder from '@h3ravel/arquebus/types/query-builder';
 
 export default class UsersSeeder extends Seeder {
   async run(connection: QueryBuilder) {
-    await connection.table('users').insert({ name: 'Alice' })
+    await connection.table('users').insert({ name: 'Alice' });
   }
 }
 ```

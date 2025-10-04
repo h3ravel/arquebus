@@ -9,8 +9,11 @@ importers:
   .:
     dependencies:
       '@h3ravel/shared':
-        specifier: ^0.20.1
-        version: 0.20.11
+        specifier: ^0.20.12
+        version: 0.20.12
+      '@h3ravel/support':
+        specifier: ^0.12.0
+        version: 0.12.0
       chalk:
         specifier: ^5.6.2
         version: 5.6.2
@@ -458,8 +461,11 @@ packages:
   '@gar/promisify@1.1.3':
     resolution: {integrity: sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==}
 
-  '@h3ravel/shared@0.20.11':
-    resolution: {integrity: sha512-9j46/Uap9g87Tt7y3KtzFiumuMuwOzxBu4sxPxddPcyg8oDURE58pK8r7xy1hFSlbpNe97ICG0T+uenOr+R+8w==}
+  '@h3ravel/shared@0.20.12':
+    resolution: {integrity: sha512-DRmavh7iegRvwGzTnpyIiJBUw33vLsyEQwVJwS5cnib389OVAjQYyPRhaV7nOCgTbfMWI48o1avJpMOgO3TsAA==}
+
+  '@h3ravel/support@0.12.0':
+    resolution: {integrity: sha512-RJ/TkLtaUl5Zu4I/Vwwp5MtTEhlDHTTBexXJAV1kcpJTeDIKHnpNzhF+sRIkHlQFmyobqy7YRsWuOdYZGidwhA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -1893,6 +1899,10 @@ packages:
     resolution: {integrity: sha512-Nv9KddBcQSlQopmBHXSsZVY5xsdlZkdH/Iey0BlcBYggMd4two7cZnKOK9vmy3nY0O5RGH99z1PCeTpPqszUYg==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
 
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
+
   magic-string@0.30.19:
     resolution: {integrity: sha512-2N21sPY9Ws53PZvsEpVtNuSW+ScYbQdp4b9qUaL+9QkHUrGFKo56Lg9Emg5s9V/qrtNBmiR01sYhUOwu3H+VOw==}
 
@@ -3246,7 +3256,7 @@ snapshots:
   '@gar/promisify@1.1.3':
     optional: true
 
-  '@h3ravel/shared@0.20.11':
+  '@h3ravel/shared@0.20.12':
     dependencies:
       chalk: 5.6.2
       edge.js: 6.3.0
@@ -3255,6 +3265,11 @@ snapshots:
       preferred-pm: 4.1.1
     transitivePeerDependencies:
       - crossws
+
+  '@h3ravel/support@0.12.0':
+    dependencies:
+      dayjs: 1.11.18
+      luxon: 3.7.2
 
   '@humanfs/core@0.19.1': {}
 
@@ -4690,6 +4705,8 @@ snapshots:
   lru-cache@7.18.3: {}
 
   lru.min@1.1.2: {}
+
+  luxon@3.7.2: {}
 
   magic-string@0.30.19:
     dependencies:

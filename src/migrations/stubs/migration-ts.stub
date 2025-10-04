@@ -15,4 +15,4 @@ export default class extends Migration {
   async down (schema: SchemaBuilder) {
     //
   }
-};
+}

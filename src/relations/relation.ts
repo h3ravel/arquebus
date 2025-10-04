@@ -14,13 +14,13 @@ class Relation {
     this.related = this.query.model
   }
 
-  static extend(trait: Record<string, any>): void {
+  static extend (trait: Record<string, any>): void {
     for (const methodName in trait) {
-      ;(this.prototype as any)[methodName] = trait[methodName]
+      ; (this.prototype as any)[methodName] = trait[methodName]
     }
   }
 
-  static noConstraints(callback: () => any): any {
+  static noConstraints (callback: () => any): any {
     const previous = this.constraints
     this.constraints = false
     try {
@@ -30,7 +30,7 @@ class Relation {
     }
   }
 
-  asProxy(): any {
+  asProxy (): any {
     const handler: ProxyHandler<any> = {
       get: function (target, prop: string | symbol) {
         if (typeof (target as any)[prop] !== 'undefined') {
@@ -49,33 +49,33 @@ class Relation {
     return new Proxy(this, handler)
   }
 
-  getRelated(): any {
+  getRelated (): any {
     return this.related
   }
 
-  getKeys(models: any[], key?: string | null): any[] {
+  getKeys (models: any[], key?: string | null): any[] {
     return models
       .map((model) => (key ? model.attributes[key] : model.getKey()))
       .sort()
   }
 
-  getRelationQuery(): any {
+  getRelationQuery (): any {
     return this.query
   }
 
-  whereInEager(
+  whereInEager (
     whereIn: string,
     key: string,
     modelKeys: any[],
     query: any = null,
   ): void {
-    ;(query || this.query)[whereIn](key, modelKeys)
+    ; (query || this.query)[whereIn](key, modelKeys)
     if (modelKeys.length === 0) {
       this.eagerKeysWereEmpty = true
     }
   }
 
-  whereInMethod(model: any, key: string): string {
+  whereInMethod (model: any, key: string): string {
     return 'whereIn' // <- dead code below never runs, but keeping structure
     const segments = key.split('.')
     return model.getKeyName() === segments.pop() &&
@@ -84,35 +84,35 @@ class Relation {
       : 'whereIn'
   }
 
-  getEager(): any {
+  getEager (): any {
     return this.eagerKeysWereEmpty
       ? (this as any).query.getModel().newCollection()
       : this.get()
   }
 
-  async get(columns: string | string[] = ['*']): Promise<any> {
+  async get (columns: string | string[] = ['*']): Promise<any> {
     return await (this as any).query.get(columns)
   }
 
-  async first(columns: string[] = ['*']): Promise<any> {
+  async first (columns: string[] = ['*']): Promise<any> {
     return await (this as any).query.first(columns)
   }
 
-  async paginate(...args: any[]): Promise<any> {
+  async paginate (...args: unknown[]): Promise<any> {
     return await this.query.paginate(...args)
   }
 
-  async count(...args: any[]): Promise<any> {
+  async count (...args: any[]): Promise<any> {
     return await (this as any).query.clearSelect().count(...args)
   }
 
-  toSql(): string {
+  toSql (): string {
     return (this as any).query.toSql()
   }
 
-  addConstraints(): void {}
+  addConstraints (): void { }
 
-  getRelationCountHash(incrementJoinCount: boolean = true): string {
+  getRelationCountHash (incrementJoinCount: boolean = true): string {
     return (
       'arquebus_reserved_' +
       (incrementJoinCount
@@ -121,7 +121,7 @@ class Relation {
     )
   }
 
-  getRelationExistenceQuery(
+  getRelationExistenceQuery (
     query: any,
     parentQuery: any,
     columns: string[] = ['*'],
@@ -135,7 +135,7 @@ class Relation {
       )
   }
 
-  getRelationExistenceCountQuery(query: any, parentQuery: any): any {
+  getRelationExistenceCountQuery (query: any, parentQuery: any): any {
     const db = this.related.getConnection()
     return this.getRelationExistenceQuery(
       query,
@@ -144,11 +144,11 @@ class Relation {
     )
   }
 
-  getQualifiedParentKeyName(): string {
+  getQualifiedParentKeyName (): string {
     return this.parent.getQualifiedKeyName()
   }
 
-  getExistenceCompareKey(this: any): string {
+  getExistenceCompareKey (this: any): string {
     return this.getQualifiedForeignKeyName?.() // BelongsToMany overrides this
   }
 }

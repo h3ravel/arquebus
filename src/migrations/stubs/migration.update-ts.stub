@@ -8,7 +8,7 @@ export default class extends Migration {
   async up(schema: SchemaBuilder) {
     await schema.table('{{ table }}', (table) => {
       // 
-    });
+    })
   }
 
   /**
@@ -17,6 +17,6 @@ export default class extends Migration {
   async down(schema: SchemaBuilder) {
     await schema.table('{{ table }}', (table) => {
       // 
-    });
+    })
   }
-};
+}

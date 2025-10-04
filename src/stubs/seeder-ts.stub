@@ -1,5 +1,5 @@
-import { arquebus, Seeder } from '@h3ravel/arquebus'
-import type QueryBuilder from '@h3ravel/arquebus/types/query-builder'
+import type { QueryBuilder } from '@h3ravel/arquebus'
+import { Seeder } from '@h3ravel/arquebus'
 
 export default class {{ name }} extends Seeder {
   async run(connection: QueryBuilder) {

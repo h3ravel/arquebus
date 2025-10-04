@@ -5,9 +5,9 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { Logger } from '@h3ravel/shared'
 import { Migrate } from 'src/migrate'
 import { MigrationCreator } from 'src/migrations/migration-creator'
+import { Str } from '@h3ravel/support'
 import type { TBaseConfig } from 'types/container'
 import type { XGeneric } from 'types/generics'
-import chalk from 'chalk'
 import cliPkg from '../../package.json'
 import { config as dotenv } from 'dotenv'
 import path from 'path'
@@ -26,13 +26,14 @@ export class Cli {
     this.basePath = basePath ?? (process.env.TEST === 'true' ? 'test/cli' : '')
   }
 
-  private terminateNotFound() {
+  private terminateNotFound () {
+    const cmd = Logger.log([['arquebus init', ['italic', 'black', 'bgGray']]], '', false)
     this.output.error(
-      `ERROR: Arquebus config not found. Run ${chalk.italic.black.bgGray('arquebus init')} first.`,
+      `ERROR: Arquebus config not found. Run ${cmd} first.`,
     )
   }
 
-  public static init() {
+  public static init () {
     dotenv({ quiet: true })
 
     const instance = new Cli()
@@ -42,7 +43,7 @@ export class Cli {
     )
   }
 
-  private async loadPaths() {
+  private async loadPaths () {
     this.cwd = path.join(process.cwd(), this.basePath)
     this.configPath =
       Utils.findUpConfig(this.cwd, 'arquebus.config', ['js', 'ts', 'cjs']) ??
@@ -59,7 +60,7 @@ export class Cli {
     return this
   }
 
-  async loadConfig() {
+  async loadConfig () {
     try {
       this.config = (await import(this.configPath ?? '----')).default
       if (this.config.migrations?.path) {
@@ -73,15 +74,15 @@ export class Cli {
     return this
   }
 
-  async run() {
+  async run () {
     const cliVersion = [
       'Arquebus CLI version:',
-      chalk.green(cliPkg.version),
+      Logger.log(cliPkg.version, 'green', false),
     ].join(' ')
 
     const localVersion = [
       'Arquebus Local version:',
-      chalk.green(this.modulePackage.version || 'None'),
+      Logger.log(this.modulePackage.version || 'None', 'green', false),
     ].join(' ')
 
     program.name('arquebus').version(`${cliVersion}\n${localVersion}`)
@@ -124,7 +125,7 @@ export class Cli {
       })
 
     program
-      .command('migrate:make <name>')
+      .command('make:migration <name>')
       .description('Create a new migration file.')
       .addOption(
         new Option('-l, --type [string]', 'Type of migration file to generate.')
@@ -173,7 +174,7 @@ export class Cli {
             create,
           )
           this.output.success(
-            `INFO: Migration Created \n ${chalk.gray(path.basename(fileName))}`,
+            `INFO: Migration Created \n ${Logger.log(path.basename(fileName), 'gray', false)}`,
             true,
           )
         } catch (e) {
@@ -205,12 +206,12 @@ export class Cli {
           const creator = new MigrationCreator(
             path.join(packagePath, pkgJson.migrations ?? 'migrations'),
           )
-
+          const pkgInf = Logger.log(path.basename(pkgJson.name + '@' + pkgJson.version), ['italic', 'gray'], false)
           this.output.info(
-            `INFO: Publishing migrations from ${chalk.italic.gray(pkgJson.name + '@' + pkgJson.version)}`,
+            `INFO: Publishing migrations from ${pkgInf}`,
           )
           await creator.publish(basePath, (fileName) => {
-            Logger.twoColumnLog(fileName, chalk.green('PUBLISHED'))
+            this.output.split('INFO: Migration Published', fileName, 'success')
           })
         } catch (e) {
           this.output.error('ERROR: ' + e)
@@ -351,14 +352,14 @@ export class Cli {
 
           if (migrations.length > 0) {
             Logger.twoColumnLog(
-              chalk.gray('Migration name'),
-              chalk.gray('Batch / Status'),
+              Logger.log('Migration name', 'gray', false),
+              Logger.log('Batch / Status', 'gray', false),
             )
 
             migrations.forEach((migration) => {
               const status = migration.ran
-                ? `[${migration.batch}] ${chalk.green('Ran')}`
-                : chalk.yellow('Pending')
+                ? `[${migration.batch}] ${Logger.log('Ran', 'green', false)}`
+                : Logger.log('Pending', 'yellow', false)
               Logger.twoColumnLog(migration.name, status)
             })
           } else {
@@ -416,13 +417,12 @@ export class Cli {
         opts: { type?: 'js' | 'ts'; force?: boolean; path?: string },
       ) => {
         if (!this.configPath) this.terminateNotFound()
-
+        /////
         const seederPath = path.join(
           this.cwd,
           opts.path ?? this.config.seeders?.path ?? './seeders',
-          name.toLowerCase() + '.' + opts.type,
+          Str.of(name).snake('-') + '.' + opts.type,
         )
-
         try {
           if (!opts.force && (await Utils.fileExists(seederPath))) {
             this.output.error('ERROR: Seeder already exists.')
@@ -438,7 +438,8 @@ export class Cli {
           let stub = await readFile(stubPath, 'utf-8')
           stub = stub.replace(/{{ name }}/g, name)
           await writeFile(seederPath, stub)
-          this.output.success(`Created Seeder: ${seederPath}`)
+
+          this.output.split('INFO: Created Seeder', path.relative(this.cwd, seederPath))
         } catch (e) {
           this.output.error('ERROR: ' + e)
         }
@@ -448,7 +449,7 @@ export class Cli {
      * Create a new model file
      */
     program
-      .command('model:make <name>')
+      .command('make:model <name>')
       .description('Create a new Model file.')
       .addOption(
         new Option('-l, --type [string]', 'Type of migration file to generate.')
