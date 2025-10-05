@@ -12,7 +12,7 @@ import path from 'path'
 /*
  * Glob utility to recursively collect all file paths
  */
-async function glob(folderPath: string): Promise<string[]> {
+async function glob (folderPath: string): Promise<string[]> {
   const files = await fs.readdir(folderPath)
   const allFiles: string[] = []
 
@@ -60,7 +60,7 @@ export class Migrator {
     this.events = dispatcher
   }
 
-  async run(
+  async run (
     paths: string[] = [],
     options: MigrationOptions = {},
   ): Promise<string[]> {
@@ -72,13 +72,13 @@ export class Migrator {
     return migrations
   }
 
-  pendingMigrations(files: Record<string, string>, ran: string[]): string[] {
+  pendingMigrations (files: Record<string, string>, ran: string[]): string[] {
     return Object.values(files).filter(
       (file) => !ran.includes(this.getMigrationName(file)),
     )
   }
 
-  async runPending(
+  async runPending (
     migrations: string[],
     options: MigrationOptions = {},
   ): Promise<void> {
@@ -100,7 +100,7 @@ export class Migrator {
     }
   }
 
-  async runUp(file: string, batch: number, _pretend: boolean): Promise<void> {
+  async runUp (file: string, batch: number, _pretend: boolean): Promise<void> {
     const migration = await this.resolvePath(file)
     const name = this.getMigrationName(file)
 
@@ -108,7 +108,7 @@ export class Migrator {
     await this.repository.log(name, batch)
   }
 
-  async runDown(
+  async runDown (
     file: string,
     migration: { migration: string },
     _pretend: boolean,
@@ -122,7 +122,7 @@ export class Migrator {
     await this.repository.delete(migration)
   }
 
-  async rollback(
+  async rollback (
     paths: string[] = [],
     options: MigrationOptions = {},
   ): Promise<string[]> {
@@ -134,7 +134,7 @@ export class Migrator {
     return await this.rollbackMigrations(migrations, paths, options)
   }
 
-  async getMigrationsForRollback(
+  async getMigrationsForRollback (
     options: MigrationOptions,
   ): Promise<{ migration: string }[]> {
     if (options.step && options.step > 0) {
@@ -146,7 +146,7 @@ export class Migrator {
     return await this.repository.getLast()
   }
 
-  async rollbackMigrations(
+  async rollbackMigrations (
     migrations: { migration: string }[],
     paths: string[],
     options: MigrationOptions,
@@ -159,7 +159,7 @@ export class Migrator {
     for (const migration of migrations) {
       const file = files[migration.migration]
       if (!file) {
-        Logger.twoColumnLog(
+        Logger.twoColumnDetail(
           Logger.parse([[migration.migration, 'green']], '', false),
           Logger.parse([['Migration not found', 'yellow']], '', false),
         )
@@ -171,7 +171,7 @@ export class Migrator {
     return rolledBack
   }
 
-  async reset(
+  async reset (
     paths: string[] = [],
     options: MigrationOptions,
     pretend = false,
@@ -194,7 +194,7 @@ export class Migrator {
    * @param paths
    * @param options
    */
-  async fresh(paths: string[], options: MigrationOptions) {
+  async fresh (paths: string[], options: MigrationOptions) {
     /** Initialise connections */
     const connection = this.repository.getConnection().connector
     const inspector = SchemaInspector.inspect(connection)
@@ -220,7 +220,7 @@ export class Migrator {
     await this.run(paths, options)
   }
 
-  async resetMigrations(
+  async resetMigrations (
     migrations: { migration: string }[],
     paths: string[],
     pretend = false,
@@ -228,7 +228,7 @@ export class Migrator {
     return this.rollbackMigrations(migrations, paths, { pretend })
   }
 
-  async runMigration(
+  async runMigration (
     migration: IMigration,
     method: 'up' | 'down',
   ): Promise<void> {
@@ -247,7 +247,7 @@ export class Migrator {
     }
   }
 
-  async runMethod(
+  async runMethod (
     connection: QueryBuilder,
     migration: IMigration,
     method: 'up' | 'down',
@@ -255,17 +255,17 @@ export class Migrator {
     await migration[method]?.(connection.schema, connection)
   }
 
-  async resolvePath(filePath: string): Promise<IMigration> {
+  async resolvePath (filePath: string): Promise<IMigration> {
     try {
       return new (await import(filePath)).default() as IMigration
     } catch {
       /** */
     }
 
-    return new (class implements Partial<IMigration> {})() as IMigration
+    return new (class implements Partial<IMigration> { })() as IMigration
   }
 
-  getMigrationClass(migrationName: string): string {
+  getMigrationClass (migrationName: string): string {
     return migrationName
       .split('_')
       .slice(4)
@@ -273,7 +273,7 @@ export class Migrator {
       .join('')
   }
 
-  async getMigrationFiles(paths: string[]): Promise<Record<string, string>> {
+  async getMigrationFiles (paths: string[]): Promise<Record<string, string>> {
     const files: string[] = []
 
     for (const p of paths) {
@@ -293,50 +293,50 @@ export class Migrator {
       }, {})
   }
 
-  getMigrationName(filePath: string): string {
+  getMigrationName (filePath: string): string {
     return path.basename(filePath).replace('.js', '')
   }
 
-  path(p: string): void {
+  path (p: string): void {
     this.paths = Array.from(new Set([...this.paths, p]))
   }
 
-  getPaths(): string[] {
+  getPaths (): string[] {
     return this.paths
   }
 
-  getConnection(): TBaseConfig['client'] {
+  getConnection (): TBaseConfig['client'] {
     return this.connection
   }
 
-  resolveConnection(connection?: TBaseConfig['client']): any {
+  resolveConnection (connection?: TBaseConfig['client']): any {
     return this.resolver.fire(connection || this.connection)
   }
 
-  getRepository(): MigrationRepository {
+  getRepository (): MigrationRepository {
     return this.repository
   }
 
-  repositoryExists(): Promise<boolean> {
+  repositoryExists (): Promise<boolean> {
     return this.repository.repositoryExists()
   }
 
-  async hasRunAnyMigrations(): Promise<boolean> {
+  async hasRunAnyMigrations (): Promise<boolean> {
     const ran = await this.repository.getRan()
     const exists = await this.repositoryExists()
     return exists && ran.length > 0
   }
 
-  deleteRepository(): void {
+  deleteRepository (): void {
     this.repository.deleteRepository()
   }
 
-  setOutput(output: boolean): this {
+  setOutput (output: boolean): this {
     this.output = output
     return this
   }
 
-  write(...args: any[]): void {
+  write (...args: any[]): void {
     if (this.output) {
       console.log(...args)
     }

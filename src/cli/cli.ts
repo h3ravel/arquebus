@@ -349,7 +349,7 @@ export class Cli {
           ).status(this.config, opts, true)
 
           if (migrations.length > 0) {
-            Logger.twoColumnLog(
+            Logger.twoColumnDetail(
               Logger.log('Migration name', 'gray', false),
               Logger.log('Batch / Status', 'gray', false),
             )
@@ -358,7 +358,7 @@ export class Cli {
               const status = migration.ran
                 ? `[${migration.batch}] ${Logger.log('Ran', 'green', false)}`
                 : Logger.log('Pending', 'yellow', false)
-              Logger.twoColumnLog(migration.name, status)
+              Logger.twoColumnDetail(migration.name, status)
             })
           } else {
             console.log('No migrations found')
