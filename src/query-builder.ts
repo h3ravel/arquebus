@@ -6,7 +6,7 @@ import Paginator from './paginator'
 import type { TConfig } from 'types/container'
 import type { TFunction } from 'types/generics'
 
-const Inference = class {} as {
+const Inference = class { } as {
   new <M extends Model = Model, R = M[] | M>(): IQueryBuilder<M, R>
 }
 
@@ -25,7 +25,7 @@ export class QueryBuilder<
     return this.asProxy()
   }
 
-  asProxy() {
+  asProxy () {
     const handler = {
       get: function (
         target: QueryBuilder<M, R>,
@@ -110,7 +110,7 @@ export class QueryBuilder<
           !skipReturning
         ) {
           return (...args: any[]) => {
-            ;(target.connector as any)[prop](...args)
+            ; (target.connector as any)[prop](...args)
             return target.asProxy()
           }
         }
@@ -123,25 +123,25 @@ export class QueryBuilder<
         value: string,
       ) {
         if (typeof target[prop] !== 'undefined') {
-          ;(target as any)[prop] = value
+          ; (target as any)[prop] = value
           return target
         }
 
-        ;(target.connector as any)[prop] = value
+        ; (target.connector as any)[prop] = value
         return target as any
       },
     }
 
     return new Proxy(this, handler) as any
   }
-  async beginTransaction() {
+  async beginTransaction () {
     return await this.connector.transaction()
   }
-  override table<X extends M>(table: string): IQueryBuilder<X, R> {
+  override table<X extends M> (table: string): IQueryBuilder<X, R> {
     const c = this.connector.table(table)
     return new QueryBuilder(null, () => c) as any
   }
-  transaction(callback?: TFunction): Promise<Knex.Transaction> | undefined {
+  transaction (callback?: TFunction): Promise<Knex.Transaction> | undefined {
     if (callback) {
       return this.connector.transaction((trx) => {
         return callback(new QueryBuilder(null, () => trx))
@@ -149,22 +149,22 @@ export class QueryBuilder<
     }
     return callback
   }
-  async find(id: string | number, columns: string[] = ['*']) {
+  async find (id: string | number, columns: string[] = ['*']) {
     return await this.connector.where('id', id).first(...columns)
   }
-  async get(_columns: string[] = ['*']) {
+  async get (_columns: string[] = ['*']) {
     return await this.connector
   }
-  async exists() {
+  async exists () {
     return (await this.connector.first()) !== null
   }
-  skip(this: any, ...args: any[]) {
+  skip (this: any, ...args: any[]) {
     return this.offset(...args)
   }
-  take(this: any, ...args: any[]) {
+  take (this: any, ...args: any[]) {
     return this.limit(...args)
   }
-  async chunk(count: number, callback: TFunction) {
+  async chunk (count: number, callback: TFunction) {
     if (
       this.connector._statements.filter((item) => item.grouping === 'order')
         .length === 0
@@ -192,7 +192,7 @@ export class QueryBuilder<
   }
   // TODO: Fix the error below
   // @ts-expect-error _pageName and _page are just bastered that will be taken care of later
-  async paginate<F extends IPaginatorParams>(
+  async paginate<F extends IPaginatorParams> (
     this: any,
     page = 1,
     perPage = 15,
@@ -211,65 +211,66 @@ export class QueryBuilder<
     }
     return new Paginator(results, parseInt(total), perPage, page)
   }
-  forPage(this: any, page = 1, perPage = 15) {
+  forPage (this: any, page = 1, perPage = 15) {
     return this.offset((page - 1) * perPage).limit(perPage)
   }
-  toSQL(...args: Parameters<typeof this.connector.toSQL>) {
+  toSQL (...args: any[]) {
+    // @ts-expect-error this.connector.toSQL does not really require any args
     return this.connector.toSQL(...args)
   }
-  async count(column: string) {
+  async count (column: string) {
     const [{ aggregate }] = await this.connector.count(column, {
       as: 'aggregate',
     })
     return Number(aggregate)
   }
-  async min(column: string) {
+  async min (column: string) {
     const [{ aggregate }] = await this.connector.min(column, {
       as: 'aggregate',
     })
     return Number(aggregate)
   }
-  async max(column: string) {
+  async max (column: string) {
     const [{ aggregate }] = await this.connector.max(column, {
       as: 'aggregate',
     })
     return Number(aggregate)
   }
-  async sum(column: string) {
+  async sum (column: string) {
     const [{ aggregate }] = await this.connector.sum(column, {
       as: 'aggregate',
     })
     return Number(aggregate)
   }
-  async avg(column: string) {
+  async avg (column: string) {
     const [{ aggregate }] = await this.connector.avg(column, {
       as: 'aggregate',
     })
     return Number(aggregate)
   }
-  clone() {
+  clone () {
     const c = this.connector.clone()
     return new QueryBuilder(null, () => c) as unknown as IQueryBuilder<M, R>
   }
-  async delete() {
+  async delete () {
     return await this.connector.delete()
   }
-  async insert(...args: Parameters<typeof this.connector.insert>) {
+  async insert (...args: Parameters<typeof this.connector.insert>) {
     return await this.connector.insert(...args)
   }
-  async update(...args: Parameters<typeof this.connector.update>) {
+  async update (...args: Parameters<typeof this.connector.update>) {
     return await this.connector.update(...args)
   }
-  destroy(...args: Parameters<typeof this.connector.destroy>) {
+  destroy (...args: Parameters<typeof this.connector.destroy>) {
     return this.connector.destroy(...args)
   }
-  get _statements() {
+  get _statements () {
     return this.connector._statements
   }
-  get _single() {
+  get _single () {
     return this.connector._single
   }
-  get from() {
+  get from () {
     return this.connector.from
   }
 }

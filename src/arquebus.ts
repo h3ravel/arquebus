@@ -28,11 +28,11 @@ class arquebus<M extends Model = Model> {
     this.models = {}
   }
 
-  getConstructor<T extends typeof arquebus>(this: InstanceType<T>) {
+  getConstructor<T extends typeof arquebus> (this: InstanceType<T>) {
     return this.constructor as T
   }
 
-  static getInstance() {
+  static getInstance () {
     if (this.instance === null) {
       this.instance = new arquebus()
     }
@@ -44,7 +44,7 @@ class arquebus<M extends Model = Model> {
    *
    * @returns
    */
-  static fire<C extends TBaseConfig['client']>(
+  static fire<C extends TBaseConfig['client']> (
     connection: C | null = null,
   ): QueryBuilder<Model> {
     return this.getInstance().getConnection(connection)
@@ -60,55 +60,55 @@ class arquebus<M extends Model = Model> {
    *
    * @returns
    */
-  static connection<C extends TBaseConfig['client']>(
+  static connection<C extends TBaseConfig['client']> (
     connection: C | null = null,
   ) {
     return this.fire(connection)
   }
 
-  static setConnectorFactory(connectorFactory: typeof Knex) {
+  static setConnectorFactory (connectorFactory: typeof Knex) {
     this.connectorFactory = connectorFactory
   }
 
-  static getConnectorFactory() {
+  static getConnectorFactory () {
     return this.connectorFactory ?? Knex
   }
 
-  static addConnection(
+  static addConnection (
     config: TConfig | TBaseConfig,
     name: string = 'default',
   ) {
     return this.getInstance().addConnection(config, name)
   }
 
-  static beginTransaction(connection = null) {
+  static beginTransaction (connection = null) {
     return this.getInstance().beginTransaction(connection)
   }
 
-  static transaction(callback: TFunction, connection = null) {
+  static transaction<A, R> (callback: TFunction<A[], R>, connection = null) {
     return this.getInstance().transaction(callback, connection)
   }
 
-  static table(name: string, connection = null) {
+  static table (name: string, connection = null) {
     return this.getInstance().table(name, connection)
   }
 
-  static schema(connection = null) {
+  static schema (connection = null) {
     return this.getInstance().schema(connection)
   }
 
-  static async destroyAll() {
+  static async destroyAll () {
     await this.getInstance().destroyAll()
   }
 
-  static createModel<X extends TGeneric>(name: string, options: X) {
+  static createModel<X extends TGeneric> (name: string, options: X) {
     return this.getInstance().createModel(name, options)
   }
 
-  connection(connection: string | null = null) {
+  connection (connection: string | null = null) {
     return this.getConnection(connection)
   }
-  getConnection(name: string | null = null) {
+  getConnection (name: string | null = null) {
     name = name || 'default'
 
     // Resolve config with fallback to 'default' when named connection is absent
@@ -119,12 +119,12 @@ class arquebus<M extends Model = Model> {
         this.connections[resolvedName],
         arquebus.getConnectorFactory(),
       )
-      ;(this.manager as any)[resolvedName] = queryBuilder
+        ; (this.manager as any)[resolvedName] = queryBuilder
     }
     return this.manager[resolvedName]
   }
 
-  addConnection(config: TConfig | TBaseConfig, name: string = 'default') {
+  addConnection (config: TConfig | TBaseConfig, name: string = 'default') {
     this.connections[name] = <TConfig>{
       ...config,
       connection: {
@@ -150,7 +150,7 @@ class arquebus<M extends Model = Model> {
    *
    * @returns
    */
-  static async autoLoad(addConnection: boolean = true): Promise<TBaseConfig> {
+  static async autoLoad (addConnection: boolean = true): Promise<TBaseConfig> {
     let config: TBaseConfig
     const jsPath = path.resolve('arquebus.config.js')
     const tsPath = path.resolve('arquebus.config.ts')
@@ -203,23 +203,23 @@ class arquebus<M extends Model = Model> {
     return {} as TBaseConfig
   }
 
-  beginTransaction(connection = null) {
+  beginTransaction (connection = null) {
     return this.connection(connection).beginTransaction()
   }
 
-  transaction(callback: TFunction, connection = null) {
+  transaction (callback: TFunction, connection = null) {
     return this.connection(connection).transaction(callback)
   }
 
-  table(name: string, connection = null) {
+  table (name: string, connection = null) {
     return this.connection(connection).table(name)
   }
 
-  schema(connection = null) {
+  schema (connection = null) {
     return this.connection(connection).schema
   }
 
-  async destroyAll() {
+  async destroyAll () {
     await Promise.all(
       Object.values(this.manager).map((connection) => {
         return connection?.destroy()
@@ -227,7 +227,7 @@ class arquebus<M extends Model = Model> {
     )
   }
 
-  createModel(name: string, options: ModelOptions = {}) {
+  createModel (name: string, options: ModelOptions = {}) {
     let BaseModel = Model
     if ('plugins' in options) {
       BaseModel = compose(
