@@ -13,7 +13,7 @@ import type { ModelOptions, TBaseConfig, TConfig } from 'types/container'
 import type { TFunction, TGeneric } from 'types/generics'
 import path from 'path'
 import { existsSync } from 'fs'
-import { Utils } from './cli/utils'
+import { FileSystem } from '@h3ravel/shared'
 
 class arquebus<M extends Model = Model> {
   static connectorFactory: typeof Knex | null = null
@@ -181,11 +181,11 @@ class arquebus<M extends Model = Model> {
       path.join(process.cwd(), 'test'),
     ]
     for (const dir of candidateDirs) {
-      const found = Utils.findUpConfig(dir, 'arquebus.config', [
+      const found = FileSystem.resolveFileUp('arquebus.config', [
         'js',
         'ts',
         'cjs',
-      ])
+      ], dir)
       if (found) {
         const isTs = found.endsWith('.ts')
         if (!isTs || process.env.NODE_ENV !== 'production') {

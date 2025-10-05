@@ -1,8 +1,8 @@
 import { Argument, Option, program } from 'commander'
+import { FileSystem, Logger } from '@h3ravel/shared'
 import { TableGuesser, Utils } from 'src/cli/utils'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
-import { Logger } from '@h3ravel/shared'
 import { Migrate } from 'src/migrate'
 import { MigrationCreator } from 'src/migrations/migration-creator'
 import { Str } from '@h3ravel/support'
@@ -45,9 +45,7 @@ export class Cli {
 
   private async loadPaths () {
     this.cwd = path.join(process.cwd(), this.basePath)
-    this.configPath =
-      Utils.findUpConfig(this.cwd, 'arquebus.config', ['js', 'ts', 'cjs']) ??
-      undefined
+    this.configPath = FileSystem.resolveFileUp('arquebus.config', ['js', 'ts', 'cjs'], this.cwd) ?? undefined
     this.modulePath = Utils.findModulePkg('@h3ravel/arquebus', this.cwd) ?? ''
 
     try {
@@ -424,7 +422,7 @@ export class Cli {
           Str.of(name).snake('-') + '.' + opts.type,
         )
         try {
-          if (!opts.force && (await Utils.fileExists(seederPath))) {
+          if (!opts.force && await FileSystem.fileExists(seederPath)) {
             this.output.error('ERROR: Seeder already exists.')
           }
 
@@ -471,7 +469,7 @@ export class Cli {
         )
 
         try {
-          if (!opts.force && (await Utils.fileExists(modelPath))) {
+          if (!opts.force && await FileSystem.fileExists(modelPath)) {
             this.output.error('ERROR: Model already exists.')
           }
 
