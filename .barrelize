@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/barrelize/schema.json",
+  "semi": false,
+  "singleQuote": true,
+  "barrels": [
+    {
+      "name": "index.ts",
+      "root": "types",
+      "exclude": [
+        "**/*.test.ts",
+        "**/*.d.ts"
+      ]
+    }
+  ]
+}

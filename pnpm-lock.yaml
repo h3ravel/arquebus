@@ -14,6 +14,9 @@ importers:
       '@h3ravel/support':
         specifier: ^0.12.0
         version: 0.12.0
+      barrelize:
+        specifier: ^1.6.4
+        version: 1.6.4
       chalk:
         specifier: ^5.6.2
         version: 5.6.2
@@ -1012,6 +1015,10 @@ packages:
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
+
+  barrelize@1.6.4:
+    resolution: {integrity: sha512-e5c/q9qeCHodgqkT2+yxAreHOW3PQyE0pLJ/1avYVY8Rzmh9vQM7MHSz0x788ksI31V6sqFctFWApWT6h9tDMw==}
+    hasBin: true
 
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
@@ -3796,6 +3803,8 @@ snapshots:
   aws-ssl-profiles@1.1.2: {}
 
   balanced-match@1.0.2: {}
+
+  barrelize@1.6.4: {}
 
   base64-js@1.5.1: {}
 
