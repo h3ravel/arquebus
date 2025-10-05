@@ -23,7 +23,7 @@ export default defineProject({
           name: 'node',
           environment: 'node',
           root: './test',
-          include: ['{index,node,seeders}.test.{ts,js}'],
+          include: ['{index,node,seeders}.test.{ts,js}', 'type-generator/**/*.test.{ts,js}'],
         },
       },
       {

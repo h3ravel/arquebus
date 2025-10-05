@@ -94,6 +94,84 @@ const users = await User.query()
 await user.load('posts');
 ```
 
+## TypeScript Type Generation
+
+Arquebus can automatically generate TypeScript interfaces and type-safe model classes from your migration files, providing full intellisense and type safety.
+
+### Quick Start
+
+```bash
+# Generate TypeScript interfaces from migrations
+npx arquebus generate:types
+
+# Generate enhanced model classes with type-safe getters/setters
+npx arquebus generate:types --models
+
+# Watch for changes and regenerate automatically
+npx arquebus generate:types --watch --models
+```
+
+### Generated Types Example
+
+From this migration:
+
+```ts
+export default class extends Migration {
+  async up(schema: SchemaBuilder) {
+    await schema.createTable('users', (table) => {
+      table.increments('id')
+      table.string('name')
+      table.string('email').unique()
+      table.boolean('active').default(true)
+      table.timestamps()
+    })
+  }
+}
+```
+
+Arquebus generates:
+
+```ts
+// Generated interfaces
+export interface IUser {
+  id: number
+  name: string
+  email: string
+  active: boolean
+  created_at: Date | null
+  updated_at: Date | null
+}
+
+export interface IUserCreate {
+  name: string
+  email: string
+  active?: boolean
+}
+
+// Enhanced model class with type safety
+export class User extends Model implements IUser {
+  protected table = 'users'
+  
+  getName(): string { return this.getAttribute('name') }
+  setName(value: string): this { return this.setAttribute('name', value) }
+  
+  static async create(attributes: IUserCreate): Promise<User> {
+    const instance = new this(attributes)
+    await instance.save()
+    return instance
+  }
+}
+```
+
+### Benefits
+
+- **Full Type Safety**: Catch type errors at compile time
+- **IntelliSense**: Auto-completion for model attributes and methods
+- **Automatic Updates**: Types stay in sync with your database schema
+- **Zero Configuration**: Works with existing migrations out of the box
+
+See the [Type Generation Documentation](./docs/TYPE_GENERATION.md) for complete details.
+
 ## Seeders
 
 - Create a seeder: `npx arquebus make:seeder UsersSeeder`

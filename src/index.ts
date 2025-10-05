@@ -55,6 +55,7 @@ const makePaginator = <M extends Model | typeof Model>(
 
 export * from './errors'
 export * from './utils'
+export * from './type-generator'
 
 // named exports
 export {

@@ -488,6 +488,77 @@ export class Cli {
           this.output.error('ERROR: ' + e)
         }
       })
+
+    /**
+     * Generate TypeScript types from migrations
+     */
+    program
+      .command('generate:types')
+      .description('Generate TypeScript interfaces from migration files.')
+      .option('-p, --path [path]', 'The path to the migrations directory.')
+      .option('-o, --output [path]', 'The output directory for generated types.')
+      .option('--models', 'Generate enhanced model classes with type-safe getters/setters.')
+      .option('--watch', 'Watch migration files for changes and regenerate types.')
+      .option('--no-timestamps', 'Exclude timestamp fields from generated types.')
+      .option('--validation', 'Generate validation methods for models.')
+      .action(async (opts: { 
+        path?: string
+        output?: string
+        models?: boolean
+        watch?: boolean
+        timestamps?: boolean
+        validation?: boolean
+      }) => {
+        if (!this.configPath) this.terminateNotFound()
+
+        try {
+          const { TypeGenerationOrchestrator } = await import('../type-generator')
+          
+          const migrationsPath = opts.path 
+            ? path.join(this.cwd, opts.path)
+            : path.join(this.cwd, this.config.migrations?.path || 'database/migrations')
+          
+          const outputDir = opts.output 
+            ? path.join(this.cwd, opts.output)
+            : path.join(this.cwd, 'database/types')
+
+          const orchestrator = new TypeGenerationOrchestrator({
+            migrationsPath,
+            outputDir,
+            watch: opts.watch || false,
+            includeTimestamps: opts.timestamps !== false,
+            generateGettersSetters: opts.models || false,
+            generateValidation: opts.validation || false,
+            verbose: true
+          })
+
+          const result = await orchestrator.generateTypes()
+
+          if (result.errors.length > 0) {
+            for (const error of result.errors) {
+              this.output.error(`ERROR: ${error}`)
+            }
+            process.exit(1)
+          }
+
+          this.output.success(`✅ Generated types for ${result.tablesProcessed} tables`)
+          this.output.info(`📄 Types: ${result.typesGenerated}`)
+          if (opts.models) {
+            this.output.info(`🏛️  Models: ${result.modelsGenerated}`)
+          }
+          this.output.info(`📂 Output: ${result.outputPath}`)
+
+          if (opts.watch) {
+            await orchestrator.watchMigrations()
+            // Keep process running for watch mode
+            process.stdin.resume()
+          }
+
+        } catch (e) {
+          this.output.error('ERROR: ' + e)
+        }
+      })
+
     await program.parseAsync(process.argv)
     process.exit(0)
   }
