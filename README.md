@@ -101,14 +101,15 @@ await user.load('posts');
 - Seeder class example (TypeScript):
 
 ```ts
-import { Seeder } from '@h3ravel/arquebus';
-import type QueryBuilder from '@h3ravel/arquebus/types/query-builder';
+import type { QueryBuilder } from '@h3ravel/arquebus'
+import { Seeder } from '@h3ravel/arquebus'
 
-export default class UsersSeeder extends Seeder {
+export default class {{ name }} extends Seeder {
   async run(connection: QueryBuilder) {
-    await connection.table('users').insert({ name: 'Alice' });
+    await connection.table('users').insert({ name: 'John Doe' })
   }
 }
+
 ```
 
 Seeders execute with the same connection setup as migrations. The CLI resolves paths from `--basePath` and `--path` and loads seeders from `.ts`/`.js` files exporting a default class with a `run` method.
