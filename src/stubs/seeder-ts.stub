@@ -2,6 +2,11 @@ import type { QueryBuilder } from '@h3ravel/arquebus'
 import { Seeder } from '@h3ravel/arquebus'
 
 export default class {{ name }} extends Seeder {
+  /**
+   * Run the database seeds.
+   *
+   * @param conn The current database connection 
+   */
   async run(connection: QueryBuilder) {
     // Example: insert sample data
     await connection.table('users').insert({ name: 'John Doe' })
