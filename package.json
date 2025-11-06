@@ -5,15 +5,15 @@
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.toneflix.net/arquebus",
   "bin": {
-    "arquebus": "./bin/index.mjs"
+    "arquebus": "./bin/index.js"
   },
   "publishConfig": {
     "access": "public"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "type": "module",
-  "types": "./dist/index.d.mts",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "bin",
@@ -23,8 +23,8 @@
     ".": {
       "cli": {
         "import": {
-          "types": "./bin/index.d.mts",
-          "default": "./bin/index.mjs"
+          "types": "./bin/index.d.ts",
+          "default": "./bin/index.js"
         },
         "require": {
           "types": "./bin/index.d.cts",
@@ -33,8 +33,8 @@
       },
       "worker": {
         "import": {
-          "types": "./dist/index.d.mts",
-          "default": "./dist/index.mjs"
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index.js"
         },
         "require": {
           "types": "./dist/index.d.cts",
@@ -43,8 +43,8 @@
       },
       "node": {
         "import": {
-          "types": "./dist/index.d.mts",
-          "default": "./dist/index.mjs"
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index.js"
         },
         "require": {
           "types": "./dist/index.d.cts",
@@ -53,8 +53,8 @@
       },
       "browser": {
         "import": {
-          "types": "./dist/browser/index.d.mts",
-          "default": "./dist/browser/index.mjs"
+          "types": "./dist/browser/index.d.ts",
+          "default": "./dist/browser/index.js"
         },
         "require": {
           "types": "./dist/browser/index.d.cts",
@@ -63,8 +63,8 @@
       },
       "default": {
         "import": {
-          "types": "./dist/index.d.mts",
-          "default": "./dist/index.mjs"
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index.js"
         },
         "require": {
           "types": "./dist/index.d.cts",
@@ -74,8 +74,8 @@
     },
     "./migrations": {
       "import": {
-        "types": "./dist/migrations/index.d.mts",
-        "default": "./dist/migrations/index.mjs"
+        "types": "./dist/migrations/index.d.ts",
+        "default": "./dist/migrations/index.js"
       },
       "require": {
         "types": "./dist/migrations/index.d.cts",
@@ -84,8 +84,8 @@
     },
     "./inspector": {
       "import": {
-        "types": "./dist/inspector/index.d.mts",
-        "default": "./dist/inspector/index.mjs"
+        "types": "./dist/inspector/index.d.ts",
+        "default": "./dist/inspector/index.js"
       },
       "require": {
         "types": "./dist/inspector/index.d.cts",
@@ -94,8 +94,8 @@
     },
     "./seeders": {
       "import": {
-        "types": "./dist/seeders/index.d.mts",
-        "default": "./dist/seeders/index.mjs"
+        "types": "./dist/seeders/index.d.ts",
+        "default": "./dist/seeders/index.js"
       },
       "require": {
         "types": "./dist/seeders/index.d.cts",
@@ -104,8 +104,8 @@
     },
     "./browser": {
       "import": {
-        "types": "./dist/browser/index.d.mts",
-        "default": "./dist/browser/index.mjs"
+        "types": "./dist/browser/index.d.ts",
+        "default": "./dist/browser/index.js"
       },
       "require": {
         "types": "./dist/browser/index.d.cts",

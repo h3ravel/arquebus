@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsdown'
+import { defineConfig, type UserConfig } from 'tsdown'
 
 const external = [
   'fs',
@@ -30,8 +30,19 @@ const external = [
   'radashi',
   'resolve-from',
 ]
+
+const base: UserConfig = {
+  outExtensions: (e) => {
+    return ({
+      js: e.format === 'es' ? '.js' : '.cjs',
+      dts: '.d.ts'
+    })
+  },
+}
+
 export default defineConfig([
   {
+    ...base,
     treeshake: true,
     entry: ['src/index.ts'],
     format: ['esm', 'cjs'],
@@ -41,11 +52,12 @@ export default defineConfig([
     clean: true,
     copy: [
       { from: 'src/migrations/stubs', to: 'dist/migrations/stubs' },
-      { from: 'src/seeders', to: 'dist/seeders' },
+      // { from: 'src/seeders', to: 'dist/seeders' },
       { from: 'src/stubs', to: 'dist/stubs' },
     ],
   },
   {
+    ...base,
     treeshake: true,
     entry: ['src/browser/index.ts'],
     format: ['esm', 'cjs'],
@@ -55,6 +67,7 @@ export default defineConfig([
     clean: true,
   },
   {
+    ...base,
     treeshake: true,
     entry: ['src/migrations/index.ts'],
     format: ['esm', 'cjs'],
@@ -65,6 +78,7 @@ export default defineConfig([
     clean: true,
   },
   {
+    ...base,
     treeshake: true,
     entry: ['src/seeders/index.ts'],
     format: ['esm', 'cjs'],
@@ -75,6 +89,7 @@ export default defineConfig([
     clean: true,
   },
   {
+    ...base,
     treeshake: true,
     entry: ['src/inspector/index.ts'],
     format: ['esm', 'cjs'],
@@ -84,6 +99,7 @@ export default defineConfig([
     clean: true,
   },
   {
+    ...base,
     treeshake: true,
     entry: ['src/cli/index.ts'],
     format: ['esm', 'cjs'],
