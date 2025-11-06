@@ -1,6 +1,6 @@
 {
   "name": "@h3ravel/arquebus",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "packageManager": "pnpm@10.14.0",
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.toneflix.net/arquebus",
@@ -183,7 +183,7 @@
     "sqlite3": "5.1.7",
     "terser": "^5.44.0",
     "ts-node": "^10.9.2",
-    "tsdown": "^0.15.4",
+    "tsdown": "^0.16.0",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.0",
