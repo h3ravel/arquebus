@@ -276,7 +276,6 @@ export class Model extends BaseModel {
     column: string,
     callback: TFunction | string | null = null,
   ) {
-    console.log(relations)
     await new Collection([this]).loadAggregate(relations, column, callback)
     return this
   }
