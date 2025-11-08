@@ -927,7 +927,7 @@ describe('Integration test', async () => {
             ).toBe(1)
           })
 
-          describe('#first() & #find()', () => {
+          describe('#first(), #find() & #exists', () => {
             it('issues a first (get one), triggering a fetched event, returning a promise', () => {
               const query = connection.table<User>('users').where('id', 1)
 
@@ -946,6 +946,18 @@ describe('Integration test', async () => {
                 .then((user) => {
                   expect(user).toEqual({ id: 1, first_name: 'Tim' })
                 })
+            })
+
+            it('can check for existing records', async () => {
+              const query = connection.table<User>('users').where('id', 1)
+              query.exists().then((exists) => {
+                expect(exists).toBe(true)
+              })
+
+              const query2 = connection.table<User>('users').where('id', 11111)
+              query2.exists().then((exists) => {
+                expect(exists).toBe(false)
+              })
             })
           })
 

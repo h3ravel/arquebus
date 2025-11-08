@@ -156,7 +156,8 @@ export class QueryBuilder<
     return await this.connector
   }
   async exists () {
-    return (await this.connector.first()) !== null
+    const result = await this.connector.first()
+    return result !== null && result !== undefined
   }
   skip (this: any, ...args: any[]) {
     return this.offset(...args)
