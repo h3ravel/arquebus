@@ -1,3 +1,5 @@
+import { Seeder, SeederCreator, SeederRunner } from './seeders'
+
 import Attribute from './casts/attribute'
 import Builder from './builder'
 import CastsAttributes from './casts-attributes'
@@ -6,7 +8,6 @@ import HasUniqueIds from './concerns/has-unique-ids'
 import type { IPaginatorParams } from 'types/utils'
 import { Migrate } from './migrate'
 import Migration from './migrations/migration'
-import { Seeder, SeederCreator, SeederRunner } from './seeders'
 import Model from './model'
 import Paginator from './paginator'
 import Pivot from './pivot'
@@ -15,38 +16,41 @@ import Scope from './scope'
 import SoftDeletes from './soft-deletes'
 import type { TGeneric } from 'types/generics'
 import arquebus from './arquebus'
+import { isArray } from 'radashi'
 
-const make = <M extends Model | typeof Model>(
-  model: M,
+interface IMake {
+  <T extends Model> (model: T, data: TGeneric): T
+  <T extends Model> (model: T, data: Array<TGeneric>): Collection<T>
+  <T extends Model> (model: T, data: TGeneric, options: { paginated?: IPaginatorParams }): Paginator<T>
+}
+
+const make: IMake = <T extends Model> (
+  model: T,
   data: TGeneric,
-  options = {} as { paginated: IPaginatorParams | boolean },
-) => {
+  options = {} as any,
+): Collection<T> | Paginator<T> | T => {
   const { paginated } = options
+
   if (paginated) {
-    return new Paginator(
+    return new Paginator<T>(
       data.data.map((item: Model) => model.make(item)),
       data.total,
       data.per_page,
       data.current_page,
-    )
+    ) as never
   }
-  if (Array.isArray(data)) {
-    return new Collection(data.map((item) => model.make(item)))
+
+  if (isArray(data)) {
+    return new Collection<T>(data.map((item) => model.make(item)))
   }
   return model.make(data)
 }
 
-const makeCollection = <M extends Model | typeof Model>(
-  model: M,
-  data: TGeneric,
-) => new Collection(data.map((item: Model) => model.make(item)))
+const makeCollection = <T extends Model> (model: T, data: TGeneric) =>
+  new Collection(data.map((item: Model) => model.make(item)))
 
-const makePaginator = <M extends Model | typeof Model>(
-  model: M,
-  data: TGeneric,
-  _: any,
-) =>
-  new Paginator(
+const makePaginator = <T extends Model> (model: T, data: TGeneric) =>
+  new Paginator<T>(
     data.data.map((item: Model) => model.make(item)),
     data.total,
     data.per_page,

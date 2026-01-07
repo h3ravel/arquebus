@@ -9,33 +9,39 @@ import Pivot from './pivot'
 import type { TGeneric } from 'types/generics'
 import { isArray } from 'radashi'
 
-const make = (
-  model: Model,
+interface IMake {
+  <T extends Model> (model: T, data: TGeneric): T
+  <T extends Model> (model: T, data: Array<TGeneric>): Collection<T>
+  <T extends Model> (model: T, data: TGeneric, options: { paginated?: IPaginatorParams }): Paginator<T>
+}
+
+const make: IMake = <T extends Model> (
+  model: T,
   data: TGeneric,
-  options = {} as { paginated: IPaginatorParams },
-) => {
+  options = {} as any,
+): Collection<T> | Paginator<T> | T => {
   const { paginated } = options
 
   if (paginated) {
-    return new Paginator(
+    return new Paginator<T>(
       data.data.map((item: Model) => model.make(item)),
       data.total,
       data.per_page,
       data.current_page,
-    )
+    ) as never
   }
 
   if (isArray(data)) {
-    return new Collection(data.map((item) => model.make(item)))
+    return new Collection<T>(data.map((item) => model.make(item)))
   }
   return model.make(data)
 }
 
-const makeCollection = (model: Model, data: TGeneric) =>
+const makeCollection = <T extends Model> (model: T, data: TGeneric) =>
   new Collection(data.map((item: Model) => model.make(item)))
 
-const makePaginator = (model: Model, data: TGeneric) =>
-  new Paginator(
+const makePaginator = <T extends Model> (model: T, data: TGeneric) =>
+  new Paginator<T>(
     data.data.map((item: Model) => model.make(item)),
     data.total,
     data.per_page,

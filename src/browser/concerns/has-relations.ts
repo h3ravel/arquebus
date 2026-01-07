@@ -3,41 +3,46 @@ import { getRelationMethod, getRelationName, snakeCase } from 'src/utils'
 
 import BelongsTo from 'src/browser/relations/belongs-to'
 import BelongsToMany from 'src/browser/relations/belongs-to-many'
+import type Collection from '../collection'
 import HasMany from 'src/browser/relations/has-many'
 import HasManyThrough from 'src/browser/relations/has-many-through'
 import HasOne from 'src/browser/relations/has-one'
 import HasOneThrough from 'src/browser/relations/has-one-through'
+import type Model from '../model'
 import { RelationNotFoundError } from 'src/errors'
 import { omit } from 'radashi'
 
-const HasRelations = <TBase extends MixinConstructor>(Instance: TBase) => {
+const HasRelations = <TBase extends MixinConstructor> (Instance: TBase) => {
   return class extends Instance {
     relations: TGeneric = {}
-    getRelation(relation: string) {
+    getRelation<
+      T extends Model,
+      IsCollection extends boolean = false
+    > (relation: string): IsCollection extends true ? Collection<T> | undefined : T | null | undefined {
       return this.relations[relation]
     }
-    setRelation(relation: string, value: any) {
+    setRelation (relation: string, value: any) {
       this.relations[relation] = value
       return this
     }
-    unsetRelation(relation: string) {
+    unsetRelation (relation: string) {
       this.relations = omit(this.relations, [relation])
       return this
     }
-    relationLoaded(relation: string) {
+    relationLoaded (relation: string) {
       return this.relations[relation] !== undefined
     }
-    related(relation: string) {
+    related (relation: string) {
       if (typeof this[getRelationMethod(relation)] !== 'function') {
         const message = `Model [${this.constructor.name}]'s relation [${relation}] doesn't exist.`
         throw new RelationNotFoundError(message)
       }
       return this[getRelationMethod(relation)]()
     }
-    async getRelated(relation: string) {
+    async getRelated (relation: string) {
       return await this.related(relation).getResults()
     }
-    relationsToData() {
+    relationsToData () {
       const data: TGeneric = {}
       for (const key in this.relations) {
         if (this.hidden.includes(key)) {
@@ -55,24 +60,47 @@ const HasRelations = <TBase extends MixinConstructor>(Instance: TBase) => {
       }
       return data
     }
-    guessBelongsToRelation() {
+    guessBelongsToRelation () {
       const e = new Error()
-      const frame = e.stack?.split('\n')[2]
-      // let lineNumber = frame.split(":").reverse()[1];
-      const functionName = frame?.split(' ')[5]
-      return getRelationName(functionName!)
+      const stack = e.stack || (e as any).stackTrace
+
+      if (!stack) {
+        return getRelationName('unknown')
+      }
+
+      const frames = stack.split('\n')
+      const frame = frames[2] || frames[1] || frames[0]
+
+      let functionName: string | undefined = 'anonymous'
+
+      if (frame.includes('@')) {
+        // Safari: functionName@file:line:column
+        functionName = frame.split('@')[0].trim()
+      } else if (frame.includes('at ')) {
+        // Chrome: at functionName (file:line:column)
+        const match = frame.match(/at\s+([^(]+)\s*\(/)
+        functionName = match ? match[1].trim() : 'anonymous'
+
+        if (functionName?.includes('.')) {
+          functionName = functionName.split('.').pop()
+        }
+      }
+
+      functionName = functionName?.replace(/^</, '').replace(/>$/, '').trim()
+
+      return getRelationName(functionName || 'anonymous')
     }
-    joiningTable(related: any, instance: typeof this | null = null) {
+    joiningTable (related: any, instance: typeof this | null = null) {
       const segments = [
         instance ? instance.joiningTableSegment() : snakeCase(related.name),
         this.joiningTableSegment(),
       ]
       return segments.sort().join('_').toLocaleLowerCase()
     }
-    joiningTableSegment() {
+    joiningTableSegment () {
       return snakeCase(this.constructor.name)
     }
-    hasOne(
+    hasOne (
       related: any,
       foreignKey: string | null = null,
       localKey: string | null = null,
@@ -87,7 +115,7 @@ const HasRelations = <TBase extends MixinConstructor>(Instance: TBase) => {
         localKey!,
       )
     }
-    hasMany(related: any, foreignKey = null, localKey = null) {
+    hasMany (related: any, foreignKey = null, localKey = null) {
       const instance = new related()
       foreignKey = foreignKey || this.getForeignKey()
       localKey = localKey || this.getKeyName()
@@ -98,7 +126,7 @@ const HasRelations = <TBase extends MixinConstructor>(Instance: TBase) => {
         localKey!,
       )
     }
-    belongsTo(
+    belongsTo (
       related: any,
       foreignKey: string | null = null,
       ownerKey: string | null = null,
@@ -110,7 +138,7 @@ const HasRelations = <TBase extends MixinConstructor>(Instance: TBase) => {
       relation = relation || this.guessBelongsToRelation()
       return new BelongsTo(related, this, foreignKey!, ownerKey!, relation!)
     }
-    belongsToMany(
+    belongsToMany (
       related: any,
       table: string | null = null,
       foreignPivotKey: string | null = null,
@@ -135,7 +163,7 @@ const HasRelations = <TBase extends MixinConstructor>(Instance: TBase) => {
         relatedKey!,
       )
     }
-    hasOneThrough(
+    hasOneThrough (
       related: any,
       through: any,
       firstKey: string | null = null,
@@ -157,7 +185,7 @@ const HasRelations = <TBase extends MixinConstructor>(Instance: TBase) => {
         secondLocalKey || through.getKeyName(),
       )
     }
-    hasManyThrough(
+    hasManyThrough (
       related: any,
       through: any,
       firstKey: string | null = null,
