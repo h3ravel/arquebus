@@ -1,6 +1,6 @@
 {
   "name": "@h3ravel/arquebus",
-  "version": "0.6.17",
+  "version": "0.7.0",
   "packageManager": "pnpm@10.14.0",
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.toneflix.net/arquebus",
@@ -70,6 +70,26 @@
           "types": "./dist/index.d.cts",
           "default": "./dist/index.cjs"
         }
+      }
+    },
+    "./concerns": {
+      "import": {
+        "types": "./dist/concerns/index.d.ts",
+        "default": "./dist/concerns/index.js"
+      },
+      "require": {
+        "types": "./dist/concerns/index.d.cts",
+        "default": "./dist/concerns/index.cjs"
+      }
+    },
+    "./relations": {
+      "import": {
+        "types": "./dist/relations/index.d.ts",
+        "default": "./dist/relations/index.js"
+      },
+      "require": {
+        "types": "./dist/relations/index.d.cts",
+        "default": "./dist/relations/index.cjs"
       }
     },
     "./migrations": {

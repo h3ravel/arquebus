@@ -12,35 +12,35 @@ import { RelationNotFoundError } from '../errors'
 import type { WithRelationType } from 'types/query-methods'
 import { omit } from 'radashi'
 
-const HasRelations = <TBase extends MixinConstructor>(Model: TBase) => {
+const HasRelations = <TBase extends MixinConstructor> (Model: TBase) => {
   return class extends Model {
     relations: Exclude<WithRelationType, string[] | string> = {}
-    getRelation(relation: string) {
+    getRelation (relation: string) {
       return this.relations[relation]
     }
-    setRelation(relation: string, value: any) {
+    setRelation (relation: string, value: any) {
       this.relations[relation] = value
       return this
     }
-    unsetRelation(relation: string) {
+    unsetRelation (relation: string) {
       this.relations = omit(this.relations, [relation])
       return this
     }
-    relationLoaded(relation: string) {
+    relationLoaded (relation: string) {
       return this.relations[relation] !== undefined
     }
-    related(relation: string) {
+    related (relation: string) {
       if (typeof this[getRelationMethod(relation)] !== 'function') {
         const message = `Model [${this.constructor.name}]'s relation [${relation}] doesn't exist.`
         throw new RelationNotFoundError(message)
       }
       return this[getRelationMethod(relation)]()
     }
-    async getRelated(relation: string) {
+    async getRelated (relation: string) {
       return await this.related(relation).getResults()
     }
-    relationsToData() {
-      const data = {}
+    relationsToData () {
+      const data = {} as any
       for (const key in this.relations) {
         if (this.hidden.includes(key)) {
           continue
@@ -53,31 +53,31 @@ const HasRelations = <TBase extends MixinConstructor>(Model: TBase) => {
             ? this.relations[key].map((item) => item.toData())
             : this.relations[key] === null
               ? null
-              : this.relations[key].toData()
+              : (this.relations[key] as any).toData()
       }
       return data
     }
-    guessBelongsToRelation() {
+    guessBelongsToRelation () {
       const e = new Error()
-      const frame = e.stack.split('\n')[2]
+      const frame = e.stack?.split('\n')[2] ?? ''
       // let lineNumber = frame.split(":").reverse()[1];
       const functionName = frame.split(' ')[5]
       return getRelationName(functionName)
     }
-    joiningTable(related: any, instance: typeof this | null = null) {
+    joiningTable (related: any, instance: typeof this | null = null) {
       const segments = [
         instance ? instance.joiningTableSegment() : snakeCase(related.name),
         this.joiningTableSegment(),
       ]
       return segments.sort().join('_').toLocaleLowerCase()
     }
-    joiningTableSegment() {
+    joiningTableSegment () {
       return snakeCase(this.constructor.name)
     }
-    hasOne(
-      related: M,
-      foreignKey: string | null = null,
-      localKey: string | null = null,
+    hasOne (
+      related: any,
+      foreignKey?: string,
+      localKey?: string,
     ) {
       const query = related.query()
       const instance = new related()
@@ -85,15 +85,15 @@ const HasRelations = <TBase extends MixinConstructor>(Model: TBase) => {
       localKey = localKey || this.getKeyName()
       return new HasOne(
         query,
-        this,
+        this as any,
         instance.getTable() + '.' + foreignKey,
         localKey,
       )
     }
-    hasMany(
-      related: M,
-      foreignKey: string | null = null,
-      localKey: string | null = null,
+    hasMany (
+      related: any,
+      foreignKey?: string,
+      localKey?: string,
     ) {
       const query = related.query()
 
@@ -107,26 +107,26 @@ const HasRelations = <TBase extends MixinConstructor>(Model: TBase) => {
         localKey,
       )
     }
-    belongsTo(
-      related,
-      foreignKey: string | null = null,
-      ownerKey: string | null = null,
-      relation: string | null = null,
+    belongsTo (
+      related: any,
+      foreignKey?: string,
+      ownerKey?: string,
+      relation?: string,
     ) {
       const query = related.query()
       const instance = new related()
       foreignKey = foreignKey || instance.getForeignKey()
       ownerKey = ownerKey || instance.getKeyName()
       relation = relation || this.guessBelongsToRelation()
-      return new BelongsTo(query, this, foreignKey, ownerKey, relation)
+      return new BelongsTo(query, this as any, foreignKey, ownerKey, relation)
     }
-    belongsToMany(
-      related,
-      table: string | null = null,
-      foreignPivotKey: string | null = null,
-      relatedPivotKey: string | null = null,
-      parentKey: string | null = null,
-      relatedKey: string | null = null,
+    belongsToMany (
+      related: any,
+      table?: string,
+      foreignPivotKey?: string,
+      relatedPivotKey?: string,
+      parentKey?: string,
+      relatedKey?: string,
     ) {
       const query = related.query()
       const instance = new related()
@@ -145,13 +145,13 @@ const HasRelations = <TBase extends MixinConstructor>(Model: TBase) => {
         relatedKey,
       )
     }
-    hasOneThrough(
-      related,
-      through,
-      firstKey = null,
-      secondKey = null,
-      localKey = null,
-      secondLocalKey = null,
+    hasOneThrough (
+      related: any,
+      through: any,
+      firstKey?: string,
+      secondKey?: string,
+      localKey?: string,
+      secondLocalKey?: string,
     ) {
       through = new through()
       const query = related.query()
@@ -167,13 +167,13 @@ const HasRelations = <TBase extends MixinConstructor>(Model: TBase) => {
         secondLocalKey || through.getKeyName(),
       )
     }
-    hasManyThrough(
-      related,
-      through,
-      firstKey = null,
-      secondKey = null,
-      localKey = null,
-      secondLocalKey = null,
+    hasManyThrough (
+      related: any,
+      through: any,
+      firstKey?: string,
+      secondKey?: string,
+      localKey?: string,
+      secondLocalKey?: string,
     ) {
       through = new through()
       const query = related.query()

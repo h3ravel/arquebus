@@ -1,0 +1,8 @@
+export * as HasAttributes from './has-attributes'
+export * as HasGlobalScopes from './has-global-scopes'
+export * as HasHooks from './has-hooks'
+export * as HasRelations from './has-relations'
+export * as HasTimestamps from './has-timestamps'
+export * as HasUniqueIds from './has-unique-ids'
+export * as HidesAttributes from './hides-attributes'
+export * as UniqueIds from './unique-ids'

@@ -37,7 +37,7 @@ const base: UserConfig = {
       js: e.format === 'es' ? '.js' : '.cjs',
       dts: '.d.ts'
     })
-  },
+  }
 }
 
 export default defineConfig([
@@ -97,6 +97,24 @@ export default defineConfig([
     dts: true,
     external,
     clean: true,
+  },
+  {
+    ...base,
+    treeshake: true,
+    entry: ['src/concerns/index.ts'],
+    format: ['esm', 'cjs'],
+    outDir: 'dist/concerns',
+    dts: true,
+    external,
+  },
+  {
+    ...base,
+    treeshake: true,
+    entry: ['src/relations/index.ts'],
+    format: ['esm', 'cjs'],
+    outDir: 'dist/relations',
+    dts: true,
+    external,
   },
   {
     ...base,
