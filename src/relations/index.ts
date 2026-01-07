@@ -1,10 +1,21 @@
-export * as BelongsTo from './belongs-to'
-export * as BelongsToMany from './belongs-to-many'
-export * as InteractsWithPivotTable from './concerns/interacts-with-pivot-table'
-export * as SupportsDefaultModels from './concerns/supports-default-models'
-export * as HasMany from './has-many'
-export * as HasManyThrough from './has-many-through'
-export * as HasOne from './has-one'
-export * as HasOneOrMany from './has-one-or-many'
-export * as HasOneThrough from './has-one-through'
-export * as Relation from './relation'
+import IBelongsTo from './belongs-to'
+import IBelongsToMany from './belongs-to-many'
+import IHasMany from './has-many'
+import IHasManyThrough from './has-many-through'
+import IHasOne from './has-one'
+import IHasOneOrMany from './has-one-or-many'
+import IHasOneThrough from './has-one-through'
+import IInteractsWithPivotTable from './concerns/interacts-with-pivot-table'
+import IRelation from './relation'
+import ISupportsDefaultModels from './concerns/supports-default-models'
+
+export const BelongsTo = IBelongsTo
+export const BelongsToMany = IBelongsToMany
+export const InteractsWithPivotTable = IInteractsWithPivotTable
+export const SupportsDefaultModels = ISupportsDefaultModels
+export const HasMany = IHasMany
+export const HasManyThrough = IHasManyThrough
+export const HasOne = IHasOne
+export const HasOneOrMany = IHasOneOrMany
+export const HasOneThrough = IHasOneThrough
+export const Relation = IRelation

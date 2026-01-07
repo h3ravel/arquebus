@@ -1,8 +1,17 @@
-export * as HasAttributes from './has-attributes'
-export * as HasGlobalScopes from './has-global-scopes'
-export * as HasHooks from './has-hooks'
-export * as HasRelations from './has-relations'
-export * as HasTimestamps from './has-timestamps'
-export * as HasUniqueIds from './has-unique-ids'
-export * as HidesAttributes from './hides-attributes'
-export * as UniqueIds from './unique-ids'
+import IHasAttributes from './has-attributes'
+import IHasGlobalScopes from './has-global-scopes'
+import IHasHooks from './has-hooks'
+import IHasRelations from './has-relations'
+import IHasTimestamps from './has-timestamps'
+import IHasUniqueIds from './has-unique-ids'
+import IHidesAttributes from './hides-attributes'
+import IUniqueIds from './unique-ids'
+
+export const HasAttributes = IHasAttributes
+export const HasGlobalScopes = IHasGlobalScopes
+export const HasHooks = IHasHooks
+export const HasRelations = IHasRelations
+export const HasTimestamps = IHasTimestamps
+export const HasUniqueIds = IHasUniqueIds
+export const HidesAttributes = IHidesAttributes
+export const UniqueIds = IUniqueIds
