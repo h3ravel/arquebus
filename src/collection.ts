@@ -8,19 +8,18 @@ import type BModel from './browser/model'
 
 class Collection<I extends Model | BModel>
   extends BaseCollection<I>
-  implements ICollection<I>
-{
-  private newConstructor(...args: any[]) {
+  implements ICollection<I> {
+  private newConstructor (...args: any[]) {
     const constr = this.getConstructor()
 
     return new constr(...args)
   }
 
-  getConstructor<T extends typeof Collection<I>>(this: InstanceType<T>) {
+  getConstructor<T extends typeof Collection<I>> (this: InstanceType<T>) {
     return this.constructor as T
   }
 
-  async load(...relations: (string[] | I[] | string | I)[]) {
+  async load (...relations: (string[] | I[] | string | I)[]) {
     if (this.isNotEmpty()) {
       const query = (this.first() as any).constructor.query().with(...relations)
       const items = await query.eagerLoadRelations(this.items)
@@ -30,7 +29,7 @@ class Collection<I extends Model | BModel>
     return this
   }
 
-  async loadAggregate<I>(
+  async loadAggregate<I> (
     relations: I,
     column: string,
     action: string | null | TFunction = null,
@@ -58,30 +57,30 @@ class Collection<I extends Model | BModel>
     return this
   }
 
-  loadCount(relations: I) {
+  loadCount (relations: I) {
     return this.loadAggregate(relations, '*', 'count')
   }
 
-  loadMax(relation: I, column: string) {
+  loadMax (relation: I, column: string) {
     return this.loadAggregate(relation, column, 'max')
   }
-  loadMin(relation: I, column: string) {
+  loadMin (relation: I, column: string) {
     return this.loadAggregate(relation, column, 'min')
   }
-  loadSum(relation: I, column: string) {
+  loadSum (relation: I, column: string) {
     return this.loadAggregate(relation, column, 'sum')
   }
-  loadAvg(relation: I, column: string) {
+  loadAvg (relation: I, column: string) {
     return this.loadAggregate(relation, column, 'avg')
   }
-  mapThen(callback: () => void) {
+  mapThen (callback: () => void) {
     return Promise.all(this.map(callback))
   }
-  modelKeys() {
+  modelKeys () {
     return this.all().map((item) => item.getKey())
   }
-  contains<K, V>(key: keyof I | K | TFunction, value?: V): boolean
-  contains<K, V>(key: K, operator?: string, value?: V) {
+  contains<K, V> (key: keyof I | K | TFunction, value?: V): boolean
+  contains<K, V> (key: K, operator?: string, value?: V) {
     if (arguments.length > 1) {
       return super.contains(key, value ?? operator) //, value)
     }
@@ -94,21 +93,21 @@ class Collection<I extends Model | BModel>
       return model.getKey() == key
     })
   }
-  diff(items: ICollection<any> | any[]) {
+  diff (items: ICollection<any> | any[]) {
     const diff = new (this.constructor as any)()
     const dictionary = this.getDictionary(items)
-    ;(this.items as unknown as any[]).map((item) => {
-      if (dictionary[item.getKey()] === undefined) {
-        diff.add(item)
-      }
-    })
+      ; (this.items as unknown as any[]).map((item) => {
+        if (dictionary[item.getKey()] === undefined) {
+          diff.add(item)
+        }
+      })
     return diff
   }
-  except(keys: any[]) {
+  except (keys: any[]) {
     const dictionary = omit(this.getDictionary(), keys)
     return new (this.constructor as any)(Object.values(dictionary))
   }
-  intersect(items: I[]) {
+  intersect (items: I[]) {
     const intersect = new (this.constructor as any)()
     if (isEmpty(items)) {
       return intersect
@@ -121,13 +120,13 @@ class Collection<I extends Model | BModel>
     }
     return intersect
   }
-  unique(key?: TFunction | keyof I, _strict = false) {
+  unique (key?: TFunction | keyof I, _strict = false) {
     if (key) {
       return super.unique(key) //, strict)
     }
     return new (this.constructor as any)(Object.values(this.getDictionary()))
   }
-  find(key: any, defaultValue = null) {
+  find (key: any, defaultValue = null) {
     // const Model = Model
     if (key instanceof Model) {
       key = key.getKey()
@@ -147,7 +146,7 @@ class Collection<I extends Model | BModel>
       })[0] || defaultValue
     )
   }
-  async fresh(...args: any[]) {
+  async fresh (...args: any[]) {
     if (this.isEmpty()) {
       return new (this.constructor as any)()
     }
@@ -164,29 +163,29 @@ class Collection<I extends Model | BModel>
       return freshModels[model.getKey()]
     })
   }
-  makeVisible(attributes: any) {
+  makeVisible (attributes: any) {
     return this.each((item) => {
       item.makeVisible(attributes)
     })
   }
-  makeHidden(attributes: any) {
+  makeHidden (attributes: any) {
     return this.each((item) => {
       item.makeHidden(attributes)
     })
   }
-  append(attributes: any) {
+  append (attributes: any) {
     return this.each((item) => {
       item.append(attributes)
     })
   }
-  only(keys: any[]) {
+  only (keys: any[]) {
     if (keys === null) {
       return new Collection(this.items)
     }
     const dictionary = pick(this.getDictionary(), keys)
     return new (this.constructor as any)(Object.values(dictionary))
   }
-  getDictionary(items?: ICollection<any> | any[]) {
+  getDictionary (items?: ICollection<any> | any[]) {
     items = !items ? (this.items as unknown as any[]) : items
     const dictionary: TGeneric = {}
     items.map((value) => {
@@ -194,7 +193,7 @@ class Collection<I extends Model | BModel>
     })
     return dictionary
   }
-  toQuery() {
+  toQuery () {
     const model = this.first()
     if (!model) {
       throw new Error('Unable to create query for empty collection.')
@@ -209,15 +208,15 @@ class Collection<I extends Model | BModel>
     }
     return (model.newModelQuery() as any).whereKey(this.modelKeys())
   }
-  toData() {
+  toData () {
     return this.all().map((item) =>
       typeof item.toData == 'function' ? item.toData() : item,
     )
   }
-  toJSON() {
+  toJSON () {
     return this.toData()
   }
-  toJson(...args: any[]) {
+  toJson (...args: any[]) {
     return JSON.stringify(this.toData(), ...args)
   }
   [Symbol.iterator]: () => Iterator<I> = () => {
@@ -225,15 +224,15 @@ class Collection<I extends Model | BModel>
     const length = this.items.length
     let n = 0
     return {
-      next() {
+      next () {
         return n < length
           ? {
-              value: (items as any)[n++],
-              done: false,
-            }
+            value: (items as any)[n++],
+            done: false,
+          }
           : {
-              done: true,
-            }
+            done: true,
+          }
       },
     } as Iterator<I>
   }

@@ -36,8 +36,8 @@ const HasRelations = <TBase extends MixinConstructor> (Model: TBase) => {
       }
       return this[getRelationMethod(relation)]()
     }
-    async getRelated (relation: string) {
-      return await this.related(relation).getResults()
+    getRelated (relation: string): Promise<any> {
+      return this.related(relation).getResults()
     }
     relationsToData () {
       const data = {} as any

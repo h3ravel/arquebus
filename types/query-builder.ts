@@ -41,36 +41,36 @@ export interface SchemaBuilder extends Knex.SchemaBuilder {
   /**
    * Retrieve all tables in the current database.
    */
-  tables(): Promise<string[]>
+  tables (): Promise<string[]>
   /**
    * Retrieve the table info for the given table, or all tables if no table is specified.
    *
    * @param table
    */
-  tableInfo(table?: string): Promise<Table | Table[]>
+  tableInfo (table?: string): Promise<Table | Table[]>
   /**
    * Retrieve all columns in a given table, or all columns if no table is specified.
    *
    * @param table
    */
-  columns(table?: string): Promise<{ table: string; column: string }[]>
+  columns (table?: string): Promise<{ table: string; column: string }[]>
   /**
    * Retrieve all columns from a given table. Returns all columns if table parameter is undefined.
    *
    * @param table
    * @param column
    */
-  columnInfo(table?: string, column?: string): Promise<Column[] | Column>
+  columnInfo (table?: string, column?: string): Promise<Column[] | Column>
   /**
    * Retrieve the primary key column for a given table.
    *
    * @param table
    */
-  primary(table: string): Promise<string>
+  primary (table: string): Promise<string>
   /**
    * Retrieve all configured foreign key constraints
    */
-  foreignKeys(): Promise<ForeignKey>
+  foreignKeys (): Promise<ForeignKey>
 }
 
 interface AsMethod<QB extends AnyQueryBuilder> {
@@ -95,7 +95,7 @@ export interface IQueryBuilder<M extends Model | BModel = Model, R = M[] | M> {
   query: IBuilder<M, R>
   schema: SchemaBuilder
   _statements: IStatement[]
-  table(name: string): IQueryBuilder<M, R>
+  table (name: string): IQueryBuilder<M, R>
   select: SelectMethod<this>
   addSelect: AddSelectMethod<this>
   columns: SelectMethod<this>
@@ -104,13 +104,13 @@ export interface IQueryBuilder<M extends Model | BModel = Model, R = M[] | M> {
   returning: ReturningMethod<this>
   distinctOn: SelectMethod<this>
   as: AsMethod<this>
-  asProxy(): IQueryBuilder<M, R>
+  asProxy (): IQueryBuilder<M, R>
   where: WhereMethod<this>
   firstOrFail: FirstOrFailMethod<this>
   forceDelete: ForceDeleteMethod
   andWhere: WhereMethod<this>
   // orWhere: WhereMethod<this>
-  orWhere(...args: any[]): this
+  orWhere (...args: any[]): this
   whereNot: WhereMethod<this>
   andWhereNot: WhereMethod<this>
   orWhereNot: WhereMethod<this>
@@ -212,31 +212,31 @@ export interface IQueryBuilder<M extends Model | BModel = Model, R = M[] | M> {
 
   groupBy: GroupByMethod<this>
   groupByRaw: RawInterface<this>
-  transaction(callback?: TFunction): Promise<Knex.Transaction> | undefined
-  destroy(callback: TFunction): Promise<number>
-  destroy(): Promise<number>
-  clone(): IQueryBuilder<M, R>
+  transaction (callback?: TFunction): Promise<Knex.Transaction> | null | undefined
+  destroy (callback: TFunction): Promise<number>
+  destroy (): Promise<number>
+  clone (): IQueryBuilder<M, R>
   raw: Knex.RawQueryBuilder<TGeneric, M>
-  get(columns?: string[]): Promise<any>
-  first(columns?: string[]): Promise<M | null | undefined>
-  find(key: string | number, columns?: string[]): Promise<M | null | undefined>
-  insert(attributes: any): Promise<unknown>
-  update(...attributes: any[]): Promise<number>
-  delete(): Promise<boolean | number>
-  exists(): Promise<boolean>
-  count(column?: string): Promise<number>
-  min(column: string): Promise<number>
-  max(column: string): Promise<number>
-  sum(column: string): Promise<number>
-  avg(column: string): Promise<number>
-  skip(count: number): this
-  take(count: number): this
-  limit(count: number): this
-  offset(count: number): this
-  pluck<X extends Model = any>(column: string): Promise<Array<X>>
-  chunk(count: number, callback: (rows: M[]) => any): Promise<boolean>
-  forPage(page: number, perPage?: number): this
-  paginate<F extends IPaginatorParams>(
+  get (columns?: string[]): Promise<any>
+  first (columns?: string[]): Promise<M | null | undefined>
+  find (key: string | number, columns?: string[]): Promise<M | null | undefined>
+  insert (attributes: any): Promise<unknown>
+  update (...attributes: any[]): Promise<number>
+  delete (): Promise<boolean | number>
+  exists (): Promise<boolean>
+  count (column?: string): Promise<number>
+  min (column: string): Promise<number>
+  max (column: string): Promise<number>
+  sum (column: string): Promise<number>
+  avg (column: string): Promise<number>
+  skip (count: number): this
+  take (count: number): this
+  limit (count: number): this
+  offset (count: number): this
+  pluck<X extends Model = any> (column: string): Promise<Array<X>>
+  chunk (count: number, callback: (rows: M[]) => any): Promise<boolean>
+  forPage (page: number, perPage?: number): this
+  paginate<F extends IPaginatorParams> (
     page?: number,
     perPage?: number,
   ): Promise<IPaginator<M, F>>

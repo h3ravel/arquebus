@@ -98,7 +98,7 @@ class Relation {
     return await (this as any).query.first(columns)
   }
 
-  async paginate (...args: unknown[]): Promise<any> {
+  async paginate (...args: any[]): Promise<any> {
     return await this.query.paginate(...args)
   }
 

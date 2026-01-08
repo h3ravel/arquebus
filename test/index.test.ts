@@ -36,6 +36,7 @@ import dayjs from 'dayjs'
 import { delay } from './utils'
 import type { IBuilder } from 'types/builder'
 import { SchemaInspector } from '@h3ravel/arquebus/inspector'
+import { Relation } from 'src/decorators'
 
 describe('node environment test', () => {
   test('should load the node version of the module', async () => {
@@ -1209,7 +1210,7 @@ describe('Integration test', async () => {
             expect(anotherUser).toBeInstanceOf(User)
             expect(anotherUser.posts).toBeInstanceOf(Collection)
             expect(anotherUser.posts.count()).toBe(2)
-            expect(anotherUser.posts.get(1).title).toBe('Test 2')
+            expect(anotherUser.posts.get(1)!.title).toBe('Test 2')
           })
 
           it('should return a Collection instance', () => {
@@ -1261,9 +1262,7 @@ describe('Integration test', async () => {
             expect(users.items().count()).toBe(2)
             expect(users.items().get(1)).toBeInstanceOf(User)
 
-            const users2 = makePaginator(User, data, {
-              paginated: true,
-            })
+            const users2 = makePaginator(User, data)
             expect(users2).toBeInstanceOf(Paginator)
             expect(users2.total()).toBe(2)
             expect(users2.perPage()).toBe(10)
@@ -2402,6 +2401,40 @@ describe('Integration test', async () => {
             await expect(
               Post.query().with(['author', 'undefinedRelation']).find(1),
             ).rejects.toThrow()
+          })
+        })
+
+        describe('Relationships', () => {
+          class User extends Base {
+            table = 'users'
+
+            @Relation
+            relationPosts () {
+              return this.hasMany(Post, 'id', 'post_id')
+            }
+          }
+
+          class Post extends Base {
+            table = 'posts'
+
+            @Relation
+            _user () {
+              return this.belongsTo(User, 'user_id', 'id')
+            }
+          }
+
+          it('returns relationsips', async () => {
+            const user = User.make({ name: 'User 1' })
+            await user.save()
+            const post = new Post({ name: 'Post 1' })
+            post.related('user').associate(user)
+            await post.save()
+
+            const related = await post.getRelated('user')
+
+            expect(related).toBeInstanceOf(User)
+            expect(related.name).toBe('User 1')
+            console.log(await post.user, related)
           })
         })
 

@@ -82,6 +82,9 @@ export class Model extends BaseModel {
     this.initializePlugins()
     this.syncOriginal()
     this.fill(attributes)
+
+    this.buildRelationships(attributes)
+
     return this.asProxy()
   }
 
@@ -100,21 +103,29 @@ export class Model extends BaseModel {
   static extend (plugin: TFunction, options: TGeneric) {
     plugin(this, options)
   }
+
   static make (attributes: TGeneric = {}) {
     const instance = new this()
+
+    instance.buildRelationships(attributes)
+
+    return instance
+  }
+
+  buildRelationships (attributes: TGeneric = {}) {
     for (const attribute in attributes) {
-      if (typeof instance[getRelationMethod(attribute)] !== 'function') {
-        instance.setAttribute(attribute, attributes[attribute])
+      if (typeof this[getRelationMethod(attribute)] !== 'function') {
+        this.setAttribute(attribute, attributes[attribute])
       } else {
-        const relation = instance[getRelationMethod(attribute)]()
+        const relation = this[getRelationMethod(attribute)]()
         const related = relation.getRelated().constructor
         if (relation instanceof HasOne || relation instanceof BelongsTo) {
-          instance.setRelation(attribute, related.make(attributes[attribute]))
+          this.setRelation(attribute, related.make(attributes[attribute]))
         } else if (
           (relation instanceof HasMany || relation instanceof BelongsToMany) &&
           Array.isArray(attributes[attribute])
         ) {
-          instance.setRelation(
+          this.setRelation(
             attribute,
             new Collection(
               attributes[attribute].map((item) => related.make(item)),
@@ -123,7 +134,6 @@ export class Model extends BaseModel {
         }
       }
     }
-    return instance
   }
 
   getConstructor<T extends typeof Model> (this: InstanceType<T>) {

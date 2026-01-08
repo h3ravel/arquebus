@@ -25,15 +25,15 @@ class BelongsTo extends compose(Relation, SupportsDefaultModels) {
     return this.asProxy()
   }
 
-  async getResults(): Promise<Model | null> {
-    if (this.child[this.foreignKey as string] === null) {
+  async getResults (): Promise<Model | null> {
+    if (this.child[this.foreignKey!] == null) {
       return this.getDefaultFor(this.parent)
     }
     const result: Model | null = (await this.query.first())!
     return result || this.getDefaultFor(this.parent)
   }
 
-  match(models: Model[], results: Model[], relation: string): Model[] {
+  match (models: Model[], results: Model[], relation: string): Model[] {
     const foreign = this.foreignKey as string
     const owner = this.ownerKey as string
     const dictionary: Record<string | number, Model> = {}
@@ -51,11 +51,11 @@ class BelongsTo extends compose(Relation, SupportsDefaultModels) {
     return models
   }
 
-  getQualifiedForeignKeyName(): string {
+  getQualifiedForeignKeyName (): string {
     return this.child.qualifyColumn(this.foreignKey as string)
   }
 
-  getRelationExistenceQuery(
+  getRelationExistenceQuery (
     query: any,
     parentQuery: any,
     columns: string[] = ['*'],
@@ -79,7 +79,7 @@ class BelongsTo extends compose(Relation, SupportsDefaultModels) {
       )
   }
 
-  getRelationExistenceQueryForSelfRelation(
+  getRelationExistenceQueryForSelfRelation (
     query: any,
     parentQuery: any,
     columns: string[] = ['*'],
@@ -95,20 +95,20 @@ class BelongsTo extends compose(Relation, SupportsDefaultModels) {
     )
   }
 
-  initRelation(models: Model[], relation: string): Model[] {
+  initRelation (models: Model[], relation: string): Model[] {
     models.forEach((model) => {
       model.setRelation(relation, this.getDefaultFor(model))
     })
     return models
   }
 
-  addEagerConstraints(models: Model[]): void {
+  addEagerConstraints (models: Model[]): void {
     const key = `${this.related.getTable()}.${this.ownerKey}`
     // const whereIn = this.whereIn(this.related, this.ownerKey);
     this.query.whereIn(key, this.getEagerModelKeys(models))
   }
 
-  getEagerModelKeys(models: Model[]): (string | number)[] {
+  getEagerModelKeys (models: Model[]): (string | number)[] {
     const keys: (string | number)[] = []
 
     models.forEach((model) => {
@@ -122,7 +122,7 @@ class BelongsTo extends compose(Relation, SupportsDefaultModels) {
     return [...new Set(keys)]
   }
 
-  associate(model: Model | string | number): Model {
+  associate (model: Model | string | number): Model {
     const ownerKey =
       model instanceof Model ? model.attributes[this.ownerKey as string] : model
 
@@ -133,16 +133,15 @@ class BelongsTo extends compose(Relation, SupportsDefaultModels) {
     } else {
       this.child.unsetRelation(this.relationName as string)
     }
-
     return this.child
   }
 
-  dissociate(): Model {
+  dissociate (): Model {
     this.child[this.foreignKey as string] = null
     return this.child.setRelation(this.relationName as string, null)
   }
 
-  addConstraints(this: any): void {
+  addConstraints (this: any): void {
     if (this.constructor.constraints) {
       const table = this.related.getTable()
       this.query.where(
@@ -153,7 +152,7 @@ class BelongsTo extends compose(Relation, SupportsDefaultModels) {
     }
   }
 
-  newRelatedInstanceFor(_parent: any): Model {
+  newRelatedInstanceFor (_parent: any): Model {
     return this.related.newInstance()
   }
 }

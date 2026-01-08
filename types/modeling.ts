@@ -205,7 +205,7 @@ export interface IModel {
   restore (options?: any): Promise<boolean>
   trashed (): boolean
   fresh (): Promise<this>
-  refresh (): Promise<this | undefined>
+  refresh (): Promise<this | null | undefined>
   push (): Promise<boolean>
   is (model: this): boolean
   isNot (model: this): boolean

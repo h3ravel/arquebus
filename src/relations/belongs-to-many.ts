@@ -44,21 +44,21 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return this.asProxy()
   }
 
-  initRelation(models: any[], relation: string): any[] {
+  initRelation (models: any[], relation: string): any[] {
     models.map((model) => {
       model.setRelation(relation, new Collection([]))
     })
     return models
   }
 
-  addConstraints(): void {
+  addConstraints (): void {
     this.performJoin()
     if ((this.constructor as any).constraints) {
       this.addWhereConstraints()
     }
   }
 
-  performJoin(query: any = null): this {
+  performJoin (query: any = null): this {
     query = query || this.query
     query.join(
       this.getTable(),
@@ -69,22 +69,22 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return this
   }
 
-  getTable(): string | undefined {
+  getTable (): string | undefined {
     return this.table
   }
 
-  getQualifiedRelatedKeyName(): string {
+  getQualifiedRelatedKeyName (): string {
     return this.related.qualifyColumn(this.relatedKey)
   }
 
-  async getResults(): Promise<any> {
+  async getResults (): Promise<any> {
     return this.parent[this.parentKey as string] !== null
       ? await this.get()
       : new Collection([])
   }
 
-  addWhereConstraints(): this {
-    ;(this as any).query.where(
+  addWhereConstraints (): this {
+    ; (this as any).query.where(
       this.getQualifiedForeignPivotKeyName(),
       '=',
       this.parent[this.parentKey as string],
@@ -92,7 +92,7 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return this
   }
 
-  async get(columns?: string[]) {
+  async get (columns?: string[]) {
     const builder = (this as any).query.applyScopes()
     columns = builder.query?._statements?.find(
       (item: any) => item.grouping == 'columns',
@@ -110,12 +110,12 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return new Collection(models)
   }
 
-  async first(columns: string[] = ['*']): Promise<any | null> {
+  async first (columns: string[] = ['*']): Promise<any | null> {
     const results = await this.take(1).get(columns)
     return results.count() > 0 ? results.first() : null
   }
 
-  async firstOrFail(...columns: any[]): Promise<any> {
+  async firstOrFail (...columns: any[]): Promise<any> {
     const model = await this.first(...columns)
     if (model !== null) {
       return model
@@ -123,18 +123,18 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     throw new ModelNotFoundError().setModel(this.related.constructor)
   }
 
-  async paginate(
+  async paginate (
     page: number = 1,
     perPage: number = 15,
     columns: string[] = ['*'],
   ): Promise<any> {
-    ;(this as any).query.select(this.shouldSelect(columns))
+    ; (this as any).query.select(this.shouldSelect(columns))
     return tap(await this.query.paginate(page, perPage), (paginator: any) => {
       this.hydratePivotRelation(paginator.items())
     })
   }
 
-  async chunk(
+  async chunk (
     count: number,
     callback: (results: any, page: number) => Promise<any>,
   ): Promise<any> {
@@ -147,21 +147,21 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     )
   }
 
-  setUsing(model: Model): this {
+  setUsing (model: Model): this {
     this.using = model
     return this
   }
 
-  as(accessor: string): this {
+  as (accessor: string): this {
     this.accessor = accessor
     return this
   }
 
-  prepareQueryBuilder(): any {
+  prepareQueryBuilder (): any {
     return (this as any).query.select(this.shouldSelect())
   }
 
-  hydratePivotRelation(models: any[]): void {
+  hydratePivotRelation (models: any[]): void {
     models.map((model) => {
       model.setRelation(
         this.accessor,
@@ -170,7 +170,7 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     })
   }
 
-  migratePivotAttributes(model: any): Record<string, any> {
+  migratePivotAttributes (model: any): Record<string, any> {
     const values: Record<string, any> = {}
     for (const key in model.attributes) {
       const value = model.attributes[key]
@@ -182,7 +182,7 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return values
   }
 
-  withTimestamps(
+  withTimestamps (
     createdAt: string | null = null,
     updatedAt: string | null = null,
   ): this {
@@ -191,14 +191,14 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return this.withPivot(this.createdAt(), this.updatedAt())
   }
 
-  shouldSelect(columns: string[] = ['*']): string[] {
+  shouldSelect (columns: string[] = ['*']): string[] {
     if (isEqual(columns, ['*'])) {
       columns = [this.related.getTable() + '.*']
     }
     return columns.concat(this.aliasedPivotColumns())
   }
 
-  aliasedPivotColumns(): string[] {
+  aliasedPivotColumns (): string[] {
     const defaults = [this.foreignPivotKey, this.relatedPivotKey]
     return collect(defaults.concat(this.pivotColumns))
       .map((column: any) => {
@@ -208,11 +208,11 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
       .all()
   }
 
-  qualifyPivotColumn(column: string): string {
+  qualifyPivotColumn (column: string): string {
     return column.includes('.') ? column : this.getTable() + '.' + column
   }
 
-  match(models: any[], results: any[], relation: string): any[] {
+  match (models: any[], results: any[], relation: string): any[] {
     const dictionary = this.buildDictionary(results)
     models.map((model) => {
       const key = model.getKey()
@@ -223,7 +223,7 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return models
   }
 
-  buildDictionary(results: any[]) {
+  buildDictionary (results: any[]) {
     const dictionary: TGeneric<Collection<any>> = {}
     results.map((result) => {
       const value = result[this.accessor][this.foreignPivotKey as string]
@@ -235,22 +235,22 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return dictionary
   }
 
-  addEagerConstraints(models: any[]): void {
-    ;(this as any).query.whereIn(
+  addEagerConstraints (models: any[]): void {
+    ; (this as any).query.whereIn(
       this.getQualifiedForeignPivotKeyName(),
       this.getKeys(models, this.parentKey),
     )
   }
 
-  getQualifiedForeignPivotKeyName(): string {
+  getQualifiedForeignPivotKeyName (): string {
     return this.qualifyPivotColumn(this.foreignPivotKey as string)
   }
 
-  getQualifiedRelatedPivotKeyName(): string {
+  getQualifiedRelatedPivotKeyName (): string {
     return this.qualifyPivotColumn(this.relatedPivotKey as string)
   }
 
-  wherePivot(
+  wherePivot (
     column: string,
     operator: any = null,
     value: any = null,
@@ -261,7 +261,7 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return this.where(this.qualifyPivotColumn(column), operator, value, boolean)
   }
 
-  wherePivotBetween(
+  wherePivotBetween (
     column: string,
     values: any,
     boolean: string = 'and',
@@ -275,11 +275,11 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     )
   }
 
-  orWherePivotBetween(column: string, values: any): any {
+  orWherePivotBetween (column: string, values: any): any {
     return this.wherePivotBetween(column, values, 'or')
   }
 
-  wherePivotNotBetween(
+  wherePivotNotBetween (
     column: string,
     values: any,
     boolean: string = 'and',
@@ -287,11 +287,11 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return this.wherePivotBetween(column, values, boolean, true)
   }
 
-  orWherePivotNotBetween(column: string, values: any): any {
+  orWherePivotNotBetween (column: string, values: any): any {
     return this.wherePivotBetween(column, values, 'or', true)
   }
 
-  wherePivotIn(
+  wherePivotIn (
     column: string,
     values: any,
     boolean: string = 'and',
@@ -300,23 +300,23 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return this.whereIn(this.qualifyPivotColumn(column), values, boolean, not)
   }
 
-  orWherePivot(column: string, operator: any = null, value: any = null): any {
+  orWherePivot (column: string, operator: any = null, value: any = null): any {
     return this.wherePivot(column, operator, value, 'or')
   }
 
-  orWherePivotIn(column: string, values: any): any {
+  orWherePivotIn (column: string, values: any): any {
     return this.wherePivotIn(column, values, 'or')
   }
 
-  wherePivotNotIn(column: string, values: any, boolean: string = 'and'): any {
+  wherePivotNotIn (column: string, values: any, boolean: string = 'and'): any {
     return this.wherePivotIn(column, values, boolean, true)
   }
 
-  orWherePivotNotIn(column: string, values: any): any {
+  orWherePivotNotIn (column: string, values: any): any {
     return this.wherePivotNotIn(column, values, 'or')
   }
 
-  wherePivotNull(
+  wherePivotNull (
     column: string,
     boolean: string = 'and',
     not: boolean = false,
@@ -324,35 +324,35 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return this.whereNull(this.qualifyPivotColumn(column), boolean, not)
   }
 
-  wherePivotNotNull(column: string, boolean: string = 'and'): any {
+  wherePivotNotNull (column: string, boolean: string = 'and'): any {
     return this.wherePivotNull(column, boolean, true)
   }
 
-  orWherePivotNull(column: string, not: boolean = false): any {
+  orWherePivotNull (column: string, not: boolean = false): any {
     return this.wherePivotNull(column, 'or', not)
   }
 
-  orWherePivotNotNull(column: string): any {
+  orWherePivotNotNull (column: string): any {
     return this.orWherePivotNull(column, true)
   }
 
-  orderByPivot(column: string, direction: string = 'asc'): any {
+  orderByPivot (column: string, direction: string = 'asc'): any {
     return this.orderBy(this.qualifyPivotColumn(column), direction)
   }
 
-  createdAt(): string {
+  createdAt (): string {
     return this.pivotCreatedAt || this.parent.getCreatedAtColumn()
   }
 
-  updatedAt(): string {
+  updatedAt (): string {
     return this.pivotUpdatedAt || this.parent.getUpdatedAtColumn()
   }
 
-  getExistenceCompareKey(): string {
+  getExistenceCompareKey (): string {
     return this.getQualifiedForeignPivotKeyName()
   }
 
-  getRelationExistenceQuery(
+  getRelationExistenceQuery (
     query: any,
     parentQuery: any,
     columns: string[] = ['*'],
@@ -370,7 +370,7 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
     return super.getRelationExistenceQuery(query, parentQuery, columns)
   }
 
-  getRelationExistenceQueryForSelfJoin(
+  getRelationExistenceQueryForSelfJoin (
     query: any,
     parentQuery: any,
     columns: string[] = ['*'],

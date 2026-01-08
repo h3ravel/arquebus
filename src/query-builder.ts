@@ -141,7 +141,7 @@ export class QueryBuilder<
     const c = this.connector.table(table)
     return new QueryBuilder(null, () => c) as any
   }
-  transaction (callback?: TFunction): Promise<Knex.Transaction> | undefined {
+  transaction (callback?: TFunction): Promise<Knex.Transaction> | undefined | null {
     if (callback) {
       return this.connector.transaction((trx) => {
         return callback(new QueryBuilder(null, () => trx))
@@ -191,14 +191,12 @@ export class QueryBuilder<
     } while (countResults === count)
     return true
   }
-  // TODO: Fix the error below
-  // @ts-expect-error _pageName and _page are just bastered that will be taken care of later
   async paginate<F extends IPaginatorParams> (
     this: any,
     page = 1,
     perPage = 15,
-    _pageName: string,
-    _page: number,
+    _pageName?: string,
+    _page?: number,
   ): Promise<IPaginator<M, F>> {
     const query = this.clone()
     const total = await query.clearOrder().count('*')

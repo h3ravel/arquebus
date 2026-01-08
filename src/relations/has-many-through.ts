@@ -34,11 +34,11 @@ class HasManyThrough extends Relation {
     return this.asProxy()
   }
 
-  addConstraints() {
+  addConstraints () {
     const localValue = this.farParent[this.localKey!]
     this.performJoin()
     if ((this as any).constructor.constraints) {
-      ;(this as any).query.where(
+      ; (this as any).query.where(
         this.getQualifiedFirstKeyName(),
         '=',
         localValue,
@@ -46,7 +46,7 @@ class HasManyThrough extends Relation {
     }
   }
 
-  performJoin(query: any | null = null) {
+  performJoin (query: any | null = null) {
     query = query! || this.query
 
     const farKey = this.getQualifiedFarKeyName()
@@ -63,17 +63,17 @@ class HasManyThrough extends Relation {
       })
     }
   }
-  getQualifiedParentKeyName() {
+  getQualifiedParentKeyName () {
     return this.parent.qualifyColumn(this.secondLocalKey)
   }
-  throughParentSoftDeletes() {
+  throughParentSoftDeletes () {
     return this.throughParent.pluginInitializers['SoftDeletes'] !== undefined
   }
-  withTrashedParents() {
-    ;(this as any).query.withoutGlobalScope('SoftDeletableHasManyThrough')
+  withTrashedParents () {
+    ; (this as any).query.withoutGlobalScope('SoftDeletableHasManyThrough')
     return this
   }
-  addEagerConstraints(models: Model[]) {
+  addEagerConstraints (models: Model[]) {
     const whereIn = this.whereInMethod(this.farParent, this.localKey!)
     this.whereInEager(
       whereIn,
@@ -82,14 +82,14 @@ class HasManyThrough extends Relation {
     )
   }
 
-  initRelation(models: Model[], relation: string) {
+  initRelation (models: Model[], relation: string) {
     for (const model of models) {
       model.setRelation(relation, this.related.newCollection())
     }
     return models
   }
 
-  match(models: Model[], results: any, relation: string) {
+  match (models: Model[], results: any, relation: string) {
     const dictionary = this.buildDictionary(results)
     for (const model of models) {
       const key = (this as any).getDictionaryKey(
@@ -102,7 +102,7 @@ class HasManyThrough extends Relation {
     return models
   }
 
-  buildDictionary(results: any) {
+  buildDictionary (results: any) {
     const dictionary: TGeneric = {}
     for (const result of results) {
       if (dictionary[result.laravel_through_key] === undefined) {
@@ -113,12 +113,12 @@ class HasManyThrough extends Relation {
     return dictionary
   }
 
-  async firstOrNew(this: any, attributes: TGeneric) {
+  async firstOrNew (this: any, attributes: TGeneric) {
     const instance = await this.where(attributes).first()
     return instance || this.related.newInstance(attributes)
   }
 
-  async updateOrCreate(this: any, attributes: TGeneric, values = {}) {
+  async updateOrCreate (this: any, attributes: TGeneric, values = {}) {
     return tap(
       await this.firstOrCreate(attributes, values),
       async (instance) => {
@@ -128,7 +128,7 @@ class HasManyThrough extends Relation {
       },
     )
   }
-  async firstWhere(
+  async firstWhere (
     this: any,
     column: string,
     operator = null,
@@ -137,18 +137,18 @@ class HasManyThrough extends Relation {
   ) {
     return await this.where(column, operator, value, boolean).first()
   }
-  async first(this: any, columns = ['*']) {
+  async first (this: any, columns = ['*']) {
     const results = await this.take(1).get(columns)
     return results.count() > 0 ? results.first() : null
   }
-  async firstOrFail(...columns: any[]) {
+  async firstOrFail (...columns: any[]) {
     const model = await this.first(...columns)
     if (model) {
       return model
     }
     throw new ModelNotFoundError().setModel(this.related.constructor)
   }
-  async firstOr(columns = ['*'], callback: TFunction | null = null) {
+  async firstOr (columns = ['*'], callback: TFunction | null = null) {
     if (typeof columns === 'function') {
       callback = columns
       columns = ['*']
@@ -159,7 +159,7 @@ class HasManyThrough extends Relation {
     }
     return callback?.()
   }
-  async find(this: any, id: string | number, columns = ['*']) {
+  async find (this: any, id: string | number, columns = ['*']) {
     if (isArray(id)) {
       return await this.findMany(id, columns)
     }
@@ -170,7 +170,7 @@ class HasManyThrough extends Relation {
     ).first(columns)
   }
 
-  async findMany(this: any, ids: (string | number)[], columns = ['*']) {
+  async findMany (this: any, ids: (string | number)[], columns = ['*']) {
     if (ids.length === 0) {
       return this.getRelated().newCollection()
     }
@@ -179,7 +179,7 @@ class HasManyThrough extends Relation {
     )
   }
 
-  async findOrFail(id: string | number, columns = ['*']) {
+  async findOrFail (id: string | number, columns = ['*']) {
     const result = await this.find(id, columns)
     if (Array.isArray(id)) {
       if (result.count() === id.length) {
@@ -191,13 +191,13 @@ class HasManyThrough extends Relation {
     throw new ModelNotFoundError().setModel(this.related.constructor, id as any)
   }
 
-  async getResults() {
+  async getResults () {
     return this.farParent[this.localKey!]
       ? await this.get()
       : this.related.newCollection()
   }
 
-  async get(columns = ['*']) {
+  async get (columns = ['*']) {
     const builder = this.prepareQueryBuilder(columns)
     let models = await builder.getModels()
     if (models.count() > 0) {
@@ -206,7 +206,7 @@ class HasManyThrough extends Relation {
     return this.related.newCollection(models)
   }
 
-  async paginate(
+  async paginate (
     perPage: number | null = null,
     columns = ['*'],
     pageName = 'page',
@@ -218,7 +218,7 @@ class HasManyThrough extends Relation {
     return await this.query.paginate(perPage ?? 15, columns, pageName, page)
   }
 
-  shouldSelect(columns = ['*']) {
+  shouldSelect (columns = ['*']) {
     if (columns?.at(0) == '*') {
       columns = [this.related.getTable() + '.*']
     }
@@ -228,18 +228,18 @@ class HasManyThrough extends Relation {
     ]
   }
 
-  async chunk(count: number, callback: TFunction) {
+  async chunk (count: number, callback: TFunction) {
     return await this.prepareQueryBuilder().chunk(count, callback)
   }
 
-  prepareQueryBuilder(this: any, columns = ['*']) {
+  prepareQueryBuilder (this: any, columns = ['*']) {
     const builder = this.query.applyScopes()
     return builder.addSelect(
       this.shouldSelect(builder.getQuery().columns ? [] : columns),
     )
   }
 
-  getRelationExistenceQuery(
+  getRelationExistenceQuery (
     query: Builder,
     parentQuery: Builder,
     columns = ['*'],
@@ -268,21 +268,21 @@ class HasManyThrough extends Relation {
       )
   }
 
-  getRelationExistenceQueryForSelfRelation(
+  getRelationExistenceQueryForSelfRelation (
     query: Builder,
     parentQuery: Builder,
     columns = ['*'],
   ) {
     const hash = this.getRelationCountHash()
-    ;(query as any).from(query.getModel().getTable() + ' as ' + hash)
-    ;(query as any).join(
-      this.throughParent.getTable(),
-      this.getQualifiedParentKeyName(),
-      '=',
-      hash + '.' + this.secondKey,
-    )
+      ; (query as any).from(query.getModel().getTable() + ' as ' + hash)
+      ; (query as any).join(
+        this.throughParent.getTable(),
+        this.getQualifiedParentKeyName(),
+        '=',
+        hash + '.' + this.secondKey,
+      )
     if (this.throughParentSoftDeletes()) {
-      ;(query as any).whereNull(
+      ; (query as any).whereNull(
         this.throughParent.getQualifiedDeletedAtColumn(),
       )
     }
@@ -297,7 +297,7 @@ class HasManyThrough extends Relation {
       )
   }
 
-  getRelationExistenceQueryForThroughSelfRelation(
+  getRelationExistenceQueryForThroughSelfRelation (
     query: Builder,
     parentQuery: Builder,
     columns = ['*'],
@@ -305,14 +305,14 @@ class HasManyThrough extends Relation {
     const hash = this.getRelationCountHash()
     const table = this.throughParent.getTable() + ' as ' + hash
 
-    ;(query as any).join(
-      table,
-      hash + '.' + this.secondLocalKey,
-      '=',
-      this.getQualifiedFarKeyName(),
-    )
+      ; (query as any).join(
+        table,
+        hash + '.' + this.secondLocalKey,
+        '=',
+        this.getQualifiedFarKeyName(),
+      )
     if (this.throughParentSoftDeletes()) {
-      ;(query as any).whereNull(
+      ; (query as any).whereNull(
         hash + '.' + this.throughParent.getDeletedAtColumn(),
       )
     }
@@ -325,31 +325,31 @@ class HasManyThrough extends Relation {
       )
   }
 
-  getQualifiedFarKeyName() {
+  getQualifiedFarKeyName () {
     return this.getQualifiedForeignKeyName()
   }
 
-  getFirstKeyName() {
+  getFirstKeyName () {
     return this.firstKey
   }
 
-  getQualifiedFirstKeyName() {
+  getQualifiedFirstKeyName () {
     return this.throughParent.qualifyColumn(this.firstKey)
   }
 
-  getForeignKeyName() {
+  getForeignKeyName () {
     return this.secondKey
   }
-  getQualifiedForeignKeyName() {
+  getQualifiedForeignKeyName () {
     return this.related.qualifyColumn(this.secondKey)
   }
-  getLocalKeyName() {
+  getLocalKeyName () {
     return this.localKey
   }
-  getQualifiedLocalKeyName() {
+  getQualifiedLocalKeyName () {
     return this.farParent.qualifyColumn(this.localKey)
   }
-  getSecondLocalKeyName() {
+  getSecondLocalKeyName () {
     return this.secondLocalKey
   }
 }
