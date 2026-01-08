@@ -2434,7 +2434,6 @@ describe('Integration test', async () => {
 
             expect(related).toBeInstanceOf(User)
             expect(related.name).toBe('User 1')
-            console.log(await post.user, related)
           })
         })
 
