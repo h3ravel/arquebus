@@ -10,26 +10,6 @@
         "**/*.test.ts",
         "**/*.d.ts"
       ]
-    },
-    {
-      "name": "index.ts",
-      "root": "src",
-      "include": [
-        "**/attribute.ts"
-      ],
-      "exports": {
-        "**/attribute.ts": [
-          "/^(?!default$)(.+)/ as $1"
-        ],
-        "**/Arr.ts": [
-          "Arr",
-          "/^(?!default$)(.+)/ as $1"
-        ],
-        "**/Crypto.ts": [
-          "* as Crypto",
-          "/^(?!default$)(.+)/ as $1"
-        ]
-      }
     }
   ]
 }
