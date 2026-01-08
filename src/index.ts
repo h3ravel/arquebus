@@ -18,6 +18,7 @@ import arquebus from './arquebus'
 export * from './errors'
 export * from './utils'
 export * from './relations'
+export * from './decorators'
 export * from './make'
 
 // named exports

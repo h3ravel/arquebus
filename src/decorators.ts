@@ -7,7 +7,7 @@
  * @param value 
  * @param context 
  */
-export function Relation (target: any, context?: any, descriptor?: any) {
+export function Relationship (target: any, context?: any, descriptor?: any) {
     // Unified Detection (Modern vs Legacy)
     const isModern = context && typeof context === 'object' && 'kind' in context
     const propertyKey = (isModern ? context.name : context) as string

@@ -36,7 +36,7 @@ import dayjs from 'dayjs'
 import { delay } from './utils'
 import type { IBuilder } from 'types/builder'
 import { SchemaInspector } from '@h3ravel/arquebus/inspector'
-import { Relation } from 'src/decorators'
+import { Relationship } from 'src/decorators'
 
 describe('node environment test', () => {
   test('should load the node version of the module', async () => {
@@ -2408,7 +2408,7 @@ describe('Integration test', async () => {
           class User extends Base {
             table = 'users'
 
-            @Relation
+            @Relationship
             relationPosts () {
               return this.hasMany(Post, 'id', 'post_id')
             }
@@ -2417,7 +2417,7 @@ describe('Integration test', async () => {
           class Post extends Base {
             table = 'posts'
 
-            @Relation
+            @Relationship
             _user () {
               return this.belongsTo(User, 'user_id', 'id')
             }
