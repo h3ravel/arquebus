@@ -58,7 +58,7 @@ jobs:
       - name: Run Generic tests
         run: pnpm test
         env:
-          MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+          MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
           MYSQL_PASSWORD: password
           POSTGRES_HOST: localhost
           POSTGRES_USER: arquebus
@@ -90,7 +90,7 @@ jobs:
           pnpm vitest --no-file-parallelism --coverage.enabled --coverage.reporter=text  --coverage.reporter=json --coverage.reporter=html --coverage.reporter=lcov
         env:
           DB: mysql
-          MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+          MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
           MYSQL_PASSWORD: password
 
       - name: Upload coverage reports to Codecov
