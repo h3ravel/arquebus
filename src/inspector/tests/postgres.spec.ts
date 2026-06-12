@@ -4,7 +4,7 @@ import type { Knex } from 'knex'
 import type { SchemaInspector } from 'src/inspector/types/schema-inspector'
 import { arquebus } from 'src'
 import assert from 'assert'
-import config from 'test/config'
+import config from '../../../test/config'
 import knex from 'knex'
 import { SchemaInspector as schemaInspector } from 'src/inspector'
 
@@ -15,7 +15,7 @@ describe('postgres-no-search-path', () => {
   const database: Knex = connection.connector
   const inspector: SchemaInspector = schemaInspector.inspect(database)
 
-  beforeAll(() => {})
+  beforeAll(() => { })
 
   afterAll(async () => {
     await database.destroy()

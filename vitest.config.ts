@@ -1,8 +1,15 @@
 import { defineProject } from 'vitest/config'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import { fileURLToPath } from 'node:url'
+
+const basicAppSource = fileURLToPath(new URL('./src/', import.meta.url))
 
 export default defineProject({
-  plugins: [tsconfigPaths()],
+  resolve: {
+    alias: [
+      { find: /^src\/(.+)$/, replacement: `${basicAppSource}$1` },
+      { find: /^src$/, replacement: basicAppSource + 'index.ts' },
+    ],
+  },
   test: {
     pool: 'threads',
     projects: [
