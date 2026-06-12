@@ -1,6 +1,6 @@
 {
   "name": "@h3ravel/arquebus",
-  "version": "0.8.0-alpha.6",
+  "version": "1.29.0-alpha.11",
   "packageManager": "pnpm@10.14.0",
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.toneflix.net/arquebus",
@@ -150,11 +150,12 @@
     "postinstall": "pnpm barrel",
     "cmd": "cross-env TEST=true tsx --experimental-specifier-resolution=node src/cli",
     "cmd:watch": "cross-env TEST=true tsx watch --experimental-specifier-resolution=node src/cli",
-    "test": "cross-env vitest --project generic",
-    "test:mysql": "cross-env DB=mysql vitest --project node",
-    "test:postgres": "cross-env DB=postgres vitest --project node",
-    "test:sqlite": "cross-env DB=sqlite vitest --project node",
-    "test:browser": "vitest --project browser",
+    "test": "cross-env vitest run --project generic",
+    "test:watch": "cross-env vitest --project generic --watch",
+    "test:mysql": "cross-env DB=mysql vitest run --project node",
+    "test:postgres": "cross-env DB=postgres vitest run --project node",
+    "test:sqlite": "cross-env DB=sqlite vitest run --project node",
+    "test:browser": "vitest run --project browser",
     "release:patch": "pnpm build && git add . && git commit -m \"version: bump version\" && pnpm version patch && pnpm publish --tag latest"
   },
   "husky": {
@@ -169,8 +170,8 @@
     ]
   },
   "dependencies": {
-    "@h3ravel/shared": "^0.29.0-alpha.10",
-    "@h3ravel/support": "^0.17.0-alpha.10",
+    "@h3ravel/shared": "^1.29.0-alpha.11",
+    "@h3ravel/support": "^1.29.0-alpha.11",
     "barrelize": "^1.6.4",
     "chalk": "^5.6.2",
     "chokidar": "^4.0.1",
@@ -200,12 +201,12 @@
     "eslint": "^9.36.0",
     "jsdom": "^26.1.0",
     "prettier": "^3.6.2",
-    "sqlite3": "5.1.7",
+    "sqlite3": "^6.0.1",
     "terser": "^5.44.0",
     "ts-node": "^10.9.2",
     "tsdown": "^0.16.0",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.44.0",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
