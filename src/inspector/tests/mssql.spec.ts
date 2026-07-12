@@ -1,14 +1,15 @@
+import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+
 import type { Knex } from 'knex'
+import type { SchemaInspector } from '../types/schema-inspector'
 import knex from 'knex'
-import { expect } from 'chai'
-import schemaInspector from '../lib'
-import type { SchemaInspector } from '../lib/types/schema-inspector'
+import { SchemaInspector as schemaInspector } from '../../../src/inspector'
 
 describe('mssql', () => {
   let database: Knex
   let inspector: SchemaInspector
 
-  before(() => {
+  beforeAll(() => {
     database = knex({
       client: 'mssql',
       connection: {
@@ -20,10 +21,10 @@ describe('mssql', () => {
         charset: 'utf8',
       },
     })
-    inspector = schemaInspector(database)
+    inspector = schemaInspector.inspect(database)
   })
 
-  after(async () => {
+  afterEach(async () => {
     await database.destroy()
   })
 

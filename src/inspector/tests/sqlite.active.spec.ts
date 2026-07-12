@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import type { Knex } from 'knex'
-import type { SchemaInspector } from 'src/inspector/types/schema-inspector'
-import { arquebus } from 'src'
+import type { SchemaInspector } from '../../../src/inspector/types/schema-inspector'
+import { arquebus } from '../../../src'
 import assert from 'assert'
 import config from '../../../test/config'
-import { SchemaInspector as schemaInspector } from 'src/inspector'
+import { SchemaInspector as schemaInspector } from '../../../src/inspector'
 
 for (const sqliteClientName of ['sqlite3']) {
   // for (const sqliteClientName of ['sqlite3', 'better-sqlite3']) {

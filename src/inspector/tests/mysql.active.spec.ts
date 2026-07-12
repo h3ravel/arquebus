@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import type { Knex } from 'knex'
-import type { SchemaInspector } from 'src/inspector/types/schema-inspector'
-import { arquebus } from 'src'
+import type { SchemaInspector } from '../../../src/inspector/types/schema-inspector'
+import { arquebus } from '../../../src'
 import config from '../../../test/config'
 import net from 'net'
-import { SchemaInspector as schemaInspector } from 'src/inspector'
+import { SchemaInspector as schemaInspector } from '../../../src/inspector'
 
-async function isPortReachable (host: string, port: number, timeout = 500): Promise<boolean> {
+async function isPortReachable(host: string, port: number, timeout = 500): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     const socket = new net.Socket()
     let settled = false

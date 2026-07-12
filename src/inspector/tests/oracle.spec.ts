@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { Knex } from 'knex'
 import type { SchemaInspector } from '../types/schema-inspector'
 import knex from 'knex'
-import { SchemaInspector as schemaInspector } from 'src/inspector'
+import { SchemaInspector as schemaInspector } from '../../../src/inspector'
 
 describe('oracledb', () => {
   let database: Knex

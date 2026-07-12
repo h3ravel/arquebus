@@ -1,14 +1,15 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+
 import type { Knex } from 'knex'
+import type { SchemaInspector } from '../types/schema-inspector'
 import knex from 'knex'
-import { expect } from 'chai'
-import schemaInspector from '../lib'
-import type { SchemaInspector } from '../lib/types/schema-inspector'
+import { SchemaInspector as schemaInspector } from '../../../src/inspector'
 
 describe('cockroachdb-no-search-path', () => {
   let database: Knex
   let inspector: SchemaInspector
 
-  before(() => {
+  beforeAll(() => {
     database = knex({
       client: 'cockroachdb',
       connection: {
@@ -20,10 +21,10 @@ describe('cockroachdb-no-search-path', () => {
         charset: 'utf8',
       },
     })
-    inspector = schemaInspector(database)
+    inspector = schemaInspector.inspect(database)
   })
 
-  after(async () => {
+  afterAll(async () => {
     await database.destroy()
   })
 
@@ -69,7 +70,7 @@ describe('cockroachdb-no-search-path', () => {
   describe('.columns', () => {
     it('returns information for all tables', async () => {
       database.transaction(async (trx) => {
-        expect(await schemaInspector(trx).columns()).to.have.deep.members([
+        expect(await schemaInspector.inspect(trx).columns()).to.have.deep.members([
           { table: 'teams', column: 'id' },
           { table: 'teams', column: 'uuid' },
           { table: 'teams', column: 'name' },
@@ -763,7 +764,7 @@ describe('cockroachdb-no-search-path', () => {
   describe('.transaction', () => {
     it('works with transactions transaction', async () => {
       database.transaction(async (trx) => {
-        expect(await schemaInspector(trx).primary('teams')).to.equal('id')
+        expect(await schemaInspector.inspect(trx).primary('teams')).to.equal('id')
       })
     })
   })
@@ -773,7 +774,7 @@ describe('cockroachdb-with-search-path', () => {
   let database: Knex
   let inspector: SchemaInspector
 
-  before(() => {
+  beforeAll(() => {
     database = knex({
       searchPath: ['public', 'test'],
       client: 'cockroachdb',
@@ -786,10 +787,10 @@ describe('cockroachdb-with-search-path', () => {
         charset: 'utf8',
       },
     })
-    inspector = schemaInspector(database)
+    inspector = schemaInspector.inspect(database)
   })
 
-  after(async () => {
+  afterAll(async () => {
     await database.destroy()
   })
 
@@ -802,7 +803,7 @@ describe('cockroachdb-with-search-path', () => {
   describe('.transaction', () => {
     it('works with transactions transaction', async () => {
       database.transaction(async (trx) => {
-        expect(await schemaInspector(trx).primary('test')).to.equal('id')
+        expect(await schemaInspector.inspect(trx).primary('test')).to.equal('id')
       })
     })
   })

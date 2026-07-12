@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import type { Knex } from 'knex'
-import type { SchemaInspector } from 'src/inspector/types/schema-inspector'
-import { arquebus } from 'src'
+import type { SchemaInspector } from '../../../src/inspector/types/schema-inspector'
+import { arquebus } from '../../../src'
 import assert from 'assert'
 import config from '../../../test/config'
 import knex from 'knex'
-import { SchemaInspector as schemaInspector } from 'src/inspector'
+import { SchemaInspector as schemaInspector } from '../../../src/inspector'
 
 describe('postgres-no-search-path', () => {
   arquebus.addConnection(config.postgres, config.postgres.client)

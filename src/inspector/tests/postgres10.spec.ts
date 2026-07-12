@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import type { Knex } from 'knex'
-import type { SchemaInspector } from 'src/inspector/types/schema-inspector'
+import type { SchemaInspector } from '../../../src/inspector/types/schema-inspector'
 import knex from 'knex'
-import { SchemaInspector as schemaInspector } from 'src/inspector'
+import { SchemaInspector as schemaInspector } from '../../../src/inspector'
 
 describe('postgres10-no-search-path', () => {
   let database: Knex
