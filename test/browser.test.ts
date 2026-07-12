@@ -12,12 +12,12 @@ import { compose } from 'src/utils'
 
 describe('browser environment test', () => {
   test('should load the browser version of the module', async () => {
-    const module = await import('@h3ravel/arquebus/browser')
+    const module = await import('../src/browser')
     expect(module.isBrowser).toBe(true)
   })
 
   test('should load the node version of the module', async () => {
-    const module = (await import('@h3ravel/arquebus')) as any
+    const module = await import('../src')
     expect(module.isBrowser).toBe(undefined)
   })
 })
@@ -58,7 +58,7 @@ describe('Model', () => {
     }
   }
 
-  class Thumbnail extends Model {}
+  class Thumbnail extends Model { }
 
   it('return the table name of the plural model name', () => {
     const user: User = new User()
@@ -211,7 +211,7 @@ describe('Model', () => {
         this.attributes.lastName = names[1]
       }
     }
-    class Post extends Model {}
+    class Post extends Model { }
 
     let testModel: any
     beforeEach(() => {
@@ -380,7 +380,7 @@ describe('Collection', () => {
   class User extends Model {
     protected primaryKey = 'some_id'
   }
-  class Post extends Model {}
+  class Post extends Model { }
 
   beforeEach(() => {
     collection = new Collection([
@@ -406,7 +406,7 @@ describe('Collection', () => {
 
 describe('Integration test', () => {
   describe('Client: ', () => {
-    class Base extends Model {}
+    class Base extends Model { }
 
     class User extends Base {
       hidden = ['password', 'remember_token']
@@ -471,9 +471,9 @@ describe('Integration test', () => {
       }
     }
 
-    class Comment extends Base {}
+    class Comment extends Base { }
 
-    class Media extends Base {}
+    class Media extends Base { }
 
     describe('Model', () => {
       describe('#isDirty()', () => {

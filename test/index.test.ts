@@ -41,7 +41,7 @@ import { SchemaInspector } from '../src/inspector'
 describe('node environment test', () => {
   test('should load the node version of the module', async () => {
     // Test automatically loads the node version
-    const module = (await import('@h3ravel/arquebus')) as any
+    const module = await import('../src')
     expect(module.isBrowser).toBeUndefined()
   })
 })
