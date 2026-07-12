@@ -20,7 +20,7 @@ jobs:
           POSTGRES_DB: arquebus_test
         ports:
           # will assign a random free host port
-          - 5432/tcp
+          - 5432
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       # https://github.community/t5/GitHub-Actions/github-actions-cannot-connect-to-mysql-service/td-p/30611#
@@ -63,7 +63,7 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_USER: arquebus
           POSTGRES_PASSWORD: arquebus
-          POSTGRES_PORT: ${{ job.services.postgres.ports['5432/tcp'] }}
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
 
       - name: Run mysql tests
         run: pnpm test:mysql
@@ -80,7 +80,7 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_USER: arquebus
           POSTGRES_PASSWORD: arquebus
-          POSTGRES_PORT: ${{ job.services.postgres.ports['5432/tcp'] }}
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
 
       - name: Run browser tests
         run: pnpm test:browser
