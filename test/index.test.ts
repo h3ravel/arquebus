@@ -35,8 +35,8 @@ import crypto from 'crypto'
 import dayjs from 'dayjs'
 import { delay } from './utils'
 import type { IBuilder } from 'types/builder'
-import { SchemaInspector } from '@h3ravel/arquebus/inspector'
-import { Relationship } from 'src/decorators'
+import { Relationship } from '../src/decorators'
+import { SchemaInspector } from '../src/inspector'
 
 describe('node environment test', () => {
   test('should load the node version of the module', async () => {

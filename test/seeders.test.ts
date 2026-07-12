@@ -1,8 +1,9 @@
-import { describe, it, beforeAll, afterAll, expect } from 'vitest'
-import config from './config'
-import { arquebus } from 'src'
-import { SeederRunner } from 'src/seeders'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { mkdir, writeFile } from 'node:fs/promises'
+
+import { SeederRunner } from '../src/seeders'
+import { arquebus } from '../src'
+import config from './config'
 import path from 'node:path'
 
 describe('SeederRunner (sqlite)', () => {
