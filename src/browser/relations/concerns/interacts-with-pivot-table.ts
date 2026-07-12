@@ -1,5 +1,5 @@
 import type { MixinConstructor, TGeneric } from 'types/generics'
-import { assign, isArray } from 'radashi'
+import { Obj } from '@h3ravel/support'
 
 import Collection from '../../collection'
 import Model from '../../model'
@@ -58,7 +58,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor> (
     formatRecordsList (records: any) {
       return collect(records)
         .mapWithKeys((attributes: TGeneric, id: any) => {
-          if (!isArray(attributes)) {
+          if (!Array.isArray(attributes)) {
             ;[id, attributes] = [attributes, {}]
           }
           return [String(id), attributes]
@@ -112,7 +112,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor> (
         value,
         attributes,
       )
-      return assign(this.baseAttachRecord(id, hasTimestamps), newAttributes)
+      return Obj.deepMerge(this.baseAttachRecord(id, hasTimestamps), newAttributes)
     }
     baseAttachRecord (id: string | number, timed: boolean) {
       let record: TGeneric = {}
@@ -132,7 +132,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor> (
       value: any,
       newAttributes: TGeneric,
     ) {
-      return isArray(value)
+      return Array.isArray(value)
         ? [key, { ...value, ...newAttributes }]
         : [value, newAttributes]
     }
@@ -146,7 +146,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor> (
       if (value instanceof Collection) {
         return value.pluck(this.relatedKey).all()
       }
-      return isArray(value) ? value : [value]
+      return Array.isArray(value) ? value : [value]
     }
   }
 }

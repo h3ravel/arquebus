@@ -27,7 +27,7 @@ import {
   it,
   test,
 } from 'vitest'
-import { omit, remove } from 'radashi'
+import { Arr } from '@h3ravel/support'
 
 import { collect } from '@h3ravel/collect.js'
 import config from './config'
@@ -898,14 +898,14 @@ describe('Integration test', async () => {
           it('allows passing an object to query', () => {
             const query = connection.table('users')
             expect(
-              remove(query._statements, (e: any) => e.grouping !== 'where')
+              Arr.reject(query._statements, (e: any) => e.grouping !== 'where')
                 .length,
             ).toBe(0)
 
             const q = query.where('id', 1).orWhere('id', '>', 10)
             expect(q).toStrictEqual(query)
             expect(
-              remove(query._statements, (e: any) => e.grouping !== 'where')
+              Arr.reject(query._statements, (e: any) => e.grouping !== 'where')
                 .length,
             ).toBe(2)
           })
@@ -913,7 +913,7 @@ describe('Integration test', async () => {
           it('allows passing a function to query', () => {
             const query = connection.table('users')
             expect(
-              remove(query._statements, (e: any) => e.grouping !== 'where')
+              Arr.reject(query._statements, (e: any) => e.grouping !== 'where')
                 .length,
             ).toBe(0)
 
@@ -923,7 +923,7 @@ describe('Integration test', async () => {
 
             expect(q).toEqual(query)
             expect(
-              remove(query._statements, (e: any) => e.grouping !== 'where')
+              Arr.reject(query._statements, (e: any) => e.grouping !== 'where')
                 .length,
             ).toBe(1)
           })
@@ -1328,7 +1328,7 @@ describe('Integration test', async () => {
           it('allows passing an object to query', () => {
             const query = User.query()
             expect(
-              remove(
+              Arr.reject(
                 query.query._statements,
                 (e: any) => e.grouping !== 'where',
               ).length,
@@ -1337,7 +1337,7 @@ describe('Integration test', async () => {
             const q = query.where('id', 1).orWhere('id', '>', 10)
             expect(q).toStrictEqual(query)
             expect(
-              remove(
+              Arr.reject(
                 query.query._statements,
                 (e: any) => e.grouping !== 'where',
               ).length,
@@ -1347,7 +1347,7 @@ describe('Integration test', async () => {
           it('allows passing a function to query', () => {
             const query = User.query()
             expect(
-              remove(
+              Arr.reject(
                 query.query._statements,
                 (e: any) => e.grouping !== 'where',
               ).length,
@@ -1359,7 +1359,7 @@ describe('Integration test', async () => {
 
             expect(q).toEqual(query)
             expect(
-              remove(
+              Arr.reject(
                 query.query._statements,
                 (e: any) => e.grouping !== 'where',
               ).length,
@@ -2145,7 +2145,7 @@ describe('Integration test', async () => {
             expect(posts.modelKeys()).toEqual([3, 4])
 
             const post = await Post.query().with('default_author').find(4)
-            const xpost = omit(post.toData(), ['updated_at', 'created_at'])
+            const xpost = Arr.except(post.toData(), ['updated_at', 'created_at'])
 
             expect(post.default_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
@@ -2222,7 +2222,7 @@ describe('Integration test', async () => {
               .with('thumbnail')
               .find(1)
               .then((post) => {
-                const xpost = omit(post.toData(), ['updated_at', 'created_at'])
+                const xpost = Arr.except(post.toData(), ['updated_at', 'created_at'])
                 expect(xpost).toEqual({
                   content:
                     'Lorem ipsum Labore eu sed sed Excepteur enim laboris deserunt adipisicing dolore culpa aliqua cupidatat proident ea et commodo labore est adipisicing ex amet exercitation est.',
@@ -2248,9 +2248,9 @@ describe('Integration test', async () => {
               .with('posts')
               .find(1)
               .then((user) => {
-                const xuser = omit(user.toData(), ['updated_at', 'created_at'])
+                const xuser = Arr.except(user.toData(), ['updated_at', 'created_at'])
                 xuser.posts = xuser.posts.map((post: Post) => {
-                  return omit(post, ['updated_at', 'created_at'])
+                  return Arr.except(post, ['updated_at', 'created_at'])
                 })
                 expect(xuser).toEqual({
                   first_name: 'Tim',
@@ -2274,7 +2274,7 @@ describe('Integration test', async () => {
               .with('author')
               .find(1)
               .then((post) => {
-                const author = omit(post.toData().author, [
+                const author = Arr.except(post.toData().author, [
                   'updated_at',
                   'created_at',
                 ])
@@ -2297,7 +2297,7 @@ describe('Integration test', async () => {
 
           it('eager loads "belongsTo" relationship with default values', async () => {
             let post = await Post.query().with('default_author').find(4)
-            let xpost = omit(post.toData(), ['updated_at', 'created_at'])
+            let xpost = Arr.except(post.toData(), ['updated_at', 'created_at'])
 
             expect(post.default_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
@@ -2311,7 +2311,7 @@ describe('Integration test', async () => {
             })
 
             post = await Post.query().with('default_post_author').find(4)
-            xpost = omit(post.toData(), ['updated_at', 'created_at'])
+            xpost = Arr.except(post.toData(), ['updated_at', 'created_at'])
 
             expect(post.default_post_author).toBeInstanceOf(User)
             expect(xpost).toEqual({
@@ -2330,9 +2330,9 @@ describe('Integration test', async () => {
               .with('tags')
               .find(1)
               .then((post) => {
-                const xpost = omit(post.toData(), ['updated_at', 'created_at'])
+                const xpost = Arr.except(post.toData(), ['updated_at', 'created_at'])
                 xpost.tags = xpost.tags.map((tag: Tag) => {
-                  tag = omit(tag, ['updated_at', 'created_at']) as Tag
+                  tag = Arr.except(tag, ['updated_at', 'created_at']) as Tag
                   return tag
                 })
 
@@ -2362,7 +2362,7 @@ describe('Integration test', async () => {
               })
               .find(1)
               .then((post) => {
-                const xpost = omit(post.toData(), ['updated_at', 'created_at'])
+                const xpost = Arr.except(post.toData(), ['updated_at', 'created_at'])
                 expect(xpost).toEqual({
                   author: { id: 1, name: 'Shuri' },
                   content:
@@ -2379,7 +2379,7 @@ describe('Integration test', async () => {
               .with('author:id,name')
               .find(1)
               .then((post) => {
-                const xpost = omit(post.toData(), ['updated_at', 'created_at'])
+                const xpost = Arr.except(post.toData(), ['updated_at', 'created_at'])
                 expect(xpost).toEqual({
                   author: { id: 1, name: 'Shuri' },
                   content:
@@ -2443,11 +2443,11 @@ describe('Integration test', async () => {
               .with('posts.tags')
               .first()
               .then((user) => {
-                const xuser = omit(user!.toData(), ['updated_at', 'created_at'])
+                const xuser = Arr.except(user!.toData(), ['updated_at', 'created_at'])
                 xuser.posts = xuser.posts.map((post: Post) => {
-                  post = omit(post, ['updated_at', 'created_at']) as Post
+                  post = Arr.except(post, ['updated_at', 'created_at']) as Post
                   post.tags = post.tags.map((tag: Tag) => {
-                    return omit(tag, ['updated_at', 'created_at'])
+                    return Arr.except(tag, ['updated_at', 'created_at'])
                   })
                   return post
                 })
@@ -2496,11 +2496,11 @@ describe('Integration test', async () => {
               )
               .first()
               .then((user) => {
-                const xuser = omit(user!.toData(), ['updated_at', 'created_at'])
+                const xuser = Arr.except(user!.toData(), ['updated_at', 'created_at'])
                 xuser.posts = xuser.posts.map((post: Post) => {
-                  post = omit(post, ['updated_at', 'created_at']) as Post
+                  post = Arr.except(post, ['updated_at', 'created_at']) as Post
                   post.tags = post.tags.map((tag: Tag) => {
-                    return omit(tag, ['updated_at', 'created_at'])
+                    return Arr.except(tag, ['updated_at', 'created_at'])
                   })
                   return post
                 })

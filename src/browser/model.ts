@@ -12,7 +12,7 @@ import HasTimestamps from '../concerns/has-timestamps'
 import HidesAttributes from '../concerns/hides-attributes'
 import type { TBaseConfig } from 'types/container'
 import type arquebus from '../arquebus'
-import { assign as merge } from 'radashi'
+import { Obj } from '@h3ravel/support'
 import pluralize from 'pluralize'
 
 const BaseModel = compose<any, any>(
@@ -205,7 +205,7 @@ class Model extends BaseModel {
     return this
   }
   toData () {
-    return merge(this.attributesToData(), this.relationsToData())
+    return Obj.deepMerge(this.attributesToData(), this.relationsToData())
   }
   toJSON () {
     return this.toData()

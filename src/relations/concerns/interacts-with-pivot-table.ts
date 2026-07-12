@@ -1,6 +1,6 @@
 import type { MixinConstructor, TGeneric } from 'types/generics'
 import { Model, Pivot } from '../../model'
-import { assign, diff as difference, isArray } from 'radashi'
+import { Obj } from '@h3ravel/support'
 
 import Collection from '../../collection'
 import { collect } from '@h3ravel/collect.js'
@@ -76,17 +76,18 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
               .pluck(this.relatedPivotKey)
               .all()
               .map((i: number) => String(i))
-      const detach = difference(
-        current,
-        Object.keys(
-          (records = this.formatRecordsList(this.parseIds(ids) as any)),
-        ),
-      )
+      const detach = collect(current)
+        .diff(
+          Object.keys(
+            (records = this.formatRecordsList(this.parseIds(ids) as any)),
+          ),
+        )
+        .all()
       if (detaching && detach.length > 0) {
         await this.detach(detach)
         changes.detached = this.castKeys(detach)
       }
-      changes = assign(
+      changes = Obj.deepMerge(
         changes,
         await this.attachNew(records, current, false),
       ) as any
@@ -105,7 +106,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
     }
     withPivot(columns: any) {
       this.pivotColumns = this.pivotColumns.concat(
-        isArray(columns) ? columns : Array.prototype.slice.call(columns),
+        Array.isArray(columns) ? columns : Array.prototype.slice.call(columns),
       )
       return this
     }
@@ -192,7 +193,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
     formatRecordsList<X>(records: X[]) {
       return collect(records)
         .mapWithKeys((attributes: any, id: any) => {
-          if (!isArray(attributes)) {
+          if (!Array.isArray(attributes)) {
             ;[id, attributes] = [attributes, {}]
           }
           return [String(id), attributes]
@@ -302,7 +303,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
         value,
         attributes,
       )
-      return assign(this.baseAttachRecord(id, hasTimestamps), newAttributes)
+      return Obj.deepMerge(this.baseAttachRecord(id, hasTimestamps), newAttributes)
     }
     baseAttachRecord(id: string | number, timed: boolean) {
       let record: TGeneric = {}
@@ -322,7 +323,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
       value: any,
       newAttributes: TGeneric,
     ) {
-      return isArray(value)
+      return Array.isArray(value)
         ? [key, { ...value, ...newAttributes }]
         : [value, newAttributes]
     }
@@ -338,7 +339,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
       if (value instanceof Collection) {
         return value.pluck(this.relatedKey).all() as I[]
       }
-      return isArray(value) ? value : [value]
+      return Array.isArray(value) ? value : [value]
     }
   }
 }

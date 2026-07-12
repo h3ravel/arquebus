@@ -1,7 +1,6 @@
 import type { MixinConstructor, TFunction } from 'types/generics'
 
 import SoftDeletingScope from './soft-deleting-scope'
-import { isNullish } from 'radashi'
 import { tap } from './utils'
 
 const softDeletes = <TBase extends MixinConstructor> (Model: TBase) => {
@@ -75,7 +74,7 @@ const softDeletes = <TBase extends MixinConstructor> (Model: TBase) => {
       return this.withoutEvents(() => this.restore())
     }
     trashed () {
-      return !isNullish(this[this.getDeletedAtColumn()])
+      return this[this.getDeletedAtColumn()] != null
     }
     static softDeleted (this: typeof Model.prototype, callback: TFunction) {
       this.addHook('trashed', callback)

@@ -4,7 +4,6 @@ import type { Builder } from 'src/builder'
 import type { Model } from 'src/model'
 import { ModelNotFoundError } from 'src/errors'
 import Relation from './relation'
-import { isArray } from 'radashi'
 import { tap } from 'src/utils'
 
 class HasManyThrough extends Relation {
@@ -160,7 +159,7 @@ class HasManyThrough extends Relation {
     return callback?.()
   }
   async find (this: any, id: string | number, columns = ['*']) {
-    if (isArray(id)) {
+    if (Array.isArray(id)) {
       return await this.findMany(id, columns)
     }
     return await this.where(

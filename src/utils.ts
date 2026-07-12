@@ -1,6 +1,6 @@
 import * as comp from 'src/mixin'
 
-import { camel, dash, snake, trim } from 'radashi'
+import { Str } from '@h3ravel/support'
 
 import type { TConfig } from 'types/container'
 import type { XGeneric } from 'types/generics'
@@ -10,32 +10,32 @@ export const now = (format = 'YYYY-MM-DD HH:mm:ss') => dayjs().format(format)
 
 export const getRelationName = (relationMethod: string) => {
   // 'relation' length 8
-  return snake(relationMethod.substring(8))
+  return Str.snake(relationMethod.substring(8))
 }
 
 export const getScopeName = (scopeMethod: string) => {
   // 'scope' length 5
-  return snake(scopeMethod.substring(5))
+  return Str.snake(scopeMethod.substring(5))
 }
 
 export const getRelationMethod = (relation: string) => {
-  return camel(`relation_${relation}`)
+  return Str.camel(`relation_${relation}`)
 }
 
 export const getScopeMethod = (scope: string) => {
-  return camel(`scope_${scope}`)
+  return Str.camel(`scope_${scope}`)
 }
 
 export const getAttrMethod = (attr: string) => {
-  return camel(`attribute_${attr}`)
+  return Str.camel(`attribute_${attr}`)
 }
 
 export const getGetterMethod = (attr: string) => {
-  return camel(`get_${attr}_attribute`)
+  return Str.camel(`get_${attr}_attribute`)
 }
 
 export const getSetterMethod = (attr: string) => {
-  return camel(`set_${attr}_attribute`)
+  return Str.camel(`set_${attr}_attribute`)
 }
 
 export const getAttrName = (attrMethod: string) => {
@@ -67,9 +67,9 @@ export const flattenDeep = (arr: any) =>
     : [arr]
 
 export const kebabCase = (str: string) =>
-  trim(dash(str.replace(/[^a-zA-Z0-9_-]/g, '-')), '_-')
+  Str.trim(Str.kebab(str.replace(/[^a-zA-Z0-9_-]/g, '-')), '_-').replace(/-+/g, '-')
 export const snakeCase = (str: string) =>
-  trim(snake(str.replace(/[^a-zA-Z0-9_-]/g, '-')), '_-')
+  Str.trim(Str.snake(str.replace(/[^a-zA-Z0-9_-]/g, '-')), '_-').replace(/_+/g, '_')
 
 export const defineConfig = (config: TConfig): XGeneric<TConfig> => {
   return config

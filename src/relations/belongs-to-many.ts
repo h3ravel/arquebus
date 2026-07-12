@@ -1,5 +1,5 @@
 import { compose, tap } from '../utils'
-import { isEqual, omit } from 'radashi'
+import { Arr } from '@h3ravel/support'
 
 import Collection from '../collection'
 import InteractsWithPivotTable from './concerns/interacts-with-pivot-table'
@@ -176,7 +176,7 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
       const value = model.attributes[key]
       if (key.startsWith('pivot_')) {
         values[key.substring(6)] = value
-        model.attributes = omit(model.attributes, [key])
+        model.attributes = Arr.except(model.attributes, [key])
       }
     }
     return values
@@ -192,7 +192,7 @@ class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
   }
 
   shouldSelect (columns: string[] = ['*']): string[] {
-    if (isEqual(columns, ['*'])) {
+    if (columns.length === 1 && columns[0] === '*') {
       columns = [this.related.getTable() + '.*']
     }
     return columns.concat(this.aliasedPivotColumns())

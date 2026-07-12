@@ -1,18 +1,10 @@
 import { ModelNotFoundError, RelationNotFoundError } from './errors'
 import type { TFunction, TGeneric } from 'types/generics'
-import {
-  diff as difference,
-  flat as flatten,
-  isArray,
-  isString,
-  assign as merge,
-  omit,
-  snake,
-} from 'radashi'
-import { flattenDeep, getRelationMethod, getScopeMethod, tap } from './utils'
+import { Arr, Obj, Str } from '@h3ravel/support'
+import { flatten, flattenDeep, getRelationMethod, getScopeMethod, tap } from './utils'
 
 import type BModel from 'src/browser/model'
-import { Collection as BaseCollection } from '@h3ravel/collect.js'
+import { Collection as BaseCollection, collect } from '@h3ravel/collect.js'
 import BelongsToMany from './relations/belongs-to-many'
 import Collection from './collection'
 import type { IBuilder } from 'types/builder'
@@ -159,7 +151,7 @@ export class Builder<
             }
           }
           if (prop.startsWith('where')) {
-            const column = snake(prop.substring(5))
+            const column = Str.snake(prop.substring(5))
             return (...args: any[]) => {
               ; (target as any).query.where(column, ...args)
               return target.asProxy()
@@ -258,7 +250,7 @@ export class Builder<
       return values
     }
     const column = this.model.getUpdatedAtColumn()
-    values = merge({ [column]: this.model.freshTimestampString() }, values)
+    values = Obj.deepMerge({ [column]: this.model.freshTimestampString() }, values)
     return values
   }
   delete () {
@@ -354,7 +346,7 @@ export class Builder<
       scope = scope.constructor.name as string
     }
 
-    this.globalScopes = omit(this.globalScopes, [scope])
+    this.globalScopes = Arr.except(this.globalScopes, [scope])
     return this
   }
   macro<N extends string> (
@@ -376,7 +368,7 @@ export class Builder<
       const eagerLoad = this.parseWithRelations({
         [args[0]]: args[1],
       })
-      this.eagerLoad = merge(this.eagerLoad, eagerLoad)
+      this.eagerLoad = Obj.deepMerge(this.eagerLoad, eagerLoad)
       return this
     }
     const relations = flattenDeep(args)
@@ -392,9 +384,9 @@ export class Builder<
       } else if (typeof relation === 'object') {
         eagerLoad = relation
       }
-      eagerLoads = merge(eagerLoads, eagerLoad)
+      eagerLoads = Obj.deepMerge(eagerLoads, eagerLoad)
     }
-    this.eagerLoad = merge(this.eagerLoad, this.parseWithRelations(eagerLoads))
+    this.eagerLoad = Obj.deepMerge(this.eagerLoad, this.parseWithRelations(eagerLoads))
     return this
   }
   has (
@@ -404,7 +396,7 @@ export class Builder<
     boolean = 'and',
     callback: TFunction | null = null,
   ): any {
-    if (isString(relation)) {
+    if (typeof relation === 'string') {
       if (relation.includes('.')) {
         return this.hasNested(relation, operator, count, boolean, callback)
       }
@@ -556,7 +548,7 @@ export class Builder<
       } else if (typeof relation === 'object') {
         eagerLoad = relation
       }
-      eagerLoads = merge(eagerLoads, eagerLoad)
+      eagerLoads = Obj.deepMerge(eagerLoads, eagerLoad)
     }
     relations = eagerLoads
     const db = this.model.getConnection()
@@ -600,7 +592,7 @@ export class Builder<
       constraints(query)
       alias =
         alias ||
-        snake(
+        Str.snake(
           `${name} ${action} ${column}`.replace(
             '/[^[:alnum:][:space:]_]/u',
             '',
@@ -639,7 +631,7 @@ export class Builder<
   parseSub (query: any) {
     if (query instanceof Builder || query instanceof Relation) {
       return [query.toSql().sql, query.toSql().bindings]
-    } else if (isString(query)) {
+    } else if (typeof query === 'string') {
       return [query, []]
     } else {
       throw new Error(
@@ -715,7 +707,7 @@ export class Builder<
     for (const key in relations) {
       const value = relations[key]
 
-      if (isString(value) || Number.isFinite(parseInt(value))) {
+      if (typeof value === 'string' || Number.isFinite(parseInt(value))) {
         continue
       }
       const [attribute, attributeSelectConstraint] =
@@ -729,14 +721,14 @@ export class Builder<
         this.prepareNestedWithRelationships(value, `${prefix}${attribute}`),
       )
 
-      relations = omit(relations, [key])
+      relations = Arr.except(relations, [key])
     }
 
     for (const key in relations) {
       const value = relations[key]
       let attribute = key,
         attributeSelectConstraint = value
-      if (isString(value)) {
+      if (typeof value === 'string') {
         ;[attribute, attributeSelectConstraint] = (
           this as any
         ).parseNameAndAttributeSelectionConstraint(value)
@@ -823,11 +815,11 @@ export class Builder<
 
   async findOrFail (this: any, ...args: any[]): Promise<M> {
     const data = await this.find(...args)
-    if (isArray(args[0])) {
+    if (Array.isArray(args[0])) {
       if (data.count() !== args[0].length) {
         throw new ModelNotFoundError().setModel(
           this.model.constructor.name as any,
-          difference(args[0] as any, data.modelKeys()),
+          collect(args[0] as any).diff(data.modelKeys()).all(),
         )
       }
       return data
@@ -854,7 +846,7 @@ export class Builder<
     if (instance !== null) {
       return instance
     }
-    return this.newModelInstance(merge(attributes, values))
+    return this.newModelInstance(Obj.deepMerge(attributes, values))
   }
 
   async firstOrCreate (this: any, attributes: TGeneric = {}, values = {}) {
@@ -863,7 +855,7 @@ export class Builder<
       return instance
     }
     return tap(
-      this.newModelInstance(merge(attributes, values)),
+      this.newModelInstance(Obj.deepMerge(attributes, values)),
       async (instance) => {
         await instance.save({
           client: this.query,
@@ -899,7 +891,7 @@ export class Builder<
     id: string | number | Collection<M>,
     columns?: string[],
   ) {
-    if (isArray(id) || id instanceof Collection) {
+    if (Array.isArray(id) || id instanceof Collection) {
       return await this.findMany(id, columns)
     }
     return await this.where(this.model.getKeyName(), id).first(columns)
@@ -911,7 +903,7 @@ export class Builder<
   ) {
     const values = ids instanceof Collection
       ? ids.modelKeys()
-      : isArray(ids)
+      : Array.isArray(ids)
         ? ids
         : [ids]
     if (values.length === 0) {
@@ -933,7 +925,7 @@ export class Builder<
     if (ids instanceof BaseCollection) {
       ids = ids.all()
     }
-    ids = isArray(ids) ? ids : Array.prototype.slice.call(ids)
+    ids = Array.isArray(ids) ? ids : Array.prototype.slice.call(ids)
     if (ids.length === 0) {
       return 0
     }

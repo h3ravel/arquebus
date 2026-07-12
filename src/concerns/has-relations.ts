@@ -10,7 +10,7 @@ import type IModel from 'src/model'
 import type { MixinConstructor } from 'types/generics'
 import { RelationNotFoundError } from '../errors'
 import type { WithRelationType } from 'types/query-methods'
-import { omit } from 'radashi'
+import { Arr } from '@h3ravel/support'
 
 const HasRelations = <TBase extends MixinConstructor> (Model: TBase) => {
   return class extends Model {
@@ -23,7 +23,7 @@ const HasRelations = <TBase extends MixinConstructor> (Model: TBase) => {
       return this
     }
     unsetRelation (relation: string) {
-      this.relations = omit(this.relations, [relation])
+      this.relations = Arr.except(this.relations, [relation])
       return this
     }
     relationLoaded (relation: string) {

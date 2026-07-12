@@ -1,6 +1,6 @@
 import { Collection as BaseCollection, collect } from '@h3ravel/collect.js'
 import type { TFunction, TGeneric } from 'types/generics'
-import { isArray, isEmpty, omit, pick } from 'radashi'
+import { Arr } from '@h3ravel/support'
 
 import type { ICollection } from 'types/utils'
 import type { IModel } from 'types/modeling'
@@ -42,12 +42,12 @@ class Collection<I extends Model> extends BaseCollection<I> {
     const values = keys.length === 1 && Array.isArray(keys[0])
       ? (keys[0] as unknown[]).map(String)
       : keys.map(String)
-    const dictionary = omit(this.getDictionary(), values)
+    const dictionary = Arr.except(this.getDictionary(), values)
     return new (this.constructor as any)(Object.values(dictionary))
   }
   intersect (items: I[]) {
     const intersect = new (this.constructor as any)()
-    if (isEmpty(items)) {
+    if (Arr.isEmpty(items)) {
       return intersect
     }
     const dictionary = this.getDictionary(items)
@@ -69,7 +69,7 @@ class Collection<I extends Model> extends BaseCollection<I> {
     if (key instanceof Model) {
       key = key.getKey()
     }
-    if (isArray(key)) {
+    if (Array.isArray(key)) {
       if (this.isEmpty()) {
         return new (this.constructor as any)()
       }
@@ -103,7 +103,7 @@ class Collection<I extends Model> extends BaseCollection<I> {
     const values = keys.length === 1 && Array.isArray(keys[0])
       ? (keys[0] as unknown[]).map(String)
       : keys.map(String)
-    const dictionary = pick(this.getDictionary(), values)
+    const dictionary = Arr.select(this.getDictionary(), values)
     return new (this.constructor as any)(Object.values(dictionary))
   }
   getDictionary (items?: BaseCollection<any> | any[]) {

@@ -3,7 +3,6 @@ import type { IMake } from './contracts/utilities'
 import type Model from './model'
 import Paginator from './paginator'
 import type { TGeneric } from 'types/generics'
-import { isArray } from 'radashi'
 
 type ModelClass<M extends Model = Model> = {
     new (...args: any[]): M
@@ -26,7 +25,7 @@ export const make: IMake = <T extends Model> (
         ) as never
     }
 
-    if (isArray(data)) {
+    if (Array.isArray(data)) {
         return new Collection<T>(data.map((item) => model.make(item)))
     }
     return model.make(data)

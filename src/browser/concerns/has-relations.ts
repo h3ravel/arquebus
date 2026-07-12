@@ -10,7 +10,7 @@ import HasOne from 'src/browser/relations/has-one'
 import HasOneThrough from 'src/browser/relations/has-one-through'
 import type Model from '../model'
 import { RelationNotFoundError } from 'src/errors'
-import { omit } from 'radashi'
+import { Arr } from '@h3ravel/support'
 
 const HasRelations = <TBase extends MixinConstructor> (Instance: TBase) => {
   return class extends Instance {
@@ -26,7 +26,7 @@ const HasRelations = <TBase extends MixinConstructor> (Instance: TBase) => {
       return this
     }
     unsetRelation (relation: string) {
-      this.relations = omit(this.relations, [relation])
+      this.relations = Arr.except(this.relations, [relation])
       return this
     }
     relationLoaded (relation: string) {

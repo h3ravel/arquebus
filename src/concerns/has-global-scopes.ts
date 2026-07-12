@@ -1,5 +1,5 @@
 import type { MixinConstructor, TGeneric } from 'types/generics'
-import { get, set } from 'radashi'
+import { data_get, data_set } from '@h3ravel/support'
 
 import { InvalidArgumentError } from '../errors'
 import Scope from '../scope'
@@ -9,18 +9,14 @@ const HasGlobalScopes = <TBase extends MixinConstructor>(Model: TBase) => {
     static globalScopes?: TGeneric
     static addGlobalScope(scope: any, implementation: any | null = null) {
       if (typeof scope === 'string' && implementation instanceof Scope) {
-        this.globalScopes = set(
-          this.globalScopes ?? {},
-          this.name + '.' + scope,
-          implementation,
-        )
+        const scopes = this.globalScopes ?? {}
+        data_set(scopes, this.name + '.' + scope, implementation)
+        this.globalScopes = scopes
         return implementation
       } else if (scope instanceof Scope) {
-        this.globalScopes = set(
-          this.globalScopes ?? {},
-          this.name + '.' + scope.constructor.name,
-          scope,
-        )
+        const scopes = this.globalScopes ?? {}
+        data_set(scopes, this.name + '.' + scope.constructor.name, scope)
+        this.globalScopes = scopes
         return scope
       }
       throw new InvalidArgumentError(
@@ -32,9 +28,9 @@ const HasGlobalScopes = <TBase extends MixinConstructor>(Model: TBase) => {
     }
     static getGlobalScope(scope: any) {
       if (typeof scope === 'string') {
-        return get(this.globalScopes, this.name + '.' + scope)
+        return data_get(this.globalScopes ?? {}, this.name + '.' + scope)
       }
-      return get(this.globalScopes, this.name + '.' + scope.constructor.name)
+      return data_get(this.globalScopes ?? {}, this.name + '.' + scope.constructor.name)
     }
     static getAllGlobalScopes() {
       return this.globalScopes
@@ -43,8 +39,8 @@ const HasGlobalScopes = <TBase extends MixinConstructor>(Model: TBase) => {
       this.globalScopes = scopes
     }
     getGlobalScopes() {
-      return get(
-        (this.constructor as any).globalScopes,
+      return data_get(
+        (this.constructor as any).globalScopes ?? {},
         this.constructor.name,
         {},
       )

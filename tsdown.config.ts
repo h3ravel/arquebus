@@ -30,7 +30,6 @@ const deps: DepsConfig = {
     'escalade',
     'knex',
     'pluralize',
-    'radashi',
     'resolve-from',
   ]
 }

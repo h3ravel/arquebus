@@ -1,6 +1,6 @@
 import { Collection as BaseCollection, collect } from '@h3ravel/collect.js'
 import type { TFunction, TGeneric } from 'types/generics'
-import { diff as difference, isArray, isEmpty, omit, pick } from 'radashi'
+import { Arr } from '@h3ravel/support'
 
 import Model from './model'
 import type BModel from './browser/model'
@@ -42,11 +42,11 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> {
         .withAggregate(relations, column, action)
         .get()
     ).keyBy(first.getKeyName())
-    const attributes = difference(Object.keys(models.first().getAttributes()), [
-      models.first().getKeyName(),
-    ])
+    const attributes = collect(Object.keys(models.first().getAttributes()))
+      .diff([models.first().getKeyName()])
+      .all()
     this.each((model) => {
-      const extraAttributes = pick(
+      const extraAttributes = Arr.select(
         models.get(model.getKey()).getAttributes(),
         attributes,
       )
@@ -105,12 +105,12 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> {
     const values = keys.length === 1 && Array.isArray(keys[0])
       ? (keys[0] as unknown[]).map(String)
       : keys.map(String)
-    const dictionary = omit(this.getDictionary(), values)
+    const dictionary = Arr.except(this.getDictionary(), values)
     return new (this.constructor as any)(Object.values(dictionary))
   }
   intersect(items: I[]) {
     const intersect = new (this.constructor as any)()
-    if (isEmpty(items)) {
+    if (Arr.isEmpty(items)) {
       return intersect
     }
     const dictionary = this.getDictionary(items)
@@ -132,7 +132,7 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> {
     if (key instanceof Model) {
       key = key.getKey()
     }
-    if (isArray(key)) {
+    if (Array.isArray(key)) {
       if (this.isEmpty()) {
         return new (this.constructor as any)()
       }
@@ -184,7 +184,7 @@ class Collection<I extends Model | BModel> extends BaseCollection<I> {
     const values = keys.length === 1 && Array.isArray(keys[0])
       ? (keys[0] as unknown[]).map(String)
       : keys.map(String)
-    const dictionary = pick(this.getDictionary(), values)
+    const dictionary = Arr.select(this.getDictionary(), values)
     return new (this.constructor as any)(Object.values(dictionary))
   }
   getDictionary(items?: BaseCollection<any> | any[]) {

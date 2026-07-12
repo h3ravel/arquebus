@@ -1,12 +1,13 @@
 import type { MixinConstructor, TGeneric } from 'types/generics'
-import { flat as flatten, omit } from 'radashi'
 import {
+  flatten,
   flattenDeep,
   getAttrMethod,
   getGetterMethod,
   getSetterMethod,
 } from '../utils'
 
+import { Arr } from '@h3ravel/support'
 import CastsAttributes from '../casts-attributes'
 import { collect } from '@h3ravel/collect.js'
 import dayjs from '../dayjs'
@@ -234,10 +235,10 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
       let attributes = { ...this.attributes }
       for (const key in attributes) {
         if (this.hidden.includes(key)) {
-          attributes = omit(attributes, [key])
+          attributes = Arr.except(attributes, [key])
         }
         if (this.visible.length > 0 && this.visible.includes(key) === false) {
-          attributes = omit(attributes, [key])
+          attributes = Arr.except(attributes, [key])
         }
       }
       for (const key of this.getDates()) {
@@ -327,7 +328,7 @@ const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
     }
     hasCast (key: string, types: readonly string[] = []) {
       if (key in this.casts) {
-        types = flatten(types as unknown as readonly string[][])
+        types = flatten(types as unknown as string[][])
         return types.length > 0 ? types.includes(this.getCastType(key)) : true
       }
       return false

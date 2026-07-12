@@ -37,7 +37,7 @@ import type {
 import type { ModelBuilder } from 'types/model-builder'
 import arquebus from './arquebus'
 import { collect } from '@h3ravel/collect.js'
-import { assign as merge } from 'radashi'
+import { Obj } from '@h3ravel/support'
 import pluralize from 'pluralize'
 
 const ModelClass = class { } as { new(): IModel } & IModel &
@@ -393,7 +393,7 @@ export class Model<
   }
 
   toData (): Attributes & Partial<Relations> {
-    return merge(
+    return Obj.deepMerge(
       this.attributesToData(),
       this.relationsToData(),
     ) as Attributes & Partial<Relations>

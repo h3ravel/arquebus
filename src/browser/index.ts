@@ -7,7 +7,6 @@ import Model from './model'
 import Paginator from './paginator'
 import Pivot from './pivot'
 import type { TGeneric } from 'types/generics'
-import { isArray } from 'radashi'
 
 interface IMake {
   <T extends Model> (model: T, data: TGeneric): T
@@ -31,7 +30,7 @@ const make: IMake = <T extends Model> (
     ) as never
   }
 
-  if (isArray(data)) {
+  if (Array.isArray(data)) {
     return new Collection<T>(data.map((item) => model.make(item)))
   }
   return model.make(data)

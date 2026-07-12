@@ -12,8 +12,8 @@ importers:
         specifier: ^5.4.0
         version: 5.4.0
       '@h3ravel/musket':
-        specifier: ^2.2.6
-        version: 2.2.6(@types/node@26.1.1)
+        specifier: ^2.2.7
+        version: 2.2.7(@types/node@26.1.1)
       '@h3ravel/shared':
         specifier: ^2.2.5
         version: 2.2.5(@types/node@26.1.1)
@@ -59,9 +59,6 @@ importers:
       pluralize:
         specifier: ^8.0.0
         version: 8.0.0
-      radashi:
-        specifier: ^12.9.1
-        version: 12.9.1
       resolve-from:
         specifier: ^5.0.0
         version: 5.0.0
@@ -496,8 +493,8 @@ packages:
   '@h3ravel/contracts@2.2.5':
     resolution: {integrity: sha512-xYChod43cdzWbRs5iv1sYYxWjj67ojz60oi2KWAiVl4/EefqwO6QfUOQUF6Gjy8baNRYqHEtIEjd882rtiv6zw==}
 
-  '@h3ravel/musket@2.2.6':
-    resolution: {integrity: sha512-TnRo5sRw0d/WjrfEC7CO1Uxfa6Bq4tKrHBOMb47YgPHut06K1UOxnRAvgPbtNEdefD8T5THo3orHSPXhzZnr2Q==}
+  '@h3ravel/musket@2.2.7':
+    resolution: {integrity: sha512-QgYy6g/c+d9NqcjJyOlh4LbMmFwgl6n5kkdB0faiJ5pbnRg2ByrSBwtu4OgDbopvHplbC6PR1ddU/pduCrCisA==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
   '@h3ravel/shared@2.2.5':
@@ -2385,10 +2382,6 @@ packages:
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
 
-  radashi@12.9.1:
-    resolution: {integrity: sha512-HCvrL1Ag7qnyH11UiSWQaEIiizJ7kldHjBw63aELoum7C8nQrSLqotLDuKKvoRPtO0w8azCzUQcL3yrU3lBksw==}
-    engines: {node: '>=16.0.0'}
-
   rc@1.2.8:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
@@ -3354,7 +3347,7 @@ snapshots:
     transitivePeerDependencies:
       - crossws
 
-  '@h3ravel/musket@2.2.6(@types/node@26.1.1)':
+  '@h3ravel/musket@2.2.7(@types/node@26.1.1)':
     dependencies:
       '@h3ravel/shared': 2.2.5(@types/node@26.1.1)
       chalk: 5.6.2
@@ -3363,7 +3356,6 @@ snapshots:
       execa: 9.6.1
       glob: 13.0.6
       preferred-pm: 4.1.1
-      radashi: 12.9.1
       resolve-from: 5.0.0
       tsx: 4.23.0
     transitivePeerDependencies:
@@ -5146,8 +5138,6 @@ snapshots:
   punycode@2.3.1: {}
 
   quansync@1.0.0: {}
-
-  radashi@12.9.1: {}
 
   rc@1.2.8:
     dependencies:

@@ -1,5 +1,4 @@
 import type { IModel } from 'types/modeling'
-import { isArray } from 'radashi'
 class BaseError extends Error {
   constructor(message: string, _entity?: any) {
     super(message)
@@ -14,9 +13,9 @@ class ModelNotFoundError extends BaseError {
   constructor() {
     super('')
   }
-  setModel(model: IModel, ids = []) {
+  setModel(model: IModel, ids: (string | number)[] | string | number = []) {
     this.model = model
-    this.ids = isArray(ids) ? ids : [ids]
+    this.ids = Array.isArray(ids) ? ids : [ids]
     this.message = `No query results for model [${model}]`
     if (this.ids.length > 0) {
       this.message += ' ' + this.ids.join(', ')

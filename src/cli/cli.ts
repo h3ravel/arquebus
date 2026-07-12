@@ -13,7 +13,6 @@ import type { XGeneric } from '../../types/generics'
 import cliPkg from '../../package.json'
 import { config as dotenv } from 'dotenv'
 import path from 'node:path'
-import { snake } from 'radashi'
 
 export type FileType = 'js' | 'ts'
 
@@ -183,7 +182,7 @@ export class Cli {
     this.ensureConfigured()
 
     try {
-      const name = snake(rawName)
+      const name = Str.snake(rawName)
       const migrationPath = path.join(
         this.cwd,
         options.path ?? this.config.migrations?.path ?? './migrations',

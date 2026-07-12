@@ -172,7 +172,7 @@
   },
   "dependencies": {
     "@h3ravel/collect.js": "^5.4.0",
-    "@h3ravel/musket": "^2.2.6",
+    "@h3ravel/musket": "^2.2.7",
     "@h3ravel/shared": "^2.2.5",
     "@h3ravel/support": "^2.2.5",
     "barrelize": "^1.8.2",
@@ -188,7 +188,6 @@
     "mysql2": "^3.22.6",
     "pg": "^8.22.0",
     "pluralize": "^8.0.0",
-    "radashi": "^12.9.1",
     "resolve-from": "^5.0.0",
     "tedious": "^20.0.0"
   },

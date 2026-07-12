@@ -1,5 +1,5 @@
 import type { MixinConstructor } from 'types/generics'
-import { diff as difference } from 'radashi'
+import { collect } from '@h3ravel/collect.js'
 import { flattenDeep } from '../utils'
 
 const HidesAttributes = <TBase extends MixinConstructor>(Model: TBase) => {
@@ -11,7 +11,7 @@ const HidesAttributes = <TBase extends MixinConstructor>(Model: TBase) => {
       if (this.visible.length > 0) {
         this.visible = [...this.visible, ...visible]
       }
-      this.hidden = difference(this.hidden, visible)
+      this.hidden = collect(this.hidden).diff(visible).all()
       return this
     }
     makeHidden(key: string[], ...keys: string[]) {
