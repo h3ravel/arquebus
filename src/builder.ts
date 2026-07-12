@@ -12,7 +12,7 @@ import {
 import { flattenDeep, getRelationMethod, getScopeMethod, tap } from './utils'
 
 import type BModel from 'src/browser/model'
-import { Collection as BaseCollection } from 'collect.js'
+import { Collection as BaseCollection } from '@h3ravel/collect.js'
 import BelongsToMany from './relations/belongs-to-many'
 import Collection from './collection'
 import type { IBuilder } from 'types/builder'
@@ -25,8 +25,8 @@ import Scope from './scope'
 
 const Inference = class { } as {
   new <
-    M extends Model | BModel = Model,
-    R = IModel | ICollection<M>,
+    M extends Model | BModel = any,
+    R = any,
   >(): IBuilder<M, R>
 }
 
@@ -909,18 +909,19 @@ export class Builder<
     ids: string[] | number[] | ICollection<any>,
     columns: string[] = ['*'],
   ) {
-    if (ids instanceof Collection) {
-      ids = ids.modelKeys()
-    }
-    ids = isArray(ids) ? ids : ([ids] as any)
-    if (ids.length === 0) {
+    const values = ids instanceof Collection
+      ? ids.modelKeys()
+      : isArray(ids)
+        ? ids
+        : [ids]
+    if (values.length === 0) {
       return new Collection([])
     }
-    return await this.whereIn(this.model.getKeyName(), ids).get(columns)
+    return await this.whereIn(this.model.getKeyName(), values).get(columns)
   }
   async pluck (column: string) {
     const data = await this.query.pluck(column)
-    return new Collection(data) as any
+    return new Collection(data as any) as any
   }
   async destroy (
     this: any,
@@ -947,7 +948,7 @@ export class Builder<
     }
     return count
   }
-  async get<M extends Model> (columns: string | string[] = ['*']) {
+  async get (columns: string | string[] = ['*']) {
     this.applyScopes()
     let models = await this.getModels(columns)
     if (models.length > 0) {
@@ -964,7 +965,7 @@ export class Builder<
     this.applyScopes()
     const query = this.query.clone()
     const total = await query.clearOrder().clearSelect().count(this.primaryKey)
-    let results: any[] = []
+    let results: any[]
     if (total > 0) {
       const skip = (page - 1) * (perPage ?? 10)
       this.take(perPage).skip(skip)

@@ -29,7 +29,7 @@ import {
 } from 'vitest'
 import { omit, remove } from 'radashi'
 
-import collect from 'collect.js'
+import { collect } from '@h3ravel/collect.js'
 import config from './config'
 import crypto from 'crypto'
 import dayjs from 'dayjs'
@@ -77,40 +77,40 @@ describe('Arquebus', () => {
 })
 
 describe('Model', () => {
-  const SomePlugin = <TBase extends MixinConstructor> (Model: TBase) => {
+  const SomePlugin = <TBase extends MixinConstructor>(Model: TBase) => {
     return class extends Model {
       pluginAttribtue = 'plugin'
-      pluginMethod () {
+      pluginMethod() {
         return this.pluginAttribtue
       }
     }
   }
 
   class User extends compose(Model, SomePlugin) {
-    relationPost () {
+    relationPost() {
       return this.hasMany(Post)
     }
   }
 
   class Post extends Model {
-    relationAuthor () {
+    relationAuthor() {
       return this.belongsTo(User)
     }
 
-    relationTags () {
+    relationTags() {
       return this.belongsToMany(Tag, 'post_tag')
     }
 
-    relationThumbnail () {
+    relationThumbnail() {
       return this.belongsTo(Thumbnail, 'thumbnail_id')
     }
   }
 
   class Tag extends Model {
-    relationPosts () {
+    relationPosts() {
       return this.belongsToMany(Post, 'post_tag')
     }
-    relationUsers () {
+    relationUsers() {
       return this.hasManyThrough(User, Post)
     }
   }
@@ -169,7 +169,7 @@ describe('Model', () => {
 
   describe('#toData & #toJson', () => {
     class User extends Model {
-      attributeFullName () {
+      attributeFullName() {
         return Attribute.make({
           get: (value, attributes) =>
             `${attributes.firstName} ${attributes.lastName}`,
@@ -180,11 +180,11 @@ describe('Model', () => {
         })
       }
 
-      get another_full_name () {
+      get another_full_name() {
         return `${this.attributes.firstName} ${this.attributes.lastName}`
       }
 
-      set another_full_name (value) {
+      set another_full_name(value) {
         const names = value.split(' ')
         this.attributes.firstName = names[0]
         this.attributes.lastName = names[1]
@@ -432,62 +432,62 @@ describe('Integration test', async () => {
       class User extends Base {
         hidden = ['password', 'remember_token']
 
-        attributeFullName () {
+        attributeFullName() {
           return Attribute.make({
             get: (value, attributes) =>
               `${attributes.firstName} ${attributes.name}`,
           })
         }
 
-        relationPosts () {
+        relationPosts() {
           return this.hasMany(Post)
         }
       }
 
       class UuidUser extends compose(Base, HasUniqueIds) {
-        newUniqueId (): string {
+        newUniqueId(): string {
           return crypto.randomUUID()
         }
       }
 
       class Post extends Base {
-        scopeIdOf (query: IBuilder<Model>, id: string) {
+        scopeIdOf(query: IBuilder<Model>, id: string) {
           return query.where('id', id)
         }
 
-        scopePublish (query: IBuilder<Model>) {
+        scopePublish(query: IBuilder<Model>) {
           return query.where('status', 1)
         }
 
-        relationAuthor () {
+        relationAuthor() {
           return this.belongsTo(User)
         }
 
-        relationDefaultAuthor () {
+        relationDefaultAuthor() {
           return this.belongsTo(User).withDefault({
             name: 'Default Author',
           })
         }
 
-        relationDefaultPostAuthor () {
+        relationDefaultPostAuthor() {
           return this.belongsTo(User).withDefault((user: User, post: Post) => {
             user.name = post.name + ' - Default Author'
           })
         }
 
-        relationThumbnail () {
+        relationThumbnail() {
           return this.belongsTo(Media, 'thumbnail_id')
         }
 
-        relationMedia () {
+        relationMedia() {
           return this.belongsToMany(Media)
         }
 
-        relationTags () {
+        relationTags() {
           return this.belongsToMany(Tag)
         }
 
-        relationComments () {
+        relationComments() {
           return this.hasMany(Comment)
         }
       }
@@ -520,7 +520,7 @@ describe('Integration test', async () => {
       })
 
       class Tag extends Base {
-        relationPosts () {
+        relationPosts() {
           return this.belongsToMany(Post)
         }
       }
@@ -532,7 +532,7 @@ describe('Integration test', async () => {
       class SoftDeletePost extends compose(Base, SoftDeletes) { }
 
       class Json extends CastsAttributes {
-        static get (
+        static get(
           model: Model,
           key: string,
           value: string,
@@ -545,7 +545,7 @@ describe('Integration test', async () => {
           }
         }
 
-        static set (
+        static set(
           model: Model,
           key: string,
           value: string,
@@ -2409,7 +2409,7 @@ describe('Integration test', async () => {
             table = 'users'
 
             @Relationship
-            relationPosts () {
+            relationPosts() {
               return this.hasMany(Post, 'id', 'post_id')
             }
           }
@@ -2418,7 +2418,7 @@ describe('Integration test', async () => {
             table = 'posts'
 
             @Relationship
-            _user () {
+            _user() {
               return this.belongsTo(User, 'user_id', 'id')
             }
           }
@@ -2593,7 +2593,7 @@ describe('Integration test', async () => {
 
         class HookPost extends compose(Base, SoftDeletes) {
           table = 'posts'
-          static boot () {
+          static boot() {
             super.boot()
             this.creating(() => {
               hits.creating++

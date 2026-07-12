@@ -15,6 +15,10 @@ import Scope from './scope'
 import SoftDeletes from './soft-deletes'
 import arquebus from './arquebus'
 
+export type * from '../types/model-builder'
+export type * from '../types/schema'
+export type * from '../types/database'
+
 export * from './errors'
 export * from './utils'
 export * from './relations'

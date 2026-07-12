@@ -24,8 +24,8 @@ const deps: DepsConfig = {
     'better-sqlite3',
     'pg-query-stream',
     'chalk',
-    'collect',
-    'commander',
+    '@h3ravel/collect.js',
+    '@h3ravel/musket',
     'dayjs',
     'escalade',
     'knex',
@@ -55,9 +55,7 @@ export default defineConfig([
     deps,
     clean: true,
     copy: [
-      { from: 'src/migrations/stubs', to: 'dist/migrations/stubs' },
-      // { from: 'src/seeders', to: 'dist/seeders' },
-      { from: 'src/stubs', to: 'dist/stubs' },
+      { from: 'src/stubs', to: 'dist' },
     ],
   },
   {

@@ -13,7 +13,8 @@ import type { ModelOptions, TBaseConfig, TConfig } from 'types/container'
 import type { TFunction, TGeneric } from 'types/generics'
 import path from 'path'
 import { existsSync } from 'fs'
-import { FileSystem } from '@h3ravel/shared'
+import { FileSystem, importFile } from '@h3ravel/shared'
+import type { DatabaseSchema, TypedArquebus } from 'types/database'
 
 class arquebus<M extends Model = Model> {
   static connectorFactory: typeof Knex | null = null
@@ -37,6 +38,10 @@ class arquebus<M extends Model = Model> {
       this.instance = new arquebus()
     }
     return this.instance
+  }
+
+  static withSchema<Database extends DatabaseSchema>(): TypedArquebus<Database> {
+    return this as unknown as TypedArquebus<Database>
   }
 
   /**
@@ -157,14 +162,14 @@ class arquebus<M extends Model = Model> {
     const instance = this.getInstance()
 
     if (existsSync(jsPath)) {
-      config = (await import(jsPath)).default
+      config = (await importFile<{ default: TBaseConfig }>(jsPath)).default
       if (addConnection) instance.addConnection(config, config.client)
       return config
     }
 
     if (existsSync(tsPath)) {
       if (process.env.NODE_ENV !== 'production') {
-        config = (await import(tsPath)).default
+        config = (await importFile<{ default: TBaseConfig }>(tsPath)).default
         if (addConnection) instance.addConnection(config, config.client)
         return config
       } else {
@@ -189,7 +194,7 @@ class arquebus<M extends Model = Model> {
       if (found) {
         const isTs = found.endsWith('.ts')
         if (!isTs || process.env.NODE_ENV !== 'production') {
-          config = (await import(found)).default
+          config = (await importFile<{ default: TBaseConfig }>(found)).default
           if (addConnection) instance.addConnection(config, config.client)
           return config
         } else {
@@ -233,7 +238,7 @@ class arquebus<M extends Model = Model> {
       BaseModel = compose(
         BaseModel,
         ...(options.plugins ?? []),
-      ) as typeof BaseModel
+      ) as unknown as typeof BaseModel
     }
 
     this.models = <Model>{

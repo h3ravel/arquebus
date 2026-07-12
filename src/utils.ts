@@ -4,10 +4,7 @@ import { camel, dash, snake, trim } from 'radashi'
 
 import type { TConfig } from 'types/container'
 import type { XGeneric } from 'types/generics'
-import advancedFormat from 'dayjs/plugin/advancedFormat.js'
-import dayjs from 'dayjs'
-
-dayjs.extend(advancedFormat)
+import dayjs from './dayjs'
 
 export const now = (format = 'YYYY-MM-DD HH:mm:ss') => dayjs().format(format)
 

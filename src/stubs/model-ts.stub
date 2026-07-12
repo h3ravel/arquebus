@@ -1,5 +1,9 @@
 import { Model } from '@h3ravel/arquebus'
 
-export default class {{ name }} extends Model {
+export interface {{ name }}Attributes {
+  id: number
+}
+
+export default class {{ name }} extends Model.define<{{ name }}Attributes>() {
   //
 }

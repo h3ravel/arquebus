@@ -2,7 +2,7 @@ import type { MixinConstructor, TGeneric } from 'types/generics'
 
 import Collection from '../collection'
 import type { Model } from '../model'
-import collect from 'collect.js'
+import { collect } from '@h3ravel/collect.js'
 import { tap } from '../utils'
 
 const HasOneOrMany = <TBase extends MixinConstructor> (Relation: TBase) => {

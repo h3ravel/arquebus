@@ -24,7 +24,6 @@ type QBOrCallback<QB extends AnyQueryBuilder> =
 interface CallbackVoid<T> {
   (this: T, arg: T): void
 }
-
 export type Raw = Knex.Raw
 
 export type OrderByDirection = 'asc' | 'desc' | 'ASC' | 'DESC'

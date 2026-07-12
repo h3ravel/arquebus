@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
 import { dirname } from 'node:path'
+import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'path'
 
@@ -23,7 +24,16 @@ export class SeederCreator {
   getStubPath (type: 'js' | 'ts') {
     if (this.customStubPath) return path.join(this.customStubPath, `seeder-${type}.stub`)
     const __dirname = this.getDirname(import.meta as any)
-    return path.join(__dirname, 'stubs', `seeder-${type}.stub`)
+    const name = `seeder-${type}.stub`
+    const candidates = [
+      path.join(__dirname, 'stubs', name),
+      path.join(__dirname, '../stubs', name),
+    ]
+    const resolved = candidates.find((candidate) => existsSync(candidate))
+
+    if (!resolved) throw new Error(`Seeder stub not found: ${name}`)
+
+    return resolved
   }
 
   getDirname (meta: ImportMeta | null) {

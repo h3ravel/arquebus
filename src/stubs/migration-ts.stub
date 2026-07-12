@@ -5,18 +5,15 @@ export default class extends Migration {
   /**
     * Run the migrations.
     */
-  async up(schema: SchemaBuilder) {
-    await schema.table('{{ table }}', (table) => {
-      // 
-    })
+  async up (schema: SchemaBuilder) {
+    //
   }
 
   /**
     * Reverse the migrations.
     */
-  async down(schema: SchemaBuilder) {
-    await schema.table('{{ table }}', (table) => {
-      // 
-    })
+  async down (schema: SchemaBuilder) {
+    //
   }
 }
+

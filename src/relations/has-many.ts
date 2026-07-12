@@ -2,7 +2,7 @@ import Collection from '../collection'
 import HasOneOrMany from './has-one-or-many'
 import type { Model } from 'src/model'
 import Relation from './relation'
-import { collect } from 'collect.js'
+import { collect } from '@h3ravel/collect.js'
 import { compose } from '../utils'
 
 class HasMany extends compose(Relation, HasOneOrMany) {

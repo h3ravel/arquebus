@@ -2,8 +2,9 @@ import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 
 import { FileSystem } from '@h3ravel/shared'
 import type { TFunction } from 'types/generics'
-import dayjs from 'dayjs'
+import dayjs from '../dayjs'
 import { dirname } from 'node:path'
+import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'path'
 
@@ -68,7 +69,6 @@ export class MigrationCreator {
         this.customStubPath ?? '',
         `migration-${this.type}.stub`,
       )
-      console.log('\n', customPath, '---')
       stub = (await FileSystem.fileExists(customPath))
         ? customPath
         : this.stubPath(`/migration-${this.type}.stub`)
@@ -123,7 +123,15 @@ export class MigrationCreator {
 
   stubPath(stub: string = '') {
     const __dirname = this.getDirname(import.meta as any)
-    return path.join(__dirname, 'stubs', stub)
+    const candidates = [
+      path.join(__dirname, 'stubs', stub),
+      path.join(__dirname, '../stubs', stub),
+    ]
+    const resolved = candidates.find((candidate) => existsSync(candidate))
+
+    if (!resolved) throw new Error(`Migration stub not found: ${stub}`)
+
+    return resolved
   }
 
   getDirname(meta: ImportMeta | null) {

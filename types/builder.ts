@@ -33,7 +33,7 @@ export interface IBuilder<M extends Model | BModel, R = ICollection<M> | IModel>
   extends BaseBuilder<M, R> {
   connector: IQueryBuilder<M, R> &
     Knex.QueryBuilder & { _statements: any[]; _single: any } & Knex
-  asProxy(): IQueryBuilder<M, R>
+  asProxy(): IBuilder<M, R>
   chunk(
     count: number,
     callback: (rows: ICollection<M>) => any,

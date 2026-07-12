@@ -1,4 +1,4 @@
-import { Collection as BaseCollection, collect } from 'collect.js'
+import { Collection as BaseCollection, collect } from '@h3ravel/collect.js'
 import type { TFunction, TGeneric } from 'types/generics'
 import { isArray, isEmpty, omit, pick } from 'radashi'
 
@@ -28,18 +28,21 @@ class Collection<I extends Model> extends BaseCollection<I> {
       return model.getKey() == key
     })
   }
-  diff (items: ICollection<any> | any[]) {
+  override diff<T = I> (items: BaseCollection<I> | T[]) {
     const diff = new (this.constructor as any)()
     const dictionary = this.getDictionary(items)
-      ; (this.items as unknown as any[]).map((item) => {
-        if (dictionary[item.getKey()] == null) {
-          diff.add(item)
-        }
-      })
+    this.all().map((item) => {
+      if (dictionary[item.getKey()] == null) {
+        diff.add(item)
+      }
+    })
     return diff
   }
-  except (keys: any[]) {
-    const dictionary = omit(this.getDictionary(), keys)
+  override except<K = I> (...keys: K[]) {
+    const values = keys.length === 1 && Array.isArray(keys[0])
+      ? (keys[0] as unknown[]).map(String)
+      : keys.map(String)
+    const dictionary = omit(this.getDictionary(), values)
     return new (this.constructor as any)(Object.values(dictionary))
   }
   intersect (items: I[]) {
@@ -48,7 +51,7 @@ class Collection<I extends Model> extends BaseCollection<I> {
       return intersect
     }
     const dictionary = this.getDictionary(items)
-    for (const item of this.items as any) {
+    for (const item of this.all()) {
       if (dictionary[item.getKey()] != null) {
         intersect.add(item)
       }
@@ -70,13 +73,13 @@ class Collection<I extends Model> extends BaseCollection<I> {
       if (this.isEmpty()) {
         return new (this.constructor as any)()
       }
-      return this.whereIn(this.first().getKeyName(), key)
+      return this.whereIn(this.first()!.getKeyName(), key)
     }
-    collect(this.items as unknown as Model[]).first((model) => {
+    collect(this.all() as unknown as Model[]).first((model) => {
       return model.getKey() == key
     })
     return (
-      (this.items as unknown as any[]).filter((model) => {
+      (this.all() as unknown as any[]).filter((model) => {
         return model.getKey() == key
       })[0] || defaultValue
     )
@@ -96,17 +99,21 @@ class Collection<I extends Model> extends BaseCollection<I> {
       item.append(attributes)
     })
   }
-  only (keys: any[]) {
-    if (keys === null) {
-      return new Collection(this.items)
-    }
-    const dictionary = pick(this.getDictionary(), keys)
+  override only<K = I> (...keys: K[]) {
+    const values = keys.length === 1 && Array.isArray(keys[0])
+      ? (keys[0] as unknown[]).map(String)
+      : keys.map(String)
+    const dictionary = pick(this.getDictionary(), values)
     return new (this.constructor as any)(Object.values(dictionary))
   }
-  getDictionary (items?: ICollection<any> | any[]) {
-    items = !items ? (this.items as unknown as any[]) : items
+  getDictionary (items?: BaseCollection<any> | any[]) {
+    const values = !items
+      ? this.all()
+      : items instanceof BaseCollection
+        ? items.all() as any[]
+        : items
     const dictionary: TGeneric = {}
-    items.map((value) => {
+    values.map((value) => {
       dictionary[value.getKey()] = value
     })
     return dictionary
@@ -116,15 +123,15 @@ class Collection<I extends Model> extends BaseCollection<I> {
       typeof item.toData == 'function' ? item.toData() : item,
     )
   }
-  toJSON () {
-    return this.toData()
+  override toJSON (): I[] {
+    return this.toData() as I[]
   }
   toJson (...args: any[]) {
     return JSON.stringify(this.toData(), ...args)
   }
   [Symbol.iterator]: () => Iterator<I> = () => {
-    const items = this.items
-    const length = this.items.length
+    const items = this.all()
+    const length = items.length
     let n = 0
     return {
       next () {

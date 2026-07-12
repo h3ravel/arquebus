@@ -72,7 +72,6 @@ export interface SchemaBuilder extends Knex.SchemaBuilder {
    */
   foreignKeys (): Promise<ForeignKey>
 }
-
 interface AsMethod<QB extends AnyQueryBuilder> {
   (alias: string): QB
 }

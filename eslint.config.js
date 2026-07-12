@@ -19,6 +19,7 @@ export default defineConfig(
     rules: {
       'semi': ['error', 'never'],
       'quotes': ['error', 'single'],
+      '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/consistent-type-imports': [
         'warn',
         { prefer: 'type-imports' }
@@ -35,5 +36,11 @@ export default defineConfig(
       ],
       '@typescript-eslint/no-explicit-any': 'off'
     }
+  },
+  {
+    files: ['test/**/*.ts'],
+    rules: {
+      'no-useless-assignment': 'off',
+    },
   },
 )

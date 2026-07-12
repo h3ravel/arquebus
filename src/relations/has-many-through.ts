@@ -93,7 +93,7 @@ class HasManyThrough extends Relation {
     const dictionary = this.buildDictionary(results)
     for (const model of models) {
       const key = (this as any).getDictionaryKey(
-        model.getAttribute(this.localKey),
+        model.getAttribute(this.localKey!) as any,
       )
       if (dictionary[key] !== undefined) {
         model.setRelation(relation, this.related.newCollection(dictionary[key]))

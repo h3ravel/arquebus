@@ -3,7 +3,7 @@ import { Model, Pivot } from '../../model'
 import { assign, diff as difference, isArray } from 'radashi'
 
 import Collection from '../../collection'
-import { collect } from 'collect.js'
+import { collect } from '@h3ravel/collect.js'
 
 const InteractsWithPivotTable = <TBase extends MixinConstructor>(
   Relation: TBase,
@@ -66,7 +66,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
         detached: [],
         updated: [],
       }
-      let records: any[]
+      let records: Record<string, any>
       const results = await this.getCurrentlyAttachedPivots()
       const current =
         results.length === 0
@@ -98,7 +98,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
     syncWithPivotValues(ids: string[], values: any, detaching = true) {
       return this.sync(
         collect(this.parseIds(ids)).mapWithKeys((id: string | number) => {
-          return [id, values]
+          return [String(id), values]
         }),
         detaching,
       )
@@ -195,7 +195,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor>(
           if (!isArray(attributes)) {
             ;[id, attributes] = [attributes, {}]
           }
-          return [id, attributes]
+          return [String(id), attributes]
         })
         .all()
     }

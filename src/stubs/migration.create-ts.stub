@@ -19,3 +19,4 @@ export default class extends Migration {
     await schema.dropTableIfExists('{{ table }}')
   }
 }
+

@@ -7,7 +7,7 @@ import type { Model } from 'src/model'
 import { ModelNotFoundError } from '../errors'
 import Relation from './relation'
 import type { TGeneric } from 'types/generics'
-import { collect } from 'collect.js'
+import { collect } from '@h3ravel/collect.js'
 
 class BelongsToMany extends compose(Relation, InteractsWithPivotTable) {
   table?: string

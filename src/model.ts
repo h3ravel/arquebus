@@ -26,8 +26,17 @@ import type { Mixins } from './mixin'
 import type { TBaseConfig } from 'types/container'
 import UniqueIds from './concerns/unique-ids'
 import type { WithRelationType } from 'types/query-methods'
+import type {
+  DefinedModel,
+  ModelColumn,
+  ModelConstructor,
+  ModelInput,
+  ModelRecord,
+  RelationRecord,
+} from 'types/schema'
+import type { ModelBuilder } from 'types/model-builder'
 import arquebus from './arquebus'
-import collect from 'collect.js'
+import { collect } from '@h3ravel/collect.js'
 import { assign as merge } from 'radashi'
 import pluralize from 'pluralize'
 
@@ -56,10 +65,17 @@ const BaseModel = compose<typeof ModelClass>(
 )
 
 // @ts-expect-error Errors will come from overlapping mixing methods and properties
-export class Model extends BaseModel {
+export class Model<
+  Attributes extends ModelRecord = any,
+  Relations extends RelationRecord = any,
+  Table extends string = string,
+> extends BaseModel {
   [key: string]: any
+  declare readonly $attributes: Attributes
+  declare readonly $relations: Relations
+  declare readonly $table: Table
   protected builder: IBuilder<any, any> | null = null
-  protected table: string | null = null
+  protected table: Table | null = null
   protected keyType = 'int'
   protected incrementing = true
   protected withCount = [] // protected
@@ -76,7 +92,7 @@ export class Model extends BaseModel {
   name!: any
   trx = null
 
-  constructor(attributes = {}) {
+  constructor(attributes: Partial<Attributes> = {}) {
     super()
     this.bootIfNotBooted()
     this.initializePlugins()
@@ -88,23 +104,40 @@ export class Model extends BaseModel {
     return this.asProxy()
   }
 
-  static query (trx = null) {
-    const instance = new this()
-    return instance.newQuery(trx)
+  static define<
+    Attributes extends ModelRecord,
+    Relations extends RelationRecord = {},
+    Table extends string = string,
+  >(): DefinedModel<Attributes, Relations, Table> {
+    return this as unknown as DefinedModel<Attributes, Relations, Table>
   }
-  static on (connection: TBaseConfig['client'] | null = null) {
+
+  static query<M extends Model> (this: ModelConstructor<M>, trx = null): ModelBuilder<M> {
+    const instance = new this()
+    return instance.newQuery(trx) as unknown as ModelBuilder<M>
+  }
+  static on<M extends Model> (
+    this: ModelConstructor<M>,
+    connection: TBaseConfig['client'] | null = null,
+  ): ModelBuilder<M> {
     const instance = new this()
     instance.setConnection(connection)
-    return instance.newQuery()
+    return instance.newQuery() as unknown as ModelBuilder<M>
   }
-  static init (attributes = {}) {
+  static init<M extends Model> (
+    this: ModelConstructor<M>,
+    attributes: ModelInput<M> = {},
+  ): M {
     return new this(attributes)
   }
   static extend (plugin: TFunction, options: TGeneric) {
     plugin(this, options)
   }
 
-  static make (attributes: TGeneric = {}) {
+  static make<M extends Model> (
+    this: ModelConstructor<M>,
+    attributes: ModelInput<M> = {},
+  ): M {
     const instance = new this()
 
     instance.buildRelationships(attributes)
@@ -215,8 +248,8 @@ export class Model extends BaseModel {
 
     return new Proxy(this, handler)
   }
-  getKey () {
-    return this.getAttribute(this.getKeyName())
+  getKey (): string | number | null | undefined {
+    return this.getAttribute(this.getKeyName()) as string | number | null | undefined
   }
   getKeyName () {
     return this.primaryKey
@@ -227,8 +260,8 @@ export class Model extends BaseModel {
   getConnectionName () {
     return this.connection!
   }
-  getTable () {
-    return this.table || pluralize(snakeCase(this.constructor.name))
+  getTable (): Table {
+    return (this.table || pluralize(snakeCase(this.constructor.name))) as Table
   }
   getConnection (this: any) {
     if (this.constructor.resolver) {
@@ -269,7 +302,7 @@ export class Model extends BaseModel {
     const scopeMethod = getScopeMethod(scope)
     return this[scopeMethod](...parameters)
   }
-  setTable (table: string) {
+  setTable (table: Table) {
     this.table = table
     return this
   }
@@ -359,8 +392,11 @@ export class Model extends BaseModel {
     )
   }
 
-  toData () {
-    return merge(this.attributesToData(), this.relationsToData())
+  toData (): Attributes & Partial<Relations> {
+    return merge(
+      this.attributesToData(),
+      this.relationsToData(),
+    ) as Attributes & Partial<Relations>
   }
   toJSON () {
     return this.toData()
@@ -371,9 +407,23 @@ export class Model extends BaseModel {
   toString () {
     return this.toJson()
   }
-  fill (attributes: TGeneric) {
+  getAttributes (): Attributes {
+    return super.getAttributes() as Attributes
+  }
+  getAttribute<Key extends string> (
+    key: Key,
+  ): Key extends keyof Attributes ? Attributes[Key] : unknown {
+    return super.getAttribute(key)
+  }
+  setAttribute<Key extends string> (
+    key: Key,
+    value: Key extends keyof Attributes ? Attributes[Key] : unknown,
+  ) {
+    return super.setAttribute(key, value as any) as this
+  }
+  fill (attributes: Partial<Attributes>) {
     for (const key in attributes) {
-      this.setAttribute(key, attributes[key])
+      ; (this as any).setAttribute(key, attributes[key])
     }
     return this
   }
@@ -409,7 +459,7 @@ export class Model extends BaseModel {
         const dirty = this.getDirty()
         if (Object.keys(dirty).length > 0) {
           await query
-            .where(this.getKeyName(), this.getKey())
+            .where(this.getKeyName(), this.getKey() as any)
             .query.update(dirty)
           this.syncChanges()
           await this.execHooks('updated', options)
@@ -445,12 +495,12 @@ export class Model extends BaseModel {
     }
     return saved
   }
-  async update (attributes: TGeneric = {}, options: TGeneric = {}) {
+  async update (attributes: Partial<Attributes> = {}, options: TGeneric = {}) {
     if (!this.exists) {
       return false
     }
     for (const key in attributes) {
-      this[key] = attributes[key]
+      ; (this as any)[key] = attributes[key]
     }
     return await this.save(options)
   }
@@ -516,7 +566,7 @@ export class Model extends BaseModel {
       : Pivot.fromAttributes(parent, attributes, table, exists)
   }
 
-  qualifyColumn (column: string) {
+  qualifyColumn (column: ModelColumn<this> | string) {
     if (column.includes('.')) {
       return column
     }

@@ -61,7 +61,7 @@ class Paginator<T extends Model, K extends IPaginatorParams = IPaginatorParams>
     return this._currentPage < this._lastPage
   }
   get (index: number) {
-    return this._items.get(index)
+    return this._items.get(index) as T | null
   }
   count () {
     return this._items.count()

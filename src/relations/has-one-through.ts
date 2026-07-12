@@ -16,7 +16,7 @@ class HasOneThrough extends compose(HasManyThrough, SupportsDefaultModels) {
   match (models: Model[], results: any, relation: string) {
     const dictionary = this.buildDictionary(results)
     for (const model of models) {
-      const key = this.getDictionaryKey(model.getAttribute(this.localKey))
+      const key = this.getDictionaryKey(model.getAttribute(this.localKey!) as any)
       if (dictionary[key] != undefined) {
         const value = dictionary[key]
         model.setRelation(relation, value[0])

@@ -3,7 +3,7 @@ import { assign, isArray } from 'radashi'
 
 import Collection from '../../collection'
 import Model from '../../model'
-import { collect } from 'collect.js'
+import { collect } from '@h3ravel/collect.js'
 
 const InteractsWithPivotTable = <TBase extends MixinConstructor> (
   Relation: TBase,
@@ -32,7 +32,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor> (
     ) {
       return this.sync(
         collect(this.parseIds(ids)).mapWithKeys((id: string | number) => {
-          return [id, values]
+          return [String(id), values]
         }),
         detaching,
       )
@@ -61,7 +61,7 @@ const InteractsWithPivotTable = <TBase extends MixinConstructor> (
           if (!isArray(attributes)) {
             ;[id, attributes] = [attributes, {}]
           }
-          return [id, attributes]
+          return [String(id), attributes]
         })
         .all()
     }

@@ -8,8 +8,8 @@ import {
 } from '../utils'
 
 import CastsAttributes from '../casts-attributes'
-import collect from 'collect.js'
-import dayjs from 'dayjs'
+import { collect } from '@h3ravel/collect.js'
+import dayjs from '../dayjs'
 
 const HasAttributes = <TBase extends MixinConstructor> (Model: TBase) => {
   return class extends Model {
