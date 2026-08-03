@@ -1,16 +1,16 @@
 import { Command, type SignatureBuilder } from '@h3ravel/musket'
 
 import type {
-  Cli,
   FileType,
   MakeFileOptions,
   MakeMigrationOptions,
   MigrationOptions,
   PathOptions,
-} from './cli'
+} from 'types/cli'
+import type { Cli } from './cli'
 
 abstract class ArquebusCommand extends Command<Cli> {
-  protected pathOption (signature: SignatureBuilder) {
+  protected pathOption(signature: SignatureBuilder) {
     return signature.option('path', {
       short: 'p',
       optionalValue: true,
@@ -20,7 +20,7 @@ abstract class ArquebusCommand extends Command<Cli> {
 }
 
 export class InitCommand extends ArquebusCommand {
-  protected buildSignature (signature: SignatureBuilder) {
+  protected buildSignature(signature: SignatureBuilder) {
     return signature
       .command('init')
       .describe('Create a fresh Arquebus config.')
@@ -32,13 +32,13 @@ export class InitCommand extends ArquebusCommand {
       })
   }
 
-  async handle () {
+  async handle() {
     await this.app.initialize(this.argument('type', 'js') as FileType)
   }
 }
 
 export class MakeMigrationCommand extends ArquebusCommand {
-  protected buildSignature (signature: SignatureBuilder) {
+  protected buildSignature(signature: SignatureBuilder) {
     return this.pathOption(signature
       .command('make:migration')
       .describe('Create a new migration file.')
@@ -61,7 +61,7 @@ export class MakeMigrationCommand extends ArquebusCommand {
       }))
   }
 
-  async handle () {
+  async handle() {
     await this.app.makeMigration(
       this.argument('name'),
       this.options() as MakeMigrationOptions,
@@ -70,14 +70,14 @@ export class MakeMigrationCommand extends ArquebusCommand {
 }
 
 export class PublishMigrationsCommand extends ArquebusCommand {
-  protected buildSignature (signature: SignatureBuilder) {
+  protected buildSignature(signature: SignatureBuilder) {
     return this.pathOption(signature
       .command('migrate:publish')
       .describe('Publish migration files from a package.')
       .argument('package', { description: 'The package to publish from.' }))
   }
 
-  async handle () {
+  async handle() {
     await this.app.publishMigrations(
       this.argument('package'),
       this.options() as PathOptions,
@@ -90,19 +90,19 @@ abstract class MigrationPathCommand extends ArquebusCommand {
   protected abstract commandDescription: string
   protected abstract execute(options: PathOptions): Promise<void>
 
-  protected buildSignature (signature: SignatureBuilder) {
+  protected buildSignature(signature: SignatureBuilder) {
     return this.pathOption(signature
       .command(this.commandName)
       .describe(this.commandDescription))
   }
 
-  async handle () {
+  async handle() {
     await this.execute(this.options() as PathOptions)
   }
 }
 
 export class MigrateCommand extends ArquebusCommand {
-  protected buildSignature (signature: SignatureBuilder) {
+  protected buildSignature(signature: SignatureBuilder) {
     return this.pathOption(signature
       .command('migrate')
       .describe('Run all pending migrations.')
@@ -113,13 +113,13 @@ export class MigrateCommand extends ArquebusCommand {
       }))
   }
 
-  async handle () {
+  async handle() {
     await this.app.migrate(this.options() as MigrationOptions)
   }
 }
 
 export class RollbackCommand extends ArquebusCommand {
-  protected buildSignature (signature: SignatureBuilder) {
+  protected buildSignature(signature: SignatureBuilder) {
     return this.pathOption(signature
       .command('migrate:rollback')
       .describe('Rollback the last database migration.')
@@ -130,7 +130,7 @@ export class RollbackCommand extends ArquebusCommand {
       }))
   }
 
-  async handle () {
+  async handle() {
     await this.app.rollback(this.options() as MigrationOptions)
   }
 }
@@ -138,31 +138,41 @@ export class RollbackCommand extends ArquebusCommand {
 export class ResetCommand extends MigrationPathCommand {
   protected commandName = 'migrate:reset'
   protected commandDescription = 'Rollback all database migrations.'
-  protected execute (options: PathOptions) { return this.app.reset(options) }
+  protected execute(options: PathOptions) {
+    return this.app.reset(options)
+  }
 }
 
 export class RefreshCommand extends MigrationPathCommand {
   protected commandName = 'migrate:refresh'
   protected commandDescription = 'Reset and re-run all migrations.'
-  protected execute (options: PathOptions) { return this.app.refresh(options) }
+  protected execute(options: PathOptions) {
+    return this.app.refresh(options)
+  }
 }
 
 export class FreshCommand extends MigrationPathCommand {
   protected commandName = 'migrate:fresh'
   protected commandDescription = 'Drop all tables and re-run all migrations.'
-  protected execute (options: PathOptions) { return this.app.fresh(options) }
+  protected execute(options: PathOptions) {
+    return this.app.fresh(options)
+  }
 }
 
 export class MigrationStatusCommand extends MigrationPathCommand {
   protected commandName = 'migrate:status'
   protected commandDescription = 'Show the status of each migration.'
-  protected execute (options: PathOptions) { return this.app.status(options) }
+  protected execute(options: PathOptions) {
+    return this.app.status(options)
+  }
 }
 
 export class SeedCommand extends MigrationPathCommand {
   protected commandName = 'db:seed'
   protected commandDescription = 'Run database seeders.'
-  protected execute (options: PathOptions) { return this.app.seed(options) }
+  protected execute(options: PathOptions) {
+    return this.app.seed(options)
+  }
 }
 
 abstract class MakeFileCommand extends ArquebusCommand {
@@ -171,7 +181,7 @@ abstract class MakeFileCommand extends ArquebusCommand {
   protected abstract fileDescription: string
   protected abstract execute(name: string, options: MakeFileOptions): Promise<void>
 
-  protected buildSignature (signature: SignatureBuilder) {
+  protected buildSignature(signature: SignatureBuilder) {
     return this.pathOption(signature
       .command(this.commandName)
       .describe(this.commandDescription)
@@ -187,8 +197,8 @@ abstract class MakeFileCommand extends ArquebusCommand {
       }))
   }
 
-  async handle () {
-    await this.execute(this.argument('name'), this.options() as MakeFileOptions)
+  async handle() {
+    await this.execute(this.argument('name'), this.options())
   }
 }
 
@@ -196,7 +206,7 @@ export class MakeSeederCommand extends MakeFileCommand {
   protected commandName = 'make:seeder'
   protected commandDescription = 'Create a new seeder file.'
   protected fileDescription = 'seeder'
-  protected execute (name: string, options: MakeFileOptions) {
+  protected execute(name: string, options: MakeFileOptions) {
     return this.app.makeSeeder(name, options)
   }
 }
@@ -205,7 +215,7 @@ export class MakeModelCommand extends MakeFileCommand {
   protected commandName = 'make:model'
   protected commandDescription = 'Create a new model file.'
   protected fileDescription = 'model'
-  protected execute (name: string, options: MakeFileOptions) {
+  protected execute(name: string, options: MakeFileOptions) {
     return this.app.makeModel(name, options)
   }
 }
