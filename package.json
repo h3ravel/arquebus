@@ -1,6 +1,6 @@
 {
   "name": "@h3ravel/arquebus",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "packageManager": "pnpm@10.18.2",
   "description": "Arquebus ORM is a Beautiful, expressive ORM inspired by Laravel's Eloquent, designed for TypeScript applications and for the H3ravel Framework.",
   "homepage": "https://h3ravel.toneflix.net/arquebus",
@@ -149,6 +149,7 @@
     "lint": "eslint . --ext .ts",
     "barrel": "barrelize >/dev/null",
     "postinstall": "pnpm barrel",
+    "prepublishOnly": "pnpm build",
     "cmd": "cross-env TEST=true tsx --experimental-specifier-resolution=node src/cli",
     "cmd:watch": "cross-env TEST=true tsx watch --experimental-specifier-resolution=node src/cli",
     "test": "cross-env vitest run --project generic",
@@ -172,9 +173,9 @@
   },
   "dependencies": {
     "@h3ravel/collect.js": "^5.4.0",
-    "@h3ravel/musket": "^2.2.7",
-    "@h3ravel/shared": "^2.2.5",
-    "@h3ravel/support": "^2.2.5",
+    "@h3ravel/musket": "^2.2.12",
+    "@h3ravel/shared": "^2.2.6",
+    "@h3ravel/support": "^2.2.6",
     "barrelize": "^1.8.2",
     "chalk": "^5.6.2",
     "chokidar": "^5.0.0",

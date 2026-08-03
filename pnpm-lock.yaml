@@ -12,14 +12,14 @@ importers:
         specifier: ^5.4.0
         version: 5.4.0
       '@h3ravel/musket':
-        specifier: ^2.2.7
-        version: 2.2.7(@types/node@26.1.1)
+        specifier: ^2.2.12
+        version: 2.2.12(@types/node@26.1.1)(tsdown@0.22.5(tsx@4.23.0)(typescript@6.0.3))
       '@h3ravel/shared':
-        specifier: ^2.2.5
-        version: 2.2.5(@types/node@26.1.1)
+        specifier: ^2.2.6
+        version: 2.2.6(@types/node@26.1.1)
       '@h3ravel/support':
-        specifier: ^2.2.5
-        version: 2.2.5(@types/node@26.1.1)(h3@2.0.1-rc.25)
+        specifier: ^2.2.6
+        version: 2.2.6(@types/node@26.1.1)(h3@2.0.1-rc.25)
       barrelize:
         specifier: ^1.8.2
         version: 1.8.2
@@ -490,18 +490,23 @@ packages:
   '@h3ravel/collect.js@5.4.0':
     resolution: {integrity: sha512-0PS7Yl30tQf3daHF0akEZ5XV5MnOq6BEsdtksCZl473bGJmrd0RQAdRIA34MEw9h+ilLhE2OhNIlYateffMvBA==}
 
-  '@h3ravel/contracts@2.2.5':
-    resolution: {integrity: sha512-xYChod43cdzWbRs5iv1sYYxWjj67ojz60oi2KWAiVl4/EefqwO6QfUOQUF6Gjy8baNRYqHEtIEjd882rtiv6zw==}
+  '@h3ravel/contracts@2.2.6':
+    resolution: {integrity: sha512-GDljn+3qswJkhujfy5O7g6Cx4nbUXzwgYjsInQ5afLthhGNrQqOyCWIWQNzM4afquEWZ/0BV22J1gfGKZgN9Vw==}
 
-  '@h3ravel/musket@2.2.7':
-    resolution: {integrity: sha512-QgYy6g/c+d9NqcjJyOlh4LbMmFwgl6n5kkdB0faiJ5pbnRg2ByrSBwtu4OgDbopvHplbC6PR1ddU/pduCrCisA==}
+  '@h3ravel/musket@2.2.12':
+    resolution: {integrity: sha512-TWlZL+AD+OHTCxs/RqS4IG7yE7DJjymfd2ivodkFrSVkX1uQMpEgd8PR5wjU6p5MCp58lqO6iORUfh27DYHl6A==}
     engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      tsdown: ^0.22.2
+    peerDependenciesMeta:
+      tsdown:
+        optional: true
 
-  '@h3ravel/shared@2.2.5':
-    resolution: {integrity: sha512-3nyQMYmB1wXD2JJ9t9hc/xTFBVewmbGkwT47su0Tp7DxhGE6WUJ6M/NhfKTHieO5sw2/1rKSU70lbzDDt2kfzg==}
+  '@h3ravel/shared@2.2.6':
+    resolution: {integrity: sha512-aB36v5gL698cjKwSlLtBKTR3QYmvCIzUxQuBkt7Tf00LR9+Q8sNTJ1VinZYE9CZ+BCawfuG1/YcSqDKUN3s6qg==}
 
-  '@h3ravel/support@2.2.5':
-    resolution: {integrity: sha512-GieWq7ZpsL7iOtTkfCqtmFs9NW6HCe/2ottp7JVvj2Io6lt+QPJ/x2frghKfPpPjEDUxT7ebC2eR0eognJUytA==}
+  '@h3ravel/support@2.2.6':
+    resolution: {integrity: sha512-/LYzW5eguyB7bcAKi8YNTghFjW57ynZ2r0v+ANjL7IcGl1FsrTspSu20jlPbMYqOu1mexe6V1D7DHN8soNDfeA==}
     peerDependencies:
       h3: ^2.0.1-rc.22
     peerDependenciesMeta:
@@ -2579,10 +2584,6 @@ packages:
     resolution: {integrity: sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ==}
     engines: {node: '>=18'}
 
-  string-width@8.1.0:
-    resolution: {integrity: sha512-Kxl3KJGb/gxkaUMOjRsQ8IrXiGW75O4E3RPjFIINOVH8AMl2SQ/yWdTzWwF3FevIX9LcMAjJW+GRwAlAbTSXdg==}
-    engines: {node: '>=20'}
-
   string-width@8.2.2:
     resolution: {integrity: sha512-GaPUh5gfdrYzqeVNZvUfT23vYYxXzKYidUcnMtJg/3rxRV63EFZy3k6xfKlmfeJD0176lnUV/Usr3XcwSvFzpg==}
     engines: {node: '>=20'}
@@ -3341,15 +3342,15 @@ snapshots:
 
   '@h3ravel/collect.js@5.4.0': {}
 
-  '@h3ravel/contracts@2.2.5':
+  '@h3ravel/contracts@2.2.6':
     dependencies:
       h3: 2.0.1-rc.25
     transitivePeerDependencies:
       - crossws
 
-  '@h3ravel/musket@2.2.7(@types/node@26.1.1)':
+  '@h3ravel/musket@2.2.12(@types/node@26.1.1)(tsdown@0.22.5(tsx@4.23.0)(typescript@6.0.3))':
     dependencies:
-      '@h3ravel/shared': 2.2.5(@types/node@26.1.1)
+      '@h3ravel/shared': 2.2.6(@types/node@26.1.1)
       chalk: 5.6.2
       commander: 14.0.1
       dayjs: 1.11.21
@@ -3358,11 +3359,13 @@ snapshots:
       preferred-pm: 4.1.1
       resolve-from: 5.0.0
       tsx: 4.23.0
+    optionalDependencies:
+      tsdown: 0.22.5(tsx@4.23.0)(typescript@6.0.3)
     transitivePeerDependencies:
       - '@types/node'
       - crossws
 
-  '@h3ravel/shared@2.2.5(@types/node@26.1.1)':
+  '@h3ravel/shared@2.2.6(@types/node@26.1.1)':
     dependencies:
       '@cli-prompts/multiline': 1.0.0
       '@inquirer/prompts': 7.9.0(@types/node@26.1.1)
@@ -3379,11 +3382,11 @@ snapshots:
       - '@types/node'
       - crossws
 
-  '@h3ravel/support@2.2.5(@types/node@26.1.1)(h3@2.0.1-rc.25)':
+  '@h3ravel/support@2.2.6(@types/node@26.1.1)(h3@2.0.1-rc.25)':
     dependencies:
       '@h3ravel/collect.js': 5.4.0
-      '@h3ravel/contracts': 2.2.5
-      '@h3ravel/shared': 2.2.5(@types/node@26.1.1)
+      '@h3ravel/contracts': 2.2.6
+      '@h3ravel/shared': 2.2.6(@types/node@26.1.1)
       dayjs: 1.11.21
       luxon: 3.7.2
     optionalDependencies:
@@ -3470,7 +3473,7 @@ snapshots:
   '@inquirer/external-editor@1.0.2(@types/node@26.1.1)':
     dependencies:
       chardet: 2.1.1
-      iconv-lite: 0.7.0
+      iconv-lite: 0.7.3
     optionalDependencies:
       '@types/node': 26.1.1
 
@@ -3707,7 +3710,7 @@ snapshots:
 
   '@types/mute-stream@0.0.1':
     dependencies:
-      '@types/node': 25.9.3
+      '@types/node': 26.1.1
 
   '@types/node@20.19.24':
     dependencies:
@@ -4984,7 +4987,7 @@ snapshots:
       is-unicode-supported: 2.1.0
       log-symbols: 7.0.1
       stdin-discarder: 0.2.2
-      string-width: 8.1.0
+      string-width: 8.2.2
 
   p-limit@2.3.0:
     dependencies:
@@ -5319,11 +5322,6 @@ snapshots:
   string-width@7.2.0:
     dependencies:
       emoji-regex: 10.5.0
-      get-east-asian-width: 1.4.0
-      strip-ansi: 7.1.2
-
-  string-width@8.1.0:
-    dependencies:
       get-east-asian-width: 1.4.0
       strip-ansi: 7.1.2
 

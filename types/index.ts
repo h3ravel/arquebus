@@ -1,4 +1,5 @@
 export * from './builder'
+export * from './cli'
 export * from './container'
 export * from './database'
 export * from './generics'

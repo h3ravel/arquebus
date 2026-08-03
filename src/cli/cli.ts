@@ -1,41 +1,21 @@
+import { Application, Kernel, type Musket } from '@h3ravel/musket'
 import { FileSystem, Logger, importFile } from '@h3ravel/shared'
-import { Kernel } from '@h3ravel/musket'
-import { Str } from '@h3ravel/support'
+import type { FileType, MakeFileOptions, MakeMigrationOptions, MigrationOptions, PathOptions } from 'types/cli'
+import { TableGuesser, Utils } from './utils'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 
 import { ArquebusCommands } from './commands'
 import { Migrate } from '../migrate'
 import { MigrationCreator } from '../migrations/migration-creator'
 import { SeederRunner } from '../seeders'
-import { TableGuesser, Utils } from './utils'
+import { Str } from '@h3ravel/support'
 import type { TBaseConfig } from '../../types/container'
 import type { XGeneric } from '../../types/generics'
 import cliPkg from '../../package.json'
 import { config as dotenv } from 'dotenv'
 import path from 'node:path'
 
-export type FileType = 'js' | 'ts'
-
-export interface PathOptions {
-  path?: string
-}
-
-export interface MigrationOptions extends PathOptions {
-  step?: number | string
-}
-
-export interface MakeMigrationOptions extends PathOptions {
-  type?: FileType
-  table?: string
-  create?: string | boolean
-}
-
-export interface MakeFileOptions extends PathOptions {
-  type?: FileType
-  force?: boolean
-}
-
-export class Cli {
+export class Cli extends Application {
   private cwd!: string
   private output = Logger
   private config: XGeneric<TBaseConfig> = {} as TBaseConfig
@@ -45,10 +25,11 @@ export class Cli {
   private modulePackage: XGeneric<{ version: string }> = { version: 'N/A' }
 
   constructor(basePath?: string) {
+    super()
     this.basePath = basePath ?? (process.env.TEST === 'true' ? 'test/cli' : '')
   }
 
-  public static async init () {
+  public static async init() {
     dotenv({ quiet: true })
 
     const instance = new Cli()
@@ -57,20 +38,26 @@ export class Cli {
     await instance.run()
   }
 
-  private terminateNotFound () {
+  registerMusketListeners(musket: Musket<this>): void {
+    musket.afterHandle.once(async () => {
+      process.exit(0)
+    })
+  }
+
+  private terminateNotFound() {
     const cmd = Logger.log([['arquebus init', ['italic', 'black', 'bgGray']]], '', false)
     this.output.error(`ERROR: Arquebus config not found. Run ${cmd} first.`)
   }
 
-  private ensureConfigured () {
+  private ensureConfigured() {
     if (!this.configPath) this.terminateNotFound()
   }
 
-  private resolveBasePath (requestedPath?: string) {
+  private resolveBasePath(requestedPath?: string) {
     return requestedPath ? path.join(this.cwd, requestedPath) : this.cwd
   }
 
-  private async resolveStub (name: string) {
+  private async resolveStub(name: string) {
     const candidates = [
       path.join(this.modulePath, 'src/stubs', name),
       path.join(this.modulePath, 'dist/stubs', name),
@@ -83,13 +70,13 @@ export class Cli {
     throw new Error(`Arquebus stub not found: ${name}`)
   }
 
-  private migrationReporter () {
+  private migrationReporter() {
     return (message: string, status?: 'error' | 'info' | 'success' | 'quiet') => {
       if (status && status !== 'quiet') this.output[status](message)
     }
   }
 
-  async loadPaths () {
+  async loadPaths() {
     this.cwd = path.join(process.cwd(), this.basePath)
     this.configPath = FileSystem.resolveFileUp(
       'arquebus.config',
@@ -109,7 +96,7 @@ export class Cli {
     return this
   }
 
-  async loadConfig () {
+  async loadConfig() {
     try {
       this.config = (
         await importFile<{ default: XGeneric<TBaseConfig> }>(this.configPath ?? '----')
@@ -126,7 +113,7 @@ export class Cli {
     return this
   }
 
-  async run () {
+  async run() {
     const kernel = new Kernel(this)
       .setCwd(this.cwd)
       .setConfig({
@@ -135,25 +122,23 @@ export class Cli {
         hideMusketInfo: true,
         versionSeparator: '\n',
       })
-      .bootstrap()
-
-    kernel.modules = [
-      {
+      .setPackages([{
         name: '@h3ravel/arquebus',
-        label: 'Arquebus CLI version',
+        label: 'Arquebus CLI',
         version: cliPkg.version,
+        base: true,
       },
       {
         name: '@h3ravel/arquebus',
-        label: 'Arquebus Local version',
+        label: 'Arquebus ORM',
         version: this.modulePackage.version || 'N/A',
-      },
-    ]
+      }])
+      .bootstrap()
 
     return await kernel.run()
   }
 
-  async initialize (type: FileType = 'js') {
+  async initialize(type: FileType = 'js') {
     if (!this.modulePath) {
       this.output.error([
         'ERROR: No local arquebus install found',
@@ -178,7 +163,7 @@ export class Cli {
     }
   }
 
-  async makeMigration (rawName: string, options: MakeMigrationOptions) {
+  async makeMigration(rawName: string, options: MakeMigrationOptions) {
     this.ensureConfigured()
 
     try {
@@ -212,7 +197,7 @@ export class Cli {
     }
   }
 
-  async publishMigrations (pkg: string, options: PathOptions) {
+  async publishMigrations(pkg: string, options: PathOptions) {
     this.ensureConfigured()
 
     try {
@@ -243,7 +228,7 @@ export class Cli {
     }
   }
 
-  async migrate (options: MigrationOptions) {
+  async migrate(options: MigrationOptions) {
     this.ensureConfigured()
     const basePath = this.resolveBasePath(options.path)
 
@@ -257,7 +242,7 @@ export class Cli {
     }
   }
 
-  async rollback (options: MigrationOptions) {
+  async rollback(options: MigrationOptions) {
     this.ensureConfigured()
     const basePath = this.resolveBasePath(options.path)
 
@@ -272,19 +257,19 @@ export class Cli {
     }
   }
 
-  async reset (options: PathOptions) {
+  async reset(options: PathOptions) {
     await this.runMigrationOperation('reset', options)
   }
 
-  async refresh (options: PathOptions) {
+  async refresh(options: PathOptions) {
     await this.runMigrationOperation('refresh', options)
   }
 
-  async fresh (options: PathOptions) {
+  async fresh(options: PathOptions) {
     await this.runMigrationOperation('fresh', options)
   }
 
-  private async runMigrationOperation (
+  private async runMigrationOperation(
     operation: 'reset' | 'refresh' | 'fresh',
     options: PathOptions,
   ) {
@@ -299,7 +284,7 @@ export class Cli {
     }
   }
 
-  async status (options: PathOptions) {
+  async status(options: PathOptions) {
     this.ensureConfigured()
     const basePath = this.resolveBasePath(options.path)
 
@@ -331,7 +316,7 @@ export class Cli {
     }
   }
 
-  async seed (options: PathOptions) {
+  async seed(options: PathOptions) {
     this.ensureConfigured()
     const basePath = this.resolveBasePath(options.path)
 
@@ -353,7 +338,7 @@ export class Cli {
     }
   }
 
-  async makeSeeder (name: string, options: MakeFileOptions) {
+  async makeSeeder(name: string, options: MakeFileOptions) {
     this.ensureConfigured()
     const type = options.type ?? 'js'
     const seederPath = path.join(
@@ -377,7 +362,7 @@ export class Cli {
     }
   }
 
-  async makeModel (name: string, options: MakeFileOptions) {
+  async makeModel(name: string, options: MakeFileOptions) {
     this.ensureConfigured()
     const type = options.type ?? 'js'
     const modelPath = path.join(
